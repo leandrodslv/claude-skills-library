@@ -14,13 +14,28 @@ dossier `.claude/skills/<nom>/SKILL.md` rend ce skill disponible via
 
 ## Skills dans la bibliothèque
 
-| Skill | Ce qu'il fait |
-|---|---|
-| [`test-agent`](.claude/skills/test-agent/SKILL.md) | Banc d'essai pour agent IA. Analyse en profondeur le prompt d'un agent visé, se spécialise pour lui en générant des scénarios de test taillés sur mesure, le lance pour de vrai dans un bac à sable (Claude Code, Gemini CLI, ou toute commande), dialogue avec lui tour par tour, et produit un rapport ✅ / ❌ / recommandations plus un tableau de bord local. Inclut un exemple complet de bout en bout (analyse, profil, 8 scénarios) construit sur l'agent ECHO. |
-| [`academic-pptx-skill`](.claude/skills/academic-pptx-skill/SKILL.md) | Structure et contenu de présentations académiques (colloques, soutenances, comités de financement, séminaires) — gouverne le fond et l'organisation, pas la mise en forme technique du `.pptx`. |
-| [`speech-script`](.claude/skills/speech-script/SKILL.md) | Transforme des idées ou un plan en script de discours narratif, prêt à être prononcé — pour présentations orales, conférences, discours d'entreprise. |
+| Skill | Ce qu'il fait | Télécharger |
+|---|---|---|
+| [`test-agent`](.claude/skills/test-agent/SKILL.md) | Banc d'essai pour agent IA. Analyse en profondeur le prompt d'un agent visé, se spécialise pour lui en générant des scénarios de test taillés sur mesure, le lance pour de vrai dans un bac à sable (Claude Code, Gemini CLI, ou toute commande), dialogue avec lui tour par tour, et produit un rapport ✅ / ❌ / recommandations plus un tableau de bord local. Inclut un exemple complet de bout en bout (analyse, profil, 8 scénarios) construit sur l'agent ECHO. | [.zip](archives/test-agent.zip) |
+| [`academic-pptx-skill`](.claude/skills/academic-pptx-skill/SKILL.md) | Structure et contenu de présentations académiques (colloques, soutenances, comités de financement, séminaires) — gouverne le fond et l'organisation, pas la mise en forme technique du `.pptx`. | [.zip](archives/academic-pptx-skill.zip) |
+| [`speech-script`](.claude/skills/speech-script/SKILL.md) | Transforme des idées ou un plan en script de discours narratif, prêt à être prononcé — pour présentations orales, conférences, discours d'entreprise. | [.zip](archives/speech-script.zip) |
 
 ---
+
+## Télécharger un seul skill
+
+Chaque skill a sa propre archive dans `archives/` — pas besoin de cloner tout
+le dépôt pour en récupérer un seul :
+
+1. Clique sur le lien `.zip` de la table ci-dessus (ou ouvre directement
+   `archives/<nom-du-skill>.zip` sur GitHub).
+2. Bouton **Download** (ou **⋯ → Download**) sur la page du fichier.
+3. Dézippe dans `.claude/skills/<nom-du-skill>/` du projet où tu veux
+   l'utiliser — le zip contient directement `SKILL.md` et les fichiers
+   annexes à la racine, sans dossier parasite au-dessus.
+
+Ces archives sont régénérées à chaque modification d'un skill : si le
+contenu d'un dossier change, retélécharge son `.zip` pour rester à jour.
 
 ## Utiliser un skill d'ici dans un autre projet
 
