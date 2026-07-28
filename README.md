@@ -52,6 +52,29 @@ s'applique donc en l'absence de licence explicite : ajouté ici pour usage
 personnel, mais le statut juridique d'une redistribution plus large n'est pas
 clarifié par le dépôt d'origine.
 
+| [`taste-skill`](.claude/skills/taste-skill/SKILL.md) | Skill par défaut anti-slop pour frontends IA (v2) : lit le brief, infère le langage de design, règle 3 curseurs (VARIANCE / MOTION / DENSITY), interdit les tirets cadratins, squelettes GSAP canoniques. | [.zip](archives/taste-skill.zip) |
+| [`taste-skill-v1`](.claude/skills/taste-skill-v1/SKILL.md) | Version v1 originale, conservée pour les projets qui dépendent de son comportement exact — à utiliser seulement si la v2 casse quelque chose. | [.zip](archives/taste-skill-v1.zip) |
+| [`gpt-tasteskill`](.claude/skills/gpt-tasteskill/SKILL.md) | Variante plus stricte pour GPT/Codex : variance de layout plus élevée, direction GSAP plus marquée, anti-slop agressif. | [.zip](archives/gpt-tasteskill.zip) |
+| [`image-to-code-skill`](.claude/skills/image-to-code-skill/SKILL.md) | Pipeline image-first : génère des références visuelles, les analyse, puis implémente le frontend pour y correspondre. | [.zip](archives/image-to-code-skill.zip) |
+| [`redesign-skill`](.claude/skills/redesign-skill/SKILL.md) | Pour projets existants : audite l'UI d'abord, puis corrige layout, espacement, hiérarchie, style. | [.zip](archives/redesign-skill.zip) |
+| [`soft-skill`](.claude/skills/soft-skill/SKILL.md) | UI haut de gamme, calme et « chère » — contraste doux, espace blanc, polices premium, motion en ressort. | [.zip](archives/soft-skill.zip) |
+| [`output-skill`](.claude/skills/output-skill/SKILL.md) | Force une sortie complète quand le modèle a tendance à livrer du travail à moitié fini, sans commentaires placeholder. | [.zip](archives/output-skill.zip) |
+| [`minimalist-skill`](.claude/skills/minimalist-skill/SKILL.md) | UI produit éditoriale (esprit Notion/Linear), palette restreinte, structure nette. | [.zip](archives/minimalist-skill.zip) |
+| [`brutalist-skill`](.claude/skills/brutalist-skill/SKILL.md) | Langage mécanique dur : typographie suisse, contraste marqué, layout expérimental. | [.zip](archives/brutalist-skill.zip) |
+| [`stitch-skill`](.claude/skills/stitch-skill/SKILL.md) | Règles compatibles Google Stitch, avec export optionnel au format `DESIGN.md`. | [.zip](archives/stitch-skill.zip) |
+| [`imagegen-frontend-web`](.claude/skills/imagegen-frontend-web/SKILL.md) | Génère des comps de site (hero, landing, multi-sections) — images de référence uniquement, pas de code. | [.zip](archives/imagegen-frontend-web.zip) |
+| [`imagegen-frontend-mobile`](.claude/skills/imagegen-frontend-mobile/SKILL.md) | Génère des écrans et flows mobiles (iOS/Android/cross-platform) — images de référence uniquement. | [.zip](archives/imagegen-frontend-mobile.zip) |
+| [`brandkit`](.claude/skills/brandkit/SKILL.md) | Génère des planches de kit de marque : pistes de logo, palettes, typographie, applications d'identité. | [.zip](archives/brandkit.zip) |
+
+**Les 13 skills `taste-skill` à `brandkit` viennent d'un dépôt tiers** :
+[Leonxlnx/taste-skill](https://github.com/Leonxlnx/taste-skill) (licence MIT,
+incluse dans chacun de ces dossiers via `LICENSE.txt`). Le dépôt source
+précise que la plupart des projets n'ont besoin que d'un ou deux de ces
+skills à la fois — tous copiés ici pour que le choix reste disponible, à toi
+de sélectionner selon `## Which one should I use?` dans le README source.
+Les 3 derniers (`imagegen-*`, `brandkit`) ne produisent que des images de
+référence, pas de code.
+
 | [`impeccable`](.claude/skills/impeccable/SKILL.md) | Guidance de design frontend pour agents IA : 23 commandes (`polish`, `audit`, `critique`, `distill`, `animate`, `bolder`, `quieter`…), itération live dans le navigateur, 60 règles de détection déterministes contre les tics visuels génériques des IA (Inter partout, dégradés violet-bleu, cartes imbriquées…). | [.zip](archives/impeccable.zip) |
 | [`think`](.claude/skills/think/SKILL.md) | Avant de construire quoi que ce soit : challenge le problème, presse-teste la conception, produit un plan complet qu'un autre agent peut implémenter. | [.zip](archives/think.zip) |
 | [`ui`](.claude/skills/ui/SKILL.md) | Interfaces frontend distinctives, avec itération esthétique pilotée par capture d'écran — direction assumée plutôt que défauts génériques. | [.zip](archives/ui.zip) |
