@@ -31,6 +31,23 @@ Deux types de contenu, pas la même mécanique :
 | [`slides`](.claude/skills/slides/SKILL.md) | Présentations HTML stratégiques avec Chart.js, tokens de design, mise en page responsive, formules de copywriting. | [.zip](archives/slides.zip) |
 | [`ui-styling`](.claude/skills/ui-styling/SKILL.md) | Interfaces accessibles avec shadcn/ui (Radix + Tailwind), thèmes, dark mode, composants accessibles (dialogs, formulaires, tableaux). | [.zip](archives/ui-styling.zip) |
 | [`impeccable`](.claude/skills/impeccable/SKILL.md) | Guidance de design frontend pour agents IA : 23 commandes (`polish`, `audit`, `critique`, `distill`, `animate`, `bolder`, `quieter`…), itération live dans le navigateur, 60 règles de détection déterministes contre les tics visuels génériques des IA (Inter partout, dégradés violet-bleu, cartes imbriquées…). | [.zip](archives/impeccable.zip) |
+| [`think`](.claude/skills/think/SKILL.md) | Avant de construire quoi que ce soit : challenge le problème, presse-teste la conception, produit un plan complet qu'un autre agent peut implémenter. | [.zip](archives/think.zip) |
+| [`ui`](.claude/skills/ui/SKILL.md) | Interfaces frontend distinctives, avec itération esthétique pilotée par capture d'écran — direction assumée plutôt que défauts génériques. | [.zip](archives/ui.zip) |
+| [`check`](.claude/skills/check/SKILL.md) | Revue de diff après une tâche, avant merge ou release : contraintes propres au projet, suivi de release/publish/push, vérification par preuves. | [.zip](archives/check.zip) |
+| [`hunt`](.claude/skills/hunt/SKILL.md) | Debug systématique de bug ou régression — cause racine confirmée avant tout correctif, surtout quand quelque chose fonctionnait avant. | [.zip](archives/hunt.zip) |
+| [`write`](.claude/skills/write/SKILL.md) | Réécrit la prose pour sonner naturel en français comme en anglais (chinois/anglais dans la version source), coupe les formulations rigides. | [.zip](archives/write.zip) |
+| [`learn`](.claude/skills/learn/SKILL.md) | Workflow de recherche en 6 phases pour un domaine inconnu : collecter, digérer, structurer, compléter, affiner, relire et publier. | [.zip](archives/learn.zip) |
+| [`read`](.claude/skills/read/SKILL.md) | Lit URLs et PDF avec routage spécifique par plateforme — résumé concis en lecture simple, sortie Markdown si conversion/citation/sauvegarde demandée. | [.zip](archives/read.zip) |
+| [`health`](.claude/skills/health/SKILL.md) | Audit de santé d'agent IA : vérifie Codex, Claude Code, les instructions de projet, la sortie du vérificateur, la maintenabilité — avec un passage résumé avant l'inspection profonde. | [.zip](archives/health.zip) |
+
+**Les 8 skills `think` à `health` viennent d'un dépôt tiers** :
+[tw93/Waza](https://github.com/tw93/Waza) (licence MIT, incluse dans chacun de
+ces dossiers via `LICENSE.txt`). Aucun correctif nécessaire à l'import :
+chaque skill est autonome, sans référence croisée vers un autre skill du
+même dépôt ni variable d'environnement de plugin. Ils sont conçus pour
+s'enchaîner en flux de travail (`think` → `check`, `hunt` → `check`, `read` →
+`learn` → `write`…), mais chaque transition reste une étape manuelle
+déclenchée par le pilote — aucune dépendance technique entre eux.
 
 **`impeccable` vient d'un dépôt tiers** :
 [pbakaus/impeccable](https://github.com/pbakaus/impeccable) (licence Apache
