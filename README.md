@@ -1,14 +1,18 @@
 # Bibliothèque de skills
 
-C'est mon espace personnel de skills pour Claude Code — un dépôt unique où je
-range tous les skills que j'utilise ou que je construis, pour ne pas les
-perdre d'un projet à l'autre et pouvoir les réutiliser n'importe où.
+C'est mon espace personnel pour Claude Code — un dépôt unique où je range les
+skills et les profils `CLAUDE.md` que j'utilise ou que je construis, pour ne
+pas les perdre d'un projet à l'autre et pouvoir les réutiliser n'importe où.
 
-Chaque skill vit dans son propre dossier sous `.claude/skills/`, avec un
-`SKILL.md` qui décrit quand et comment Claude Code doit l'utiliser. C'est la
-convention standard de Claude Code : n'importe quel projet qui embarque un
-dossier `.claude/skills/<nom>/SKILL.md` rend ce skill disponible via
-`/<nom>`.
+Deux types de contenu, pas la même mécanique :
+
+- **Skills** (`.claude/skills/<nom>/SKILL.md`) — invocables via `/<nom>` dans
+  Claude Code. C'est la convention standard : n'importe quel projet qui
+  embarque ce dossier rend le skill disponible.
+- **Profils `CLAUDE.md`** (`claude-md-profiles/`) — pas des skills, pas de
+  commande. Ce sont des fichiers à copier **à la racine** d'un projet (ou dans
+  `~/.claude/CLAUDE.md` pour un effet global) : Claude Code les lit
+  automatiquement à chaque message, sans rien invoquer.
 
 ---
 
@@ -69,6 +73,37 @@ le dépôt pour en récupérer un seul :
 
 Ces archives sont régénérées à chaque modification d'un skill : si le
 contenu d'un dossier change, retélécharge son `.zip` pour rester à jour.
+
+---
+
+## Profils `CLAUDE.md`
+
+Des fichiers `CLAUDE.md` prêts à l'emploi pour réduire la verbosité et le
+coût en tokens de sortie — à déposer tels quels à la racine d'un projet.
+**Pas des skills** : rien à installer dans `.claude/skills/`, aucune commande
+`/`, Claude Code les charge automatiquement dès qu'ils sont présents.
+Source : [drona23/claude-token-efficient](https://github.com/drona23/claude-token-efficient)
+(licence MIT, `LICENSE.txt` inclus).
+
+| Profil | Pour quoi | Fichier |
+|---|---|---|
+| `CLAUDE.md` (principal) | Profil universel — le point de départ recommandé | [ouvrir](claude-md-profiles/CLAUDE.md) |
+| `CLAUDE.agents.md` | Pipelines d'automatisation, systèmes multi-agents, bots, tâches planifiées | [ouvrir](claude-md-profiles/CLAUDE.agents.md) |
+| `CLAUDE.analysis.md` | Analyse de données, recherche, analyse financière, reporting | [ouvrir](claude-md-profiles/CLAUDE.analysis.md) |
+| `CLAUDE.benchmark.md` | Benchmarks code — minimise l'overhead en préservant le taux de réussite | [ouvrir](claude-md-profiles/CLAUDE.benchmark.md) |
+| `CLAUDE.coding.md` | Projets de dev, revue de code, debug, refactoring | [ouvrir](claude-md-profiles/CLAUDE.coding.md) |
+| `CLAUDE.compressed.md` | Workloads à fort volume de sortie où le coût en tokens domine (mesuré : -62% Opus, -32% Sonnet, -22% Haiku vs baseline) | [ouvrir](claude-md-profiles/CLAUDE.compressed.md) |
+
+**Utilisation** : télécharge le fichier voulu (bouton Download sur sa page
+GitHub) et dépose-le à la racine du projet cible sous le nom `CLAUDE.md` —
+un seul profil actif à la fois, ils ne se combinent pas. N'en mets un que sur
+des workflows à fort volume de sortie (pipelines, automatisation) : sur des
+échanges courts et ponctuels, le fichier coûte plus de tokens en entrée qu'il
+n'en économise en sortie — l'auteur le dit lui-même dans son README.
+
+Le dépôt source contient aussi 3 dossiers d'expérimentation versionnés
+(`J/K/M-drona23-v5/v6/v8`, variantes de test du benchmark) volontairement
+laissés de côté ici — pas des profils prêts à l'emploi.
 
 ## Utiliser un skill d'ici dans un autre projet
 
