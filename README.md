@@ -39,6 +39,31 @@ Deux types de contenu, pas la même mécanique :
 | [`learn`](.claude/skills/learn/SKILL.md) | Workflow de recherche en 6 phases pour un domaine inconnu : collecter, digérer, structurer, compléter, affiner, relire et publier. | [.zip](archives/learn.zip) |
 | [`read`](.claude/skills/read/SKILL.md) | Lit URLs et PDF avec routage spécifique par plateforme — résumé concis en lecture simple, sortie Markdown si conversion/citation/sauvegarde demandée. | [.zip](archives/read.zip) |
 | [`health`](.claude/skills/health/SKILL.md) | Audit de santé d'agent IA : vérifie Codex, Claude Code, les instructions de projet, la sortie du vérificateur, la maintenabilité — avec un passage résumé avant l'inspection profonde. | [.zip](archives/health.zip) |
+| [`build-graph`](.claude/skills/build-graph/SKILL.md) ⚠️ | Construit ou met à jour le graphe de connaissance du code (SQLite, `.code-review-graph/graph.db`) — préalable aux 6 autres skills de ce groupe. | [.zip](archives/build-graph.zip) |
+| [`debug-issue`](.claude/skills/debug-issue/SKILL.md) ⚠️ | Debug systématique via navigation du code par le graphe de dépendances. | [.zip](archives/debug-issue.zip) |
+| [`explore-codebase`](.claude/skills/explore-codebase/SKILL.md) ⚠️ | Navigue et comprend la structure d'une codebase via le graphe de connaissance. | [.zip](archives/explore-codebase.zip) |
+| [`refactor-safely`](.claude/skills/refactor-safely/SKILL.md) ⚠️ | Planifie et exécute un refactoring sûr via analyse de dépendances. | [.zip](archives/refactor-safely.zip) |
+| [`review-changes`](.claude/skills/review-changes/SKILL.md) ⚠️ | Revue de code structurée via détection de changements et analyse d'impact. | [.zip](archives/review-changes.zip) |
+| [`review-delta`](.claude/skills/review-delta/SKILL.md) ⚠️ | Revue des seuls changements depuis le dernier commit, économe en tokens, avec détection automatique du rayon d'impact. | [.zip](archives/review-delta.zip) |
+| [`review-pr`](.claude/skills/review-pr/SKILL.md) ⚠️ | Revue d'une PR ou d'un diff de branche avec le contexte structurel complet du graphe, analyse du rayon d'impact incluse. | [.zip](archives/review-pr.zip) |
+
+> ⚠️ **Ces 7 skills (`build-graph` à `review-pr`) ne fonctionnent pas seuls.**
+> Contrairement à tous les autres skills de cette bibliothèque, ils ne
+> contiennent que des instructions qui appellent des **outils MCP**
+> (`list_graph_stats_tool`, `build_or_update_graph_tool`…) — aucun script,
+> aucune donnée embarquée. Ces outils sont fournis par un serveur MCP externe,
+> le moteur d'analyse Python `code-review-graph`, à installer et configurer
+> **avant** que ces skills ne servent à quoi que ce soit :
+> ```bash
+> pip install code-review-graph
+> code-review-graph install   # detecte l'outil IA et configure le MCP
+> ```
+> Sans cette étape, copier ces dossiers ne fait rien — les outils qu'ils
+> appellent n'existent pas.
+
+**Les 7 skills `build-graph` à `review-pr` viennent d'un dépôt tiers** :
+[tirth8205/code-review-graph](https://github.com/tirth8205/code-review-graph)
+(licence MIT, incluse dans chacun de ces dossiers via `LICENSE.txt`).
 
 **Les 8 skills `think` à `health` viennent d'un dépôt tiers** :
 [tw93/Waza](https://github.com/tw93/Waza) (licence MIT, incluse dans chacun de
