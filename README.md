@@ -42,6 +42,16 @@ nécessaire, autonome, sans dépendance externe.
 **`brand-guidelines` vient aussi du dépôt officiel** anthropics/skills
 (licence Apache 2.0, `LICENSE.txt` inclus).
 
+| [`figma-design-to-code`](.claude/skills/figma-design-to-code/SKILL.md) | Prérequis obligatoire avant d'implémenter un design Figma en code — instructions et étapes pour porter correctement un design Figma en composants réels. Déclenché par « implement this Figma design », « build this screen from Figma ». | [.zip](archives/figma-design-to-code.zip) |
+
+**`figma-design-to-code` vient de** [figma/mcp-server-guide](https://github.com/figma/mcp-server-guide)
+(dépôt officiel Figma). ⚠️ **Aucun fichier de licence trouvé dans le dépôt
+source** — ni `LICENSE`, ni mention dans le README, qui renvoie même vers les
+« Figma Brand Usage Guidelines » pour les icônes. Le droit d'auteur par défaut
+s'applique donc en l'absence de licence explicite : ajouté ici pour usage
+personnel, mais le statut juridique d'une redistribution plus large n'est pas
+clarifié par le dépôt d'origine.
+
 | [`impeccable`](.claude/skills/impeccable/SKILL.md) | Guidance de design frontend pour agents IA : 23 commandes (`polish`, `audit`, `critique`, `distill`, `animate`, `bolder`, `quieter`…), itération live dans le navigateur, 60 règles de détection déterministes contre les tics visuels génériques des IA (Inter partout, dégradés violet-bleu, cartes imbriquées…). | [.zip](archives/impeccable.zip) |
 | [`think`](.claude/skills/think/SKILL.md) | Avant de construire quoi que ce soit : challenge le problème, presse-teste la conception, produit un plan complet qu'un autre agent peut implémenter. | [.zip](archives/think.zip) |
 | [`ui`](.claude/skills/ui/SKILL.md) | Interfaces frontend distinctives, avec itération esthétique pilotée par capture d'écran — direction assumée plutôt que défauts génériques. | [.zip](archives/ui.zip) |
