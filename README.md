@@ -26,6 +26,17 @@ dossier `.claude/skills/<nom>/SKILL.md` rend ce skill disponible via
 | [`design-system`](.claude/skills/design-system/SKILL.md) | Architecture de tokens à trois couches (primitif → sémantique → composant), spécifications de composants, génération stratégique de slides. | [.zip](archives/design-system.zip) |
 | [`slides`](.claude/skills/slides/SKILL.md) | Présentations HTML stratégiques avec Chart.js, tokens de design, mise en page responsive, formules de copywriting. | [.zip](archives/slides.zip) |
 | [`ui-styling`](.claude/skills/ui-styling/SKILL.md) | Interfaces accessibles avec shadcn/ui (Radix + Tailwind), thèmes, dark mode, composants accessibles (dialogs, formulaires, tableaux). | [.zip](archives/ui-styling.zip) |
+| [`impeccable`](.claude/skills/impeccable/SKILL.md) | Guidance de design frontend pour agents IA : 23 commandes (`polish`, `audit`, `critique`, `distill`, `animate`, `bolder`, `quieter`…), itération live dans le navigateur, 60 règles de détection déterministes contre les tics visuels génériques des IA (Inter partout, dégradés violet-bleu, cartes imbriquées…). | [.zip](archives/impeccable.zip) |
+
+**`impeccable` vient d'un dépôt tiers** :
+[pbakaus/impeccable](https://github.com/pbakaus/impeccable) (licence Apache
+2.0, incluse via `LICENSE.txt` ; `NOTICE.md` copié aussi — deux fichiers de
+référence de ce skill, `reference/ios.md` et `reference/android.md`, sont
+eux-mêmes distillés d'un troisième projet sous licence MIT, crédité dans
+`NOTICE.md`). Aucun correctif nécessaire à l'import : les chemins sont déjà
+écrits en relatif au projet, sans dépendre d'une variable d'environnement de
+plugin. Un script fait référence à `react` comme dépendance externe — sans
+incidence hors d'un projet React qui l'a déjà dans son `node_modules`.
 
 **Les 7 skills `ui-ux-pro-max` à `ui-styling` viennent d'un dépôt tiers** :
 [nextlevelbuilder/ui-ux-pro-max-skill](https://github.com/nextlevelbuilder/ui-ux-pro-max-skill)
