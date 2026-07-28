@@ -30,6 +30,13 @@ Deux types de contenu, pas la même mécanique :
 | [`design-system`](.claude/skills/design-system/SKILL.md) | Architecture de tokens à trois couches (primitif → sémantique → composant), spécifications de composants, génération stratégique de slides. | [.zip](archives/design-system.zip) |
 | [`slides`](.claude/skills/slides/SKILL.md) | Présentations HTML stratégiques avec Chart.js, tokens de design, mise en page responsive, formules de copywriting. | [.zip](archives/slides.zip) |
 | [`ui-styling`](.claude/skills/ui-styling/SKILL.md) | Interfaces accessibles avec shadcn/ui (Radix + Tailwind), thèmes, dark mode, composants accessibles (dialogs, formulaires, tableaux). | [.zip](archives/ui-styling.zip) |
+| [`canvas-design`](.claude/skills/canvas-design/SKILL.md) | Crée des œuvres visuelles originales (`.png`, `.pdf`) — posters, affiches, pièces artistiques — guidées par une philosophie de design, jamais en copiant le travail d'artistes existants. | [.zip](archives/canvas-design.zip) |
+
+**`canvas-design` vient du dépôt officiel** :
+[anthropics/skills](https://github.com/anthropics/skills) (licence Apache 2.0,
+`LICENSE.txt` inclus). Skill maintenu par Anthropic — aucun correctif
+nécessaire, autonome, sans dépendance externe.
+
 | [`impeccable`](.claude/skills/impeccable/SKILL.md) | Guidance de design frontend pour agents IA : 23 commandes (`polish`, `audit`, `critique`, `distill`, `animate`, `bolder`, `quieter`…), itération live dans le navigateur, 60 règles de détection déterministes contre les tics visuels génériques des IA (Inter partout, dégradés violet-bleu, cartes imbriquées…). | [.zip](archives/impeccable.zip) |
 | [`think`](.claude/skills/think/SKILL.md) | Avant de construire quoi que ce soit : challenge le problème, presse-teste la conception, produit un plan complet qu'un autre agent peut implémenter. | [.zip](archives/think.zip) |
 | [`ui`](.claude/skills/ui/SKILL.md) | Interfaces frontend distinctives, avec itération esthétique pilotée par capture d'écran — direction assumée plutôt que défauts génériques. | [.zip](archives/ui.zip) |
