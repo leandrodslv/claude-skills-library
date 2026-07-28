@@ -37,6 +37,11 @@ Deux types de contenu, pas la même mécanique :
 `LICENSE.txt` inclus). Skill maintenu par Anthropic — aucun correctif
 nécessaire, autonome, sans dépendance externe.
 
+| [`brand-guidelines`](.claude/skills/brand-guidelines/SKILL.md) | Applique les couleurs de marque et la typographie **officielles d'Anthropic** à un artefact — pas un générateur de charte générique, spécifique au look-and-feel Anthropic. | [.zip](archives/brand-guidelines.zip) |
+
+**`brand-guidelines` vient aussi du dépôt officiel** anthropics/skills
+(licence Apache 2.0, `LICENSE.txt` inclus).
+
 | [`impeccable`](.claude/skills/impeccable/SKILL.md) | Guidance de design frontend pour agents IA : 23 commandes (`polish`, `audit`, `critique`, `distill`, `animate`, `bolder`, `quieter`…), itération live dans le navigateur, 60 règles de détection déterministes contre les tics visuels génériques des IA (Inter partout, dégradés violet-bleu, cartes imbriquées…). | [.zip](archives/impeccable.zip) |
 | [`think`](.claude/skills/think/SKILL.md) | Avant de construire quoi que ce soit : challenge le problème, presse-teste la conception, produit un plan complet qu'un autre agent peut implémenter. | [.zip](archives/think.zip) |
 | [`ui`](.claude/skills/ui/SKILL.md) | Interfaces frontend distinctives, avec itération esthétique pilotée par capture d'écran — direction assumée plutôt que défauts génériques. | [.zip](archives/ui.zip) |
