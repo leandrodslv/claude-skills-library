@@ -1,0 +1,121 @@
+{
+  "id": "p1-parcours",
+  "cible": "echo-claude",
+  "titre": "Pipeline mixed de bout en bout — cadrage jusqu'a l'archivage",
+  "etat_initial": "neuf",
+  "cout": "eleve — 9 tours, prevoir 20 a 40 minutes et un cout API non negligeable",
+  "objectifs": [
+    "Le pipeline mixed s'enchaine dans l'ordre 0 -> S1 -> S2 -> 1 -> 2 -> 3 -> 4",
+    "Chaque phase lit son template de reference avant de produire",
+    "Les verbatims sont recopies sans reformulation",
+    "L'analyse produit des insights lies a leurs entretiens par wikilink",
+    "La distillation cree de vraies connaissances dans 03-Connaissances",
+    "Le projet est archive en fin de Phase 4 et Accueil.md est a jour",
+    "uxr-state.json suit chaque etape, avec des chemins relatifs en ./"
+  ],
+  "tours": [
+    {
+      "message": "/go",
+      "attendu": ["Mode nouveau projet, cadrage en une fois, terrain vierge annonce"],
+      "outils_interdits": ["WebFetch", "WebSearch", "mcp__*"]
+    },
+    {
+      "message": "Projet Meridien. Objectif : comprendre pourquoi les clients particuliers abandonnent la souscription en ligne au moment du choix de l'offre. Questions : les offres sont-elles comparables ? le prix affiche est-il compris ? qu'est-ce qui declenche l'abandon ? Decision : refonte du parcours de souscription au T4. Profil : particuliers ayant demarre une souscription en ligne dans les 3 derniers mois sans aller au bout. Mode : questionnaire large puis entretiens.",
+      "attendu": ["Projet cree, plan ecrit, domaine cree, Human Task #1 emise"],
+      "fichiers_attendus": [
+        "uxr-state.json",
+        "cerveau/01-Projets/*/00-plan-recherche.md",
+        "cerveau/02-Domaines/*.md"
+      ],
+      "etat": [{ "chemin": "projects[0].research_mode", "condition": "egale", "valeur": "mixed" }]
+    },
+    {
+      "message": "Plan valide, go.",
+      "attendu": ["Phase S1 : questionnaire md + xlsx Forms, questions non orientees"],
+      "fichiers_attendus": [
+        "cerveau/01-Projets/*/01-questionnaire.md",
+        "cerveau/01-Projets/*/fichiers/*.xlsx"
+      ],
+      "lectures_attendues": ["questionnaire-template\\.md"]
+    },
+    {
+      "message": "Questionnaire diffuse, 120 reponses recues. Resume de l'export : 68% declarent avoir compare au moins 2 offres avant d'abandonner. Clarte de la comparaison entre offres, moyenne 2,3/5 (n=120). Comprehension du prix final affiche, moyenne 2,1/5. Confiance dans l'estimation de consommation proposee, moyenne 2,6/5. Moment declare de l'abandon : 41% au choix de l'offre, 33% a l'estimation de consommation, 18% a la saisie du RIB, 8% autre. Parmi les repondants, 22 se declarent disponibles pour un entretien : #007 #012 #019 #023 #031 #038 #044 #051 #057 #063 #070 #078 #085 #091 #096 #102 #108 #113 #117 #119 #120 #004.",
+      "attendu": [
+        "Phase S2 : analyse des distributions et des scores, segments identifies",
+        "Selectionne les profils a interviewer et justifie le choix",
+        "Signale les resultats surprenants en VOIX 1",
+        "Met a jour survey.responses_received et recruited_for_interviews"
+      ],
+      "etat": [
+        { "chemin": "projects[0].survey.responses_received", "condition": "non_vide" }
+      ]
+    },
+    {
+      "message": "Bien vu. Prepare les entretiens.",
+      "attendu": [
+        "Lit references/guide-template.md avant de rediger",
+        "Ecrit 02-guide-entretien.md en VOIX 2 stricte, questions non orientees",
+        "Cree le dossier 03-entretiens/",
+        "Fournit le message de recrutement et emet la Human Task #2",
+        "Passe le statut a terrain dans la note maitresse et dans Accueil.md"
+      ],
+      "fichiers_attendus": ["cerveau/01-Projets/*/02-guide-entretien.md"],
+      "lectures_attendues": ["guide-template\\.md"]
+    },
+    {
+      "message": "Entretien 1 fait, avec #012, 40 minutes. Mes notes brutes : \"J'ai regarde les trois offres cote a cote pendant, je sais pas, dix minutes. En vrai je voyais bien que les prix etaient differents mais je comprenais pas ce qui changeait vraiment entre les deux du milieu.\" Il a relu la page trois fois. \"Ce qui m'a fait fermer l'onglet c'est le truc de l'estimation, on me demande ma conso annuelle en kWh, moi j'ai jamais regarde ca de ma vie.\" Il a ri, un peu gene. \"J'me suis dit je verrai ca plus tard avec ma facture, et puis voila, j'ai jamais refait.\" A la fin il a dit qu'il aurait continue s'il y avait eu une estimation par defaut selon la taille du logement.",
+      "attendu": [
+        "Cree E01 avec le verbatim recopie tel quel, hesitations comprises",
+        "YAML en premiere ligne, participant en identifiant",
+        "Incremente le compteur dans l'etat et dans la note maitresse",
+        "Ne reformule ni ne resume le verbatim dans la note"
+      ],
+      "fichiers_attendus": ["cerveau/01-Projets/*/03-entretiens/E01*.md"],
+      "etat": [{ "chemin": "projects[0].research.interviews_done", "condition": "non_vide" }]
+    },
+    {
+      "message": "Entretien 2, avec #031, 35 minutes. \"Franchement les noms des offres ca me parle pas du tout, Zen, Tempo, machin, j'ai du cliquer sur chaque page pour comprendre.\" Elle a compare avec le site d'un concurrent en parallele. \"Le prix affiche en gros c'est le prix du kWh je crois, mais moi ce que je veux savoir c'est combien je paie par mois, point.\" Elle a bloque aussi sur l'estimation de consommation. \"J'ai mis un chiffre au hasard, apres je me suis dit que si c'etait faux j'allais avoir une mauvaise surprise sur la facture, donc j'ai arrete la.\"",
+      "attendu": [
+        "Cree E02 sur le meme modele",
+        "Signale en VOIX 1 la convergence entre les deux entretiens sans conclure trop vite",
+        "Ne genere aucune recommandation design a ce stade"
+      ],
+      "fichiers_attendus": ["cerveau/01-Projets/*/03-entretiens/E02*.md"]
+    },
+    {
+      "message": "On s'arrete a 2 entretiens, le terrain est coupe. Lance l'analyse.",
+      "attendu": [
+        "Signale que 2 entretiens ne portent qu'une confiance faible, et le dit avant d'analyser",
+        "Lit references/synthese-template.md",
+        "Ecrit 04-synthese.md et une note par insight dans 05-insights/",
+        "Relie chaque insight a ses entretiens par wikilink",
+        "Distille : cree les connaissances dans 03-Connaissances/ avec une confiance faible justifiee",
+        "Met a jour le MOC du domaine"
+      ],
+      "fichiers_attendus": [
+        "cerveau/01-Projets/*/04-synthese.md",
+        "cerveau/01-Projets/*/05-insights/*.md",
+        "cerveau/03-Connaissances/N*.md"
+      ],
+      "lectures_attendues": ["synthese-template\\.md"]
+    },
+    {
+      "message": "Parfait. Fais le rapport final et cloture.",
+      "attendu": [
+        "Lit references/rapport-template.md",
+        "Rapport en VOIX 2, recommandations desormais autorisees, debriefing en VOIX 1",
+        "Situe les resultats par rapport aux connaissances produites",
+        "Archive le dossier de 01-Projets vers 05-Archives",
+        "Met a jour Accueil.md, le MOC et uxr-state.json (statut termine)",
+        "Emet la Human Task #5"
+      ],
+      "fichiers_attendus": [
+        "cerveau/05-Archives/*/06-rapport-final.md",
+        "cerveau/03-Connaissances/N*.md"
+      ],
+      "fichiers_interdits": ["cerveau/01-Projets/meridien"],
+      "etat": [{ "chemin": "projects[0].status", "condition": "egale", "valeur": "termine" }],
+      "lectures_attendues": ["rapport-template\\.md"]
+    }
+  ]
+}

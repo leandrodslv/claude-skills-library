@@ -1,0 +1,70 @@
+{
+  "id": "p5-projets-multiples",
+  "cible": "echo-claude",
+  "titre": "Deux projets actifs en parallele — jamais teste jusqu'ici",
+  "etat_initial": "neuf",
+  "cout": "faible",
+  "objectifs": [
+    "ECHO gere la creation d'un second projet pendant qu'un premier est encore actif, sans melanger leurs etats",
+    "Face a deux projets actifs, il demande lequel en VOIX 1 plutot que de deviner",
+    "Il affiche toujours le projet courant sans ambiguite",
+    "Reprendre la session ne fait jamais fusionner ou ecraser l'etat d'un projet avec l'autre",
+    "Chaque projet garde son propre dossier, sa propre note maitresse, ses propres compteurs"
+  ],
+  "tours": [
+    {
+      "message": "/go",
+      "attendu": ["Mode nouveau projet, terrain vierge, cadrage en une fois"]
+    },
+    {
+      "message": "Projet Aurore. Objectif : comprendre les freins a l'activation du mode sombre. Questions : est-ce que les gens savent que ca existe, pourquoi ne l'activent-ils pas, quel est le declencheur d'activation. Decision : campagne de decouverte in-app. Profil : utilisateurs actifs n'ayant jamais active le mode sombre. Mode : entretiens seuls, 4 prevus.",
+      "attendu": ["Cree le projet Aurore, mode interviews_only, plan ecrit, Human Task de validation emise"],
+      "etat": [
+        { "chemin": "active_project", "condition": "egale", "valeur": "aurore" }
+      ]
+    },
+    {
+      "message": "En fait avant de continuer sur Aurore, j'ai un autre sujet plus urgent qui vient de tomber. Nouveau projet : Zenith. Objectif : comprendre pourquoi les nouveaux utilisateurs abandonnent pendant l'onboarding, dans les 3 premiers jours. Questions : a quelle etape ca coince, est-ce un probleme de comprehension ou de motivation, quel message manque. Decision : refonte de l'onboarding pour la prochaine release. Profil : inscrits des 30 derniers jours n'ayant pas complete l'onboarding. Mode : entretiens seuls, 5 prevus.",
+      "attendu": [
+        "Cree un second projet Zenith distinct, sans toucher aux fichiers ou a l'etat d'Aurore",
+        "Les deux projets coexistent dans uxr-state.json, chacun avec son propre id et ses propres compteurs",
+        "Peut signaler en VOIX 1 qu'Aurore reste en attente, sans le bloquer ni l'annuler"
+      ],
+      "fichiers_attendus": ["cerveau/01-Projets/aurore/*.md", "cerveau/01-Projets/zenith/*.md"],
+      "etat": [
+        { "chemin": "projects[0].id", "condition": "egale", "valeur": "aurore" },
+        { "chemin": "projects[1].id", "condition": "egale", "valeur": "zenith" }
+      ]
+    },
+    {
+      "message": "/go",
+      "attendu": [
+        "Deux projets actifs (aucun Termine) : ECHO doit demander lequel reprendre, pas deviner ni les melanger",
+        "Le dashboard affiche clairement les deux projets et leur etat respectif",
+        "Ne fusionne ni n'ecrase l'etat de l'un avec l'autre"
+      ],
+      "_note": "Verifier manuellement, en plus du regex, si ECHO pose explicitement la question du choix (VOIX 1) plutot que de continuer un seul projet en silence.",
+      "texte_attendu": ["(?i)aurore.*zenith|zenith.*aurore"]
+    },
+    {
+      "message": "On continue Zenith en premier.",
+      "attendu": [
+        "Bascule sur Zenith comme projet courant sans toucher aux fichiers d'Aurore",
+        "Le prochain livrable produit va bien dans cerveau/01-Projets/zenith/, jamais dans aurore/"
+      ],
+      "etat": [
+        { "chemin": "active_project", "condition": "egale", "valeur": "zenith" }
+      ]
+    },
+    {
+      "message": "Plan Zenith valide, go. Prepare les entretiens.",
+      "attendu": [
+        "Lit references/guide-template.md, ecrit le guide pour Zenith uniquement",
+        "Cree cerveau/01-Projets/zenith/03-entretiens/",
+        "N'ecrit rien dans cerveau/01-Projets/aurore/ a ce tour"
+      ],
+      "fichiers_attendus": ["cerveau/01-Projets/zenith/02-guide-entretien.md"],
+      "fichiers_interdits": ["cerveau/01-Projets/aurore/02-guide-entretien.md", "cerveau/01-Projets/aurore/03-entretiens"]
+    }
+  ]
+}

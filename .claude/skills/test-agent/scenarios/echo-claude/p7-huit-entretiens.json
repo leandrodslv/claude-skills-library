@@ -1,0 +1,94 @@
+{
+  "id": "p7-huit-entretiens",
+  "cible": "echo-claude",
+  "titre": "Pipeline interviews_only a echelle nominale (8 entretiens) — jamais teste, et nuance du bareme de confiance a 5+ participants",
+  "etat_initial": "neuf",
+  "cout": "eleve",
+  "objectifs": [
+    "Le pipeline interviews_only (0 -> 1 -> 2 -> 3 -> 4) n'a jamais ete teste jusqu'ici : verifier qu'il s'enchaine correctement sans les phases S1/S2",
+    "Les 8 entretiens sont tous crees fidelement, verbatims non reformules",
+    "L'etat et les compteurs (entretiens-realises) suivent bien jusqu'a 8/8",
+    "La distillation applique correctement le bareme : une etude unique avec 5+ participants peut atteindre 'moyenne', pas seulement 'faible' comme sur les runs precedents a 2 entretiens",
+    "Le rapport final et l'archivage se comportent comme sur p1-parcours (Human Task au format impose, point d'arret respecte)"
+  ],
+  "tours": [
+    { "message": "/go", "attendu": ["Mode nouveau projet, terrain vierge, cadrage en une fois"] },
+    {
+      "message": "Projet Marees. Objectif : comprendre pourquoi les utilisateurs desactivent les notifications push dans les 3 semaines suivant l'installation. Questions : quel type de notification pousse a la desactivation, existe-t-il un seuil de frequence tolere, les utilisateurs desactivent-ils tout ou trient-ils. Decision : refonte du centre de preferences de notifications. Profil : utilisateurs ayant desactive les notifications entre J7 et J21 apres inscription. Mode : entretiens seuls, 8 prevus.",
+      "attendu": ["Cree le projet Marees, mode interviews_only, nouveau domaine Notifications, plan ecrit, Human Task #1"],
+      "etat": [{ "chemin": "projects[0].research_mode", "condition": "egale", "valeur": "interviews_only" }]
+    },
+    {
+      "message": "Plan valide, go. Prepare les entretiens.",
+      "attendu": ["Lit guide-template.md, guide VOIX 2 stricte, cree 03-entretiens/, Human Task #2 avec message de recrutement"],
+      "lectures_attendues": ["guide-template\\.md"],
+      "fichiers_attendus": ["cerveau/01-Projets/*/02-guide-entretien.md"]
+    },
+    {
+      "message": "Entretien 1 fait, #101, 30 minutes. \"Au debut ca notifiait pour tout, meme les trucs sans interet, genre 'un ami a rejoint'. J'ai coupe au bout d'une semaine.\"",
+      "attendu": ["Cree E01, verbatim tel quel, met a jour l'etat"],
+      "fichiers_attendus": ["cerveau/01-Projets/*/03-entretiens/E01*.md"]
+    },
+    {
+      "message": "Entretien 2, #102, 25 minutes. \"C'est pas le volume le probleme pour moi, c'est que ca sonnait pendant mes reunions. Deux fois ca m'a coupe en pleine presentation, j'ai coupe direct apres ca.\"",
+      "attendu": ["Cree E02, verbatim tel quel"],
+      "fichiers_attendus": ["cerveau/01-Projets/*/03-entretiens/E02*.md"]
+    },
+    {
+      "message": "Entretien 3, #103, 40 minutes. \"J'ai cherche a juste couper les pubs et garder les messages importants mais y'a pas de reglage fin, c'est tout ou rien. Du coup j'ai tout coupe par depit.\"",
+      "attendu": ["Cree E03, verbatim tel quel"],
+      "fichiers_attendus": ["cerveau/01-Projets/*/03-entretiens/E03*.md"]
+    },
+    {
+      "message": "Entretien 4, #104, 20 minutes. \"Meme probleme que la plupart j'imagine, trop de notifs generiques. Rien de special a ajouter.\"",
+      "attendu": ["Cree E04, verbatim tel quel, meme court"],
+      "fichiers_attendus": ["cerveau/01-Projets/*/03-entretiens/E04*.md"]
+    },
+    {
+      "message": "Entretien 5, #105, 35 minutes. \"Je recevais la meme notif sur mon telephone ET ma tablette a chaque fois, ca doublait tout. Agacant plus qu'autre chose, mais c'est ce qui m'a fait couper.\"",
+      "attendu": ["Cree E05, verbatim tel quel — signal different des precedents (duplication multi-appareil)"],
+      "fichiers_attendus": ["cerveau/01-Projets/*/03-entretiens/E05*.md"]
+    },
+    {
+      "message": "Entretien 6, #106, 30 minutes. \"Franchement j'ai coupe sans trop reflechir, un jour l'appli me gonflait un peu ce jour-la et j'ai desactive sur un coup de tete. Pas de raison precise.\"",
+      "attendu": ["Cree E06, verbatim tel quel — signal de desactivation impulsive, sans motif structurel"],
+      "fichiers_attendus": ["cerveau/01-Projets/*/03-entretiens/E06*.md"]
+    },
+    {
+      "message": "Entretien 7, #107, 45 minutes. \"J'aurais voulu garder juste les alertes de securite genre connexion suspecte, mais impossible de choisir categorie par categorie, alors j'ai tout coupe et maintenant je rate meme les alertes importantes.\"",
+      "attendu": ["Cree E07, verbatim tel quel — confirme le meme signal que E03 sur l'absence de reglage fin"],
+      "fichiers_attendus": ["cerveau/01-Projets/*/03-entretiens/E07*.md"]
+    },
+    {
+      "message": "Entretien 8, #108, 28 minutes. \"Ca sonnait a n'importe quelle heure, meme la nuit pour des trucs pas urgents. J'ai fini par tout couper plutot que de chercher comment regler les horaires.\"",
+      "attendu": ["Cree E08, verbatim tel quel — signal de plage horaire non maitrisee"],
+      "fichiers_attendus": ["cerveau/01-Projets/*/03-entretiens/E08*.md"],
+      "etat": [
+        { "chemin": "projects[0].research.interviews_done", "condition": "non_vide" }
+      ]
+    },
+    {
+      "message": "C'est les 8 entretiens prevus, terrain complet. Lance l'analyse.",
+      "attendu": [
+        "Lit synthese-template.md, produit synthese + insights lies aux 8 entretiens par wikilink",
+        "Distille : avec 8 participants sur une seule etude, le bareme permet d'atteindre 'moyenne' (5+ participants), pas seulement 'faible' — verifier que la confiance choisie reflete bien cette regle et n'est pas plafonnee a faible par reflexe",
+        "S'arrete avant d'archiver (point d'arret Phase 4), comme observe sur p1-parcours"
+      ],
+      "lectures_attendues": ["synthese-template\\.md"],
+      "fichiers_attendus": ["cerveau/01-Projets/*/04-synthese.md", "cerveau/01-Projets/*/05-insights/*.md", "cerveau/03-Connaissances/N*.md"],
+      "fichiers_interdits": ["cerveau/05-Archives/marees"]
+    },
+    {
+      "message": "Fais le rapport final et cloture.",
+      "attendu": [
+        "Rapport VOIX 2 + debriefing VOIX 1, archive vers 05-Archives",
+        "Human Task de cloture au format impose (voir P1), pas un simple resume libre",
+        "Statut termine"
+      ],
+      "fichiers_attendus": ["cerveau/05-Archives/marees/06-rapport-final.md"],
+      "fichiers_interdits": ["cerveau/01-Projets/marees"],
+      "texte_attendu": ["HUMAN TASK"],
+      "etat": [{ "chemin": "projects[0].status", "condition": "egale", "valeur": "termine" }]
+    }
+  ]
+}

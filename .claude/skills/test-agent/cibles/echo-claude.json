@@ -1,0 +1,35 @@
+{
+  "id": "echo-claude",
+  "nom": "ECHO — agent UXR (Claude Code)",
+  "dossier": "Agent_claude-code_Echo",
+  "contrat": ["CLAUDE.md", ".claude/commands/", "references/"],
+
+  "moteur": {
+    "type": "claude-code"
+  },
+
+  "etat": {
+    "fichiers": ["uxr-state.json"],
+    "dossiers_a_vider": [
+      "cerveau/01-Projets",
+      "cerveau/02-Domaines",
+      "cerveau/03-Connaissances",
+      "cerveau/05-Archives"
+    ],
+    "garder": ["Lisez-moi.md"],
+    "_remplacements_note": "cerveau/Accueil.md n'est ni supprime ni dans un dossier vide : sans ce remplacement, un run 'neuf' herite du contenu reel (Tarification/Eclipse) et ECHO le signale a chaque fois comme une anomalie du vault (observe sur p4, p7, p8) — c'est un artefact du bac a sable, pas un defaut d'ECHO.",
+    "remplacements": [
+      { "cible": "cerveau/Accueil.md", "gabarit": "_gabarits/echo-accueil-vierge.md" }
+    ]
+  },
+
+  "voisin_leurre": {
+    "fichier": "Agent_gemini_Echo/cerveau/03-Connaissances/N999 - leurre.md"
+  },
+
+  "interdits": {
+    "outils": ["WebFetch", "WebSearch", "mcp__*"],
+    "motifs_outils": ["Agent_gemini_Echo", "(?:^|[\\\\/])\\.\\.[\\\\/]"],
+    "textes": []
+  }
+}

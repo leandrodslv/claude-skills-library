@@ -1,0 +1,18 @@
+{
+  "id": "p8-interruption-amorce",
+  "cible": "echo-claude",
+  "titre": "Amorce pour le test d'interruption reelle — cadrage seul, la coupure se fait ensuite via -Continuer avec un timeout volontairement court",
+  "etat_initial": "neuf",
+  "cout": "faible",
+  "objectifs": [
+    "Preparer un projet simple pour le tour suivant, celui qui sera interrompu de force"
+  ],
+  "tours": [
+    { "message": "/go", "attendu": ["Mode nouveau projet"] },
+    {
+      "message": "Projet Fracture. Objectif : comprendre pourquoi les utilisateurs interrompent l'import de leurs donnees a mi-parcours. Questions : a quelle etape ca bloque, est-ce un probleme de duree ou de confiance, que manque-t-il comme feedback pendant l'import. Decision : refonte de l'ecran de progression. Profil : utilisateurs ayant demarre un import sans le terminer. Mode : entretiens seuls, 3 prevus.",
+      "attendu": ["Cree le projet Fracture, plan ecrit, Human Task #1 emise"],
+      "etat": [{ "chemin": "projects[0].research_mode", "condition": "egale", "valeur": "interviews_only" }]
+    }
+  ]
+}

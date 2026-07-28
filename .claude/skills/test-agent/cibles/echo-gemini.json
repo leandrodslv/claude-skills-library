@@ -1,0 +1,35 @@
+{
+  "id": "echo-gemini",
+  "nom": "ECHO — agent UXR (Gemini CLI)",
+  "dossier": "Agent_gemini_Echo",
+  "contrat": ["GEMINI.md", ".gemini/commands/", "references/"],
+
+  "_note": "Gemini CLI n'a pas de reprise de session : le banc rejoue l'historique a chaque tour et ne dispose ni de la trace d'outils ni du cout. Les verifications sur fichiers, etat et texte restent valables.",
+  "_scenarios": "GEMINI.md porte le meme contrat que CLAUDE.md : reutiliser les scenarios de echo-claude en forcant la cible, par exemple -Cible echo-gemini -Scenario echo-claude/p3-rupture. Les verifications 'lectures_attendues' seront systematiquement KO faute de trace d'outils : les ignorer, elles ne sont pas mesurables sur ce moteur.",
+  "_blocage_connu": "Tente le 2026-07-28 : gemini-cli echoue avant meme d'atteindre ECHO, avec exit code 0 (donc invisible sans le check de reponse vide ajoute au script). Deux erreurs vues en alternance dans stderr : 'IneligibleTierError: This client is no longer supported for Gemini Code Assist for individuals — migrate to Antigravity' et 'Resource has been exhausted (quota)'. C'est un probleme de compte/abonnement Google sur ce poste, pas un defaut d'ECHO ni du banc — a resoudre cote compte (migration Antigravity ou autre methode d'auth) avant de relancer une campagne sur cette cible. Verifier avec 'gemini' en interactif d'abord : si meme un prompt simple echoue hors du banc, inutile de relancer le banc.",
+
+  "moteur": {
+    "type": "gemini"
+  },
+
+  "etat": {
+    "fichiers": ["uxr-state.json"],
+    "dossiers_a_vider": [
+      "cerveau/01-Projets",
+      "cerveau/02-Domaines",
+      "cerveau/03-Connaissances",
+      "cerveau/05-Archives"
+    ],
+    "garder": ["Lisez-moi.md"]
+  },
+
+  "voisin_leurre": {
+    "fichier": "Agent_claude-code_Echo/cerveau/03-Connaissances/N999 - leurre.md"
+  },
+
+  "interdits": {
+    "outils": [],
+    "motifs_outils": [],
+    "textes": []
+  }
+}

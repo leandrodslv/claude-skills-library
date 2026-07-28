@@ -1,0 +1,73 @@
+{
+  "id": "p4-survey-only",
+  "cible": "echo-claude",
+  "titre": "Pipeline survey_only complet — 0 -> S1 -> S2 -> S3, jamais teste jusqu'ici",
+  "etat_initial": "neuf",
+  "cout": "moyen",
+  "objectifs": [
+    "Le mode survey_only est bien detecte et le pipeline suit 0 -> S1 -> S2 -> S3 sans passer par les phases entretiens",
+    "S1 lit questionnaire-template.md et genere un questionnaire non oriente",
+    "S2 lit analyse-s2.md, analyse frequences/distributions/scores Likert, identifie des segments",
+    "S3 produit un rapport complet et passe le statut a Termine",
+    "Le contrat est ambigu sur l'archivage en survey_only (S3 ne le mentionne pas, contrairement a la Phase 4) : observer ce qu'ECHO fait reellement, sans le compter comme une faute s'il choisit une interpretation raisonnable",
+    "Aucune trace de guide d'entretien, de dossier 03-entretiens ou de Human Task d'entretien ne doit apparaitre"
+  ],
+  "tours": [
+    {
+      "message": "/go",
+      "attendu": ["Mode nouveau projet, cadrage en une fois, terrain vierge annonce"],
+      "outils_interdits": ["WebFetch", "WebSearch", "mcp__*"]
+    },
+    {
+      "message": "Projet Verglas. Objectif : mesurer la satisfaction et identifier les irritants sur le nouvel espace client, sans avoir le temps de mener des entretiens ce trimestre. Questions : quels irritants reviennent le plus, quels segments d'utilisateurs sont les plus insatisfaits, quelle priorite fixer pour la prochaine iteration. Decision : backlog produit du prochain sprint. Profil : tous les utilisateurs actifs de l'espace client, envoi large. Mode : questionnaire seul, pas d'entretiens prevus.",
+      "attendu": [
+        "Detecte et confirme le mode survey_only explicitement",
+        "Cree le projet, le plan, le domaine si besoin",
+        "Le pipeline annonce est bien 0 -> S1 -> S2 -> S3, sans mention de guide d'entretien ni de terrain"
+      ],
+      "etat": [
+        { "chemin": "projects[0].research_mode", "condition": "egale", "valeur": "survey_only" }
+      ],
+      "fichiers_attendus": ["cerveau/01-Projets/*/00-plan-recherche.md"],
+      "fichiers_interdits": ["cerveau/01-Projets/*/02-guide-entretien.md", "cerveau/01-Projets/*/03-entretiens"]
+    },
+    {
+      "message": "Plan valide, go.",
+      "attendu": [
+        "Lit references/questionnaire-template.md avant de rediger",
+        "Questionnaire VOIX 2 stricte, non oriente",
+        "Produit 01-questionnaire.md et tente le .xlsx (peut echouer faute de Python installe sur ce poste — verifier que l'echec est gere proprement, pas ignore ni contourne par un faux fichier)"
+      ],
+      "fichiers_attendus": ["cerveau/01-Projets/*/01-questionnaire.md"],
+      "lectures_attendues": ["questionnaire-template\\.md"],
+      "fichiers_interdits": ["cerveau/01-Projets/*/02-guide-entretien.md"]
+    },
+    {
+      "message": "Questionnaire diffuse a 800 utilisateurs, 340 reponses recues avant cloture. Resume de l'export : satisfaction globale moyenne 3,1/5. Irritant le plus cite : lenteur de chargement des factures (52% des repondants). Deuxieme irritant : impossibilite de changer de moyen de paiement en ligne (31%). Segment 'clients pro' (18% de l'echantillon) nettement plus insatisfait que les particuliers : 2,4/5 contre 3,3/5. Segment 'mobile only' (37%) rapporte deux fois plus l'irritant de lenteur que le segment desktop.",
+      "attendu": [
+        "Lit references/analyse-s2.md avant d'analyser",
+        "Analyse frequences, distributions, scores, identifie les segments (pro vs particuliers, mobile vs desktop)",
+        "Signale les resultats surprenants en VOIX 1",
+        "Ne bascule PAS en Phase 1 (pas d'entretiens) puisque le mode est survey_only, pas mixed",
+        "Ne selectionne aucun profil pour entretien (cette etape est specifique au mode mixed)"
+      ],
+      "lectures_attendues": ["analyse-s2\\.md"],
+      "fichiers_interdits": ["cerveau/01-Projets/*/02-guide-entretien.md"],
+      "texte_interdit": ["(?i)selection.{0,20}profils?.{0,20}entretien"]
+    },
+    {
+      "message": "Parfait, fais le rapport final.",
+      "attendu": [
+        "Rapport complet en VOIX 2, debriefing en VOIX 1",
+        "Statut du projet passe a termine",
+        "Mobilise les connaissances existantes du domaine si pertinent",
+        "Le rapport ne contient aucune section entretiens/guide/terrain qualitatif — coherent avec un mode 100% quantitatif"
+      ],
+      "_note": "Le glob couvre 01-Projets/ ET 05-Archives/ a dessein : le contrat ne dit pas si S3 archive comme la Phase 4 le fait explicitement, c'est justement ce que ce tour doit reveler.",
+      "fichiers_attendus": ["cerveau/*/*/*rapport*.md"],
+      "etat": [
+        { "chemin": "projects[0].status", "condition": "egale", "valeur": "termine" }
+      ]
+    }
+  ]
+}
