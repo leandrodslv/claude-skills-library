@@ -61,86 +61,96 @@ Claude Code les charge automatiquement à chaque message.
 
 La bibliothèque regroupe actuellement plusieurs familles de skills.
 
+> 💡 Chaque skill importé d'un dépôt externe contient désormais son propre
+> `README.md` (le README d'origine, vendorisé tel quel) directement dans son
+> dossier `.claude/skills/<nom>/` — c'est la meilleure source pour comprendre
+> un skill en détail. Quand aucun dépôt public n'existe, un `SOURCE.md`
+> explique la provenance à la place. La colonne **Source** ci-dessous pointe
+> vers le dépôt d'origine de chaque skill.
+
 ## 🧠 Agents & Tests
 
-| Skill | Description |
-|---------|-------------|
-| `test-agent` | Framework de test pour agents IA avec génération automatique de scénarios, exécution sandboxée et rapport détaillé. |
+| Skill | Description | Source |
+|---------|-------------|--------|
+| `test-agent` | Framework de test pour agents IA avec génération automatique de scénarios, exécution sandboxée et rapport détaillé. | Original (aucun dépôt public identifié) |
 
 ---
 
 ## 🎤 Présentation & Communication
 
-| Skill | Description |
-|---------|-------------|
-| `academic-pptx-skill` | Structure des présentations académiques et de recherche. |
-| `speech-script` | Génération de scripts de discours naturels et fluides. |
-| `slides` | Présentations HTML stratégiques avec design system intégré. |
+| Skill | Description | Source |
+|---------|-------------|--------|
+| `academic-pptx-skill` | Structure des présentations académiques et de recherche. | [Gabberflast/academic-pptx-skill](https://github.com/Gabberflast/academic-pptx-skill) |
+| `speech-script` | Génération de scripts de discours naturels et fluides. | [sgharlow/claude-code-recipes](https://github.com/sgharlow/claude-code-recipes) — Recipe #40 |
+| `slides` | Présentations HTML stratégiques avec design system intégré. | ClaudeKit Marketing Kit (produit payant, [docs](https://docs.claudekit.cc/docs/marketing/skills/) — pas de dépôt public) |
 
 ---
 
 ## 🎨 Design & Branding
 
-| Skill | Description |
-|---------|-------------|
-| `brand` | Positionnement, voix et cohérence de marque. |
-| `design` | Branding complet : logos, identité, assets marketing. |
-| `design-system` | Architecture de design systems et bibliothèques de composants. |
-| `brandkit` | Génération de kits de marque complets. |
-| `banner-design` | Création de bannières marketing et visuels promotionnels. |
-| `canvas-design` | Production d'œuvres visuelles, affiches et posters. |
-| `brand-guidelines` | Application de la charte visuelle officielle Anthropic. |
+| Skill | Description | Source |
+|---------|-------------|--------|
+| `brand` | Positionnement, voix et cohérence de marque. | ClaudeKit Marketing Kit (payant, pas de dépôt public) |
+| `design` | Branding complet : logos, identité, assets marketing. | ClaudeKit Marketing Kit (payant, pas de dépôt public) |
+| `design-system` | Architecture de design systems et bibliothèques de composants. | ClaudeKit Marketing Kit (payant, pas de dépôt public) |
+| `brandkit` | Génération de kits de marque complets. | [Leonxlnx/taste-skill](https://github.com/Leonxlnx/taste-skill) |
+| `banner-design` | Création de bannières marketing et visuels promotionnels. | ClaudeKit Marketing Kit (payant, pas de dépôt public) |
+| `canvas-design` | Production d'œuvres visuelles, affiches et posters. | [anthropics/skills](https://github.com/anthropics/skills) (officiel Anthropic) |
+| `brand-guidelines` | Application de la charte visuelle officielle Anthropic. | [anthropics/skills](https://github.com/anthropics/skills) (officiel Anthropic) |
 
 ---
 
 ## 💎 UI / UX
 
-| Skill | Description |
-|---------|-------------|
-| `ui-ux-pro-max` | Base de connaissances massive UI/UX (styles, palettes, typographies, règles UX...). |
-| `ui-styling` | Interfaces accessibles avec shadcn/ui et Tailwind. |
-| `ui` | Création d'interfaces distinctives orientées direction artistique. |
-| `soft-skill` | UI premium, épurée et haut de gamme. |
-| `minimalist-skill` | Design éditorial inspiré de Notion et Linear. |
-| `brutalist-skill` | Interfaces radicales à inspiration brutaliste. |
-| `taste-skill` | Anti-slop frontend pour IA. |
-| `gpt-tasteskill` | Variante optimisée pour GPT/Codex. |
-| `redesign-skill` | Audit et amélioration d'interfaces existantes. |
-| `impeccable` | Ensemble de commandes de critique, polish et amélioration frontend. |
+| Skill | Description | Source |
+|---------|-------------|--------|
+| `ui-ux-pro-max` | Base de connaissances massive UI/UX (styles, palettes, typographies, règles UX...). | [nextlevelbuilder/ui-ux-pro-max-skill](https://github.com/nextlevelbuilder/ui-ux-pro-max-skill) |
+| `ui-styling` | Interfaces accessibles avec shadcn/ui et Tailwind. | [mrgoonie/claudekit-skills](https://github.com/mrgoonie/claudekit-skills) |
+| `ui` | Création d'interfaces distinctives orientées direction artistique. | [tw93/Waza](https://github.com/tw93/Waza) |
+| `soft-skill` | UI premium, épurée et haut de gamme. | [Leonxlnx/taste-skill](https://github.com/Leonxlnx/taste-skill) |
+| `minimalist-skill` | Design éditorial inspiré de Notion et Linear. | [Leonxlnx/taste-skill](https://github.com/Leonxlnx/taste-skill) |
+| `brutalist-skill` | Interfaces radicales à inspiration brutaliste. | [Leonxlnx/taste-skill](https://github.com/Leonxlnx/taste-skill) |
+| `taste-skill` | Anti-slop frontend pour IA. | [Leonxlnx/taste-skill](https://github.com/Leonxlnx/taste-skill) |
+| `taste-skill-v1` | Version 1 du skill anti-slop frontend. | [Leonxlnx/taste-skill](https://github.com/Leonxlnx/taste-skill) |
+| `gpt-tasteskill` | Variante optimisée pour GPT/Codex. | [Leonxlnx/taste-skill](https://github.com/Leonxlnx/taste-skill) |
+| `redesign-skill` | Audit et amélioration d'interfaces existantes. | [Leonxlnx/taste-skill](https://github.com/Leonxlnx/taste-skill) |
+| `impeccable` | Ensemble de commandes de critique, polish et amélioration frontend. | [pbakaus/impeccable](https://github.com/pbakaus/impeccable) |
 
 ---
 
 ## 🖼️ Génération visuelle
 
-| Skill | Description |
-|---------|-------------|
-| `imagegen-frontend-web` | Génération de maquettes web de référence. |
-| `imagegen-frontend-mobile` | Génération de références mobiles iOS/Android. |
-| `image-to-code-skill` | Pipeline image → analyse → implémentation frontend. |
+| Skill | Description | Source |
+|---------|-------------|--------|
+| `imagegen-frontend-web` | Génération de maquettes web de référence. | [Leonxlnx/taste-skill](https://github.com/Leonxlnx/taste-skill) |
+| `imagegen-frontend-mobile` | Génération de références mobiles iOS/Android. | [Leonxlnx/taste-skill](https://github.com/Leonxlnx/taste-skill) |
+| `image-to-code-skill` | Pipeline image → analyse → implémentation frontend. | [Leonxlnx/taste-skill](https://github.com/Leonxlnx/taste-skill) |
 
 ---
 
 ## 💻 Développement
 
-| Skill | Description |
-|---------|-------------|
-| `figma-design-to-code` | Transformation rigoureuse de designs Figma en composants réels. |
-| `stitch-skill` | Workflow compatible Google Stitch. |
-| `output-skill` | Force des livrables complets sans placeholders. |
+| Skill | Description | Source |
+|---------|-------------|--------|
+| `figma-design-to-code` | Transformation rigoureuse de designs Figma en composants réels. | [figma/mcp-server-guide](https://github.com/figma/mcp-server-guide) (officiel Figma) |
+| `stitch-skill` | Workflow compatible Google Stitch. | [Leonxlnx/taste-skill](https://github.com/Leonxlnx/taste-skill) |
+| `output-skill` | Force des livrables complets sans placeholders. | [Leonxlnx/taste-skill](https://github.com/Leonxlnx/taste-skill) |
 
 ---
 
 ## 🔍 Analyse, Recherche & Productivité
 
-| Skill | Description |
-|---------|-------------|
-| `think` | Remise en question du problème et planification stratégique. |
-| `read` | Lecture de pages web et PDF. |
-| `learn` | Recherche structurée en plusieurs phases. |
-| `write` | Réécriture de textes naturels et fluides. |
-| `check` | Revue de livraison avant merge ou release. |
-| `hunt` | Recherche systématique de causes racines. |
-| `health` | Audit de santé d'agents IA. |
+> Skills [Waza](https://github.com/tw93/Waza) (Tw93), sous licence MIT.
+
+| Skill | Description | Source |
+|---------|-------------|--------|
+| `think` | Remise en question du problème et planification stratégique. | [tw93/Waza](https://github.com/tw93/Waza) |
+| `read` | Lecture de pages web et PDF. | [tw93/Waza](https://github.com/tw93/Waza) |
+| `learn` | Recherche structurée en plusieurs phases. | [tw93/Waza](https://github.com/tw93/Waza) |
+| `write` | Réécriture de textes naturels et fluides. | [tw93/Waza](https://github.com/tw93/Waza) |
+| `check` | Revue de livraison avant merge ou release. | [tw93/Waza](https://github.com/tw93/Waza) |
+| `hunt` | Recherche systématique de causes racines. | [tw93/Waza](https://github.com/tw93/Waza) |
+| `health` | Audit de santé d'agents IA. | [tw93/Waza](https://github.com/tw93/Waza) |
 
 ---
 
@@ -148,32 +158,33 @@ La bibliothèque regroupe actuellement plusieurs familles de skills.
 
 > Skills officiels [GSAP](https://github.com/greensock/gsap-skills) (GreenSock), sous licence MIT.
 
-| Skill | Description |
-|---------|-------------|
-| `gsap-core` | API de base — `gsap.to()`, `from()`, `fromTo()`, easing, stagger, `matchMedia()`. |
-| `gsap-timeline` | Séquencement d'animations avec `gsap.timeline()`, paramètre de position, imbrication. |
-| `gsap-react` | Intégration React/Next.js — hook `useGSAP`, refs, `gsap.context()`, cleanup. |
-| `gsap-frameworks` | Intégration Vue, Nuxt, Svelte, SvelteKit — cycle de vie, cleanup au démontage. |
-| `gsap-scrolltrigger` | Animations liées au scroll — pinning, scrub, triggers, parallax. |
-| `gsap-plugins` | Plugins GSAP — ScrollToPlugin, Flip, Draggable, SplitText, CustomEase, etc. |
-| `gsap-utils` | Utilitaires `gsap.utils` — clamp, mapRange, random, snap, toArray, wrap. |
-| `gsap-performance` | Optimisation des animations — transforms, will-change, 60fps. |
+| Skill | Description | Source |
+|---------|-------------|--------|
+| `gsap-core` | API de base — `gsap.to()`, `from()`, `fromTo()`, easing, stagger, `matchMedia()`. | [greensock/gsap-skills](https://github.com/greensock/gsap-skills) |
+| `gsap-timeline` | Séquencement d'animations avec `gsap.timeline()`, paramètre de position, imbrication. | [greensock/gsap-skills](https://github.com/greensock/gsap-skills) |
+| `gsap-react` | Intégration React/Next.js — hook `useGSAP`, refs, `gsap.context()`, cleanup. | [greensock/gsap-skills](https://github.com/greensock/gsap-skills) |
+| `gsap-frameworks` | Intégration Vue, Nuxt, Svelte, SvelteKit — cycle de vie, cleanup au démontage. | [greensock/gsap-skills](https://github.com/greensock/gsap-skills) |
+| `gsap-scrolltrigger` | Animations liées au scroll — pinning, scrub, triggers, parallax. | [greensock/gsap-skills](https://github.com/greensock/gsap-skills) |
+| `gsap-plugins` | Plugins GSAP — ScrollToPlugin, Flip, Draggable, SplitText, CustomEase, etc. | [greensock/gsap-skills](https://github.com/greensock/gsap-skills) |
+| `gsap-utils` | Utilitaires `gsap.utils` — clamp, mapRange, random, snap, toArray, wrap. | [greensock/gsap-skills](https://github.com/greensock/gsap-skills) |
+| `gsap-performance` | Optimisation des animations — transforms, will-change, 60fps. | [greensock/gsap-skills](https://github.com/greensock/gsap-skills) |
 
 ---
 
 ## 🌐 Graphe de connaissance du code
 
 > ⚠️ Ces skills nécessitent l'installation préalable du moteur **code-review-graph**.
+> Skills [tirth8205/code-review-graph](https://github.com/tirth8205/code-review-graph) (Tirth Kanani), sous licence MIT.
 
-| Skill | Description |
-|---------|-------------|
-| `build-graph` | Construction du graphe de connaissance. |
-| `debug-issue` | Débogage guidé par le graphe. |
-| `explore-codebase` | Exploration structurelle du code. |
-| `refactor-safely` | Refactoring piloté par les dépendances. |
-| `review-changes` | Revue d'impact des modifications. |
-| `review-delta` | Revue des changements depuis le dernier commit. |
-| `review-pr` | Revue complète de Pull Request. |
+| Skill | Description | Source |
+|---------|-------------|--------|
+| `build-graph` | Construction du graphe de connaissance. | [tirth8205/code-review-graph](https://github.com/tirth8205/code-review-graph) |
+| `debug-issue` | Débogage guidé par le graphe. | [tirth8205/code-review-graph](https://github.com/tirth8205/code-review-graph) |
+| `explore-codebase` | Exploration structurelle du code. | [tirth8205/code-review-graph](https://github.com/tirth8205/code-review-graph) |
+| `refactor-safely` | Refactoring piloté par les dépendances. | [tirth8205/code-review-graph](https://github.com/tirth8205/code-review-graph) |
+| `review-changes` | Revue d'impact des modifications. | [tirth8205/code-review-graph](https://github.com/tirth8205/code-review-graph) |
+| `review-delta` | Revue des changements depuis le dernier commit. | [tirth8205/code-review-graph](https://github.com/tirth8205/code-review-graph) |
+| `review-pr` | Revue complète de Pull Request. | [tirth8205/code-review-graph](https://github.com/tirth8205/code-review-graph) |
 
 ### Installation
 
