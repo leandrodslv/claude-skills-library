@@ -6,9 +6,9 @@
 
 ---
 
-# 🗂️ Deux types de ressources
+# 🗂️ Trois types de ressources
 
-Cette bibliothèque contient deux catégories distinctes.
+Cette bibliothèque contient trois catégories distinctes.
 
 ## ⚡ Skills
 
@@ -54,6 +54,27 @@ MonProjet/
 ```
 
 Claude Code les charge automatiquement à chaque message.
+
+---
+
+## 🧩 Frameworks de référence
+
+**Emplacement :**
+
+```text
+frameworks/<nom>/
+```
+
+Certains outils de l'écosystème agent ne sont **pas des skills autonomes**
+mais des frameworks complets avec leur propre installeur (ils créent leur
+propre infrastructure de projet — config, scripts, catalogues — au moment de
+l'installation). Les copier tels quels dans `.claude/skills/` produirait des
+skills cassés. Pour ceux-là, ce dossier contient une fiche de référence
+(README d'origine vendorisé + notes) plutôt qu'un skill installable.
+
+| Framework | Description | Source |
+|---------|-------------|--------|
+| `bmad-method` | Développement agile piloté par agents IA — 12+ agents experts (PM, Architecte, Dev, UX...), workflows structurés de l'analyse à l'implémentation. S'installe par projet via `npx bmad-method@next install`. | [bmad-code-org/BMAD-METHOD](https://github.com/bmad-code-org/BMAD-METHOD) |
 
 ---
 
