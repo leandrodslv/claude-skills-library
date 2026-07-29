@@ -81,6 +81,8 @@ La bibliothèque regroupe actuellement plusieurs familles de skills.
 | Skill | Description | Source |
 |---------|-------------|--------|
 | `find-skills` | Aide à découvrir et installer des skills de l'écosystème open (via `npx skills find`), avec vérification de la réputation/popularité avant recommandation. | [vercel-labs/skills](https://github.com/vercel-labs/skills) (officiel Vercel Labs) |
+| `frontend-design` | Design frontend distinctif et haut de gamme (direction artistique, typographie, choix qui évitent l'esthétique générique IA). | [anthropics/skills](https://github.com/anthropics/skills) (officiel Anthropic) |
+| `web-design-guidelines` | Revue de code UI selon les Web Interface Guidelines (accessibilité, performance, UX — 100+ règles). | [vercel-labs/agent-skills](https://github.com/vercel-labs/agent-skills) (officiel Vercel Labs) |
 
 ---
 

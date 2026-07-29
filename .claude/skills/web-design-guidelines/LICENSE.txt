@@ -1,0 +1,11 @@
+MIT License
+
+This skill is distributed as part of the vercel-labs/agent-skills repository
+(https://github.com/vercel-labs/agent-skills), licensed under the MIT License.
+The repository does not ship a standalone LICENSE file; its README states:
+
+    ## License
+
+    MIT
+
+Copyright (c) Vercel, Inc.
