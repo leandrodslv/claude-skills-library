@@ -171,6 +171,23 @@ La bibliothèque regroupe actuellement plusieurs familles de skills.
 
 ---
 
+## 🎬 Animation (GSAP)
+
+> Skills officiels [GSAP](https://github.com/greensock/gsap-skills) (GreenSock), sous licence MIT.
+
+| Skill | Description |
+|---------|-------------|
+| `gsap-core` | API de base — `gsap.to()`, `from()`, `fromTo()`, easing, stagger, `matchMedia()`. |
+| `gsap-timeline` | Séquencement d'animations avec `gsap.timeline()`, paramètre de position, imbrication. |
+| `gsap-react` | Intégration React/Next.js — hook `useGSAP`, refs, `gsap.context()`, cleanup. |
+| `gsap-frameworks` | Intégration Vue, Nuxt, Svelte, SvelteKit — cycle de vie, cleanup au démontage. |
+| `gsap-scrolltrigger` | Animations liées au scroll — pinning, scrub, triggers, parallax. |
+| `gsap-plugins` | Plugins GSAP — ScrollToPlugin, Flip, Draggable, SplitText, CustomEase, etc. |
+| `gsap-utils` | Utilitaires `gsap.utils` — clamp, mapRange, random, snap, toArray, wrap. |
+| `gsap-performance` | Optimisation des animations — transforms, will-change, 60fps. |
+
+---
+
 ## 🌐 Graphe de connaissance du code
 
 > ⚠️ Ces skills nécessitent l'installation préalable du moteur **code-review-graph**.
