@@ -96,6 +96,7 @@ La bibliothèque regroupe actuellement plusieurs familles de skills.
 | `test-agent` | Framework de test pour agents IA avec génération automatique de scénarios, exécution sandboxée et rapport détaillé. | Original (aucun dépôt public identifié) |
 | `context-keeper` | Crée, met à jour et restaure un fichier de contexte maître capturant l'état de tous les projets en cours pour reprendre instantanément dans n'importe quelle conversation. | Original (skill personnel) |
 | `brainstorming` | Facilitation de sessions de brainstorming/idéation (HMW, SCAMPER, Crazy 8s, brainwriting...), sélection automatique de la méthode adaptée. | Original (skill personnel) |
+| `naming` | Naming créatif pour projets, artistes IA/musicaux, agents IA et workflows — shortlist commentée avec taglines. | Original (skill personnel) |
 
 ---
 
@@ -149,6 +150,7 @@ La bibliothèque regroupe actuellement plusieurs familles de skills.
 | `banner-design` | Création de bannières marketing et visuels promotionnels. | ClaudeKit Marketing Kit (payant, pas de dépôt public) |
 | `canvas-design` | Production d'œuvres visuelles, affiches et posters. | [anthropics/skills](https://github.com/anthropics/skills) (officiel Anthropic) |
 | `brand-guidelines` | Application de la charte visuelle officielle Anthropic. | [anthropics/skills](https://github.com/anthropics/skills) (officiel Anthropic) |
+| `notion-template-designer` | Crée des templates Notion visuellement soignés (dashboards, trackers, portfolios...) via recherche d'inspiration et le MCP Notion. | Original (skill personnel) |
 
 ---
 
