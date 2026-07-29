@@ -1,225 +1,312 @@
-# Bibliothèque de skills
+# 📚 Bibliothèque de Skills
 
-C'est mon espace personnel pour Claude Code — un dépôt unique où je range les
-skills et les profils `CLAUDE.md` que j'utilise ou que je construis, pour ne
-pas les perdre d'un projet à l'autre et pouvoir les réutiliser n'importe où.
-
-Deux types de contenu, pas la même mécanique :
-
-- **Skills** (`.claude/skills/<nom>/SKILL.md`) — invocables via `/<nom>` dans
-  Claude Code. C'est la convention standard : n'importe quel projet qui
-  embarque ce dossier rend le skill disponible.
-- **Profils `CLAUDE.md`** (`claude-md-profiles/`) — pas des skills, pas de
-  commande. Ce sont des fichiers à copier **à la racine** d'un projet (ou dans
-  `~/.claude/CLAUDE.md` pour un effet global) : Claude Code les lit
-  automatiquement à chaque message, sans rien invoquer.
+> Mon espace personnel pour **Claude Code** : un dépôt unique où je centralise les skills et profils `CLAUDE.md` que j'utilise ou développe.
+>
+> **Objectif :** ne rien perdre entre les projets, partager facilement des composants réutilisables et disposer d'une bibliothèque prête à l'emploi partout.
 
 ---
 
-## Skills dans la bibliothèque
+# 🗂️ Deux types de ressources
 
-| Skill | Ce qu'il fait | Télécharger |
-|---|---|---|
-| [`test-agent`](.claude/skills/test-agent/SKILL.md) | Banc d'essai pour agent IA. Analyse en profondeur le prompt d'un agent visé, se spécialise pour lui en générant des scénarios de test taillés sur mesure, le lance pour de vrai dans un bac à sable (Claude Code, Gemini CLI, ou toute commande), dialogue avec lui tour par tour, et produit un rapport ✅ / ❌ / recommandations plus un tableau de bord local. Inclut un exemple complet de bout en bout (analyse, profil, 8 scénarios) construit sur l'agent ECHO. | [.zip](archives/test-agent.zip) |
-| [`academic-pptx-skill`](.claude/skills/academic-pptx-skill/SKILL.md) | Structure et contenu de présentations académiques (colloques, soutenances, comités de financement, séminaires) — gouverne le fond et l'organisation, pas la mise en forme technique du `.pptx`. | [.zip](archives/academic-pptx-skill.zip) |
-| [`speech-script`](.claude/skills/speech-script/SKILL.md) | Transforme des idées ou un plan en script de discours narratif, prêt à être prononcé — pour présentations orales, conférences, discours d'entreprise. | [.zip](archives/speech-script.zip) |
-| [`ui-ux-pro-max`](.claude/skills/ui-ux-pro-max/SKILL.md) | Base de données consultable d'intelligence UI/UX : 84 styles, 192 palettes, 74 associations de polices, 98 règles UX, 104 icônes, presets d'animation GSAP, sur 22 stacks techniques. Génère un design system complet et argumenté à partir d'une description de produit. |  [.zip](archives/ui-ux-pro-max.zip) |
-| [`banner-design`](.claude/skills/banner-design/SKILL.md) | Conception de bannières (réseaux sociaux, pubs, hero de site, print) avec plusieurs pistes de direction artistique et visuels générés par IA. | [.zip](archives/banner-design.zip) |
-| [`brand`](.claude/skills/brand/SKILL.md) | Voix de marque, identité visuelle, cadres de messages, cohérence de marque sur les contenus et assets marketing. | [.zip](archives/brand.zip) |
-| [`design`](.claude/skills/design/SKILL.md) | Skill de design large : identité de marque, tokens, logos, kit d'identité corporate, présentations HTML, bannières, icônes, visuels sociaux. | [.zip](archives/design.zip) |
-| [`design-system`](.claude/skills/design-system/SKILL.md) | Architecture de tokens à trois couches (primitif → sémantique → composant), spécifications de composants, génération stratégique de slides. | [.zip](archives/design-system.zip) |
-| [`slides`](.claude/skills/slides/SKILL.md) | Présentations HTML stratégiques avec Chart.js, tokens de design, mise en page responsive, formules de copywriting. | [.zip](archives/slides.zip) |
-| [`ui-styling`](.claude/skills/ui-styling/SKILL.md) | Interfaces accessibles avec shadcn/ui (Radix + Tailwind), thèmes, dark mode, composants accessibles (dialogs, formulaires, tableaux). | [.zip](archives/ui-styling.zip) |
-| [`canvas-design`](.claude/skills/canvas-design/SKILL.md) | Crée des œuvres visuelles originales (`.png`, `.pdf`) — posters, affiches, pièces artistiques — guidées par une philosophie de design, jamais en copiant le travail d'artistes existants. | [.zip](archives/canvas-design.zip) |
+Cette bibliothèque contient deux catégories distinctes.
 
-**`canvas-design` vient du dépôt officiel** :
-[anthropics/skills](https://github.com/anthropics/skills) (licence Apache 2.0,
-`LICENSE.txt` inclus). Skill maintenu par Anthropic — aucun correctif
-nécessaire, autonome, sans dépendance externe.
+## ⚡ Skills
 
-| [`brand-guidelines`](.claude/skills/brand-guidelines/SKILL.md) | Applique les couleurs de marque et la typographie **officielles d'Anthropic** à un artefact — pas un générateur de charte générique, spécifique au look-and-feel Anthropic. | [.zip](archives/brand-guidelines.zip) |
+**Emplacement :**
 
-**`brand-guidelines` vient aussi du dépôt officiel** anthropics/skills
-(licence Apache 2.0, `LICENSE.txt` inclus).
-
-| [`figma-design-to-code`](.claude/skills/figma-design-to-code/SKILL.md) | Prérequis obligatoire avant d'implémenter un design Figma en code — instructions et étapes pour porter correctement un design Figma en composants réels. Déclenché par « implement this Figma design », « build this screen from Figma ». | [.zip](archives/figma-design-to-code.zip) |
-
-**`figma-design-to-code` vient de** [figma/mcp-server-guide](https://github.com/figma/mcp-server-guide)
-(dépôt officiel Figma). ⚠️ **Aucun fichier de licence trouvé dans le dépôt
-source** — ni `LICENSE`, ni mention dans le README, qui renvoie même vers les
-« Figma Brand Usage Guidelines » pour les icônes. Le droit d'auteur par défaut
-s'applique donc en l'absence de licence explicite : ajouté ici pour usage
-personnel, mais le statut juridique d'une redistribution plus large n'est pas
-clarifié par le dépôt d'origine.
-
-| [`taste-skill`](.claude/skills/taste-skill/SKILL.md) | Skill par défaut anti-slop pour frontends IA (v2) : lit le brief, infère le langage de design, règle 3 curseurs (VARIANCE / MOTION / DENSITY), interdit les tirets cadratins, squelettes GSAP canoniques. | [.zip](archives/taste-skill.zip) |
-| [`taste-skill-v1`](.claude/skills/taste-skill-v1/SKILL.md) | Version v1 originale, conservée pour les projets qui dépendent de son comportement exact — à utiliser seulement si la v2 casse quelque chose. | [.zip](archives/taste-skill-v1.zip) |
-| [`gpt-tasteskill`](.claude/skills/gpt-tasteskill/SKILL.md) | Variante plus stricte pour GPT/Codex : variance de layout plus élevée, direction GSAP plus marquée, anti-slop agressif. | [.zip](archives/gpt-tasteskill.zip) |
-| [`image-to-code-skill`](.claude/skills/image-to-code-skill/SKILL.md) | Pipeline image-first : génère des références visuelles, les analyse, puis implémente le frontend pour y correspondre. | [.zip](archives/image-to-code-skill.zip) |
-| [`redesign-skill`](.claude/skills/redesign-skill/SKILL.md) | Pour projets existants : audite l'UI d'abord, puis corrige layout, espacement, hiérarchie, style. | [.zip](archives/redesign-skill.zip) |
-| [`soft-skill`](.claude/skills/soft-skill/SKILL.md) | UI haut de gamme, calme et « chère » — contraste doux, espace blanc, polices premium, motion en ressort. | [.zip](archives/soft-skill.zip) |
-| [`output-skill`](.claude/skills/output-skill/SKILL.md) | Force une sortie complète quand le modèle a tendance à livrer du travail à moitié fini, sans commentaires placeholder. | [.zip](archives/output-skill.zip) |
-| [`minimalist-skill`](.claude/skills/minimalist-skill/SKILL.md) | UI produit éditoriale (esprit Notion/Linear), palette restreinte, structure nette. | [.zip](archives/minimalist-skill.zip) |
-| [`brutalist-skill`](.claude/skills/brutalist-skill/SKILL.md) | Langage mécanique dur : typographie suisse, contraste marqué, layout expérimental. | [.zip](archives/brutalist-skill.zip) |
-| [`stitch-skill`](.claude/skills/stitch-skill/SKILL.md) | Règles compatibles Google Stitch, avec export optionnel au format `DESIGN.md`. | [.zip](archives/stitch-skill.zip) |
-| [`imagegen-frontend-web`](.claude/skills/imagegen-frontend-web/SKILL.md) | Génère des comps de site (hero, landing, multi-sections) — images de référence uniquement, pas de code. | [.zip](archives/imagegen-frontend-web.zip) |
-| [`imagegen-frontend-mobile`](.claude/skills/imagegen-frontend-mobile/SKILL.md) | Génère des écrans et flows mobiles (iOS/Android/cross-platform) — images de référence uniquement. | [.zip](archives/imagegen-frontend-mobile.zip) |
-| [`brandkit`](.claude/skills/brandkit/SKILL.md) | Génère des planches de kit de marque : pistes de logo, palettes, typographie, applications d'identité. | [.zip](archives/brandkit.zip) |
-
-**Les 13 skills `taste-skill` à `brandkit` viennent d'un dépôt tiers** :
-[Leonxlnx/taste-skill](https://github.com/Leonxlnx/taste-skill) (licence MIT,
-incluse dans chacun de ces dossiers via `LICENSE.txt`). Le dépôt source
-précise que la plupart des projets n'ont besoin que d'un ou deux de ces
-skills à la fois — tous copiés ici pour que le choix reste disponible, à toi
-de sélectionner selon `## Which one should I use?` dans le README source.
-Les 3 derniers (`imagegen-*`, `brandkit`) ne produisent que des images de
-référence, pas de code.
-
-| [`impeccable`](.claude/skills/impeccable/SKILL.md) | Guidance de design frontend pour agents IA : 23 commandes (`polish`, `audit`, `critique`, `distill`, `animate`, `bolder`, `quieter`…), itération live dans le navigateur, 60 règles de détection déterministes contre les tics visuels génériques des IA (Inter partout, dégradés violet-bleu, cartes imbriquées…). | [.zip](archives/impeccable.zip) |
-| [`think`](.claude/skills/think/SKILL.md) | Avant de construire quoi que ce soit : challenge le problème, presse-teste la conception, produit un plan complet qu'un autre agent peut implémenter. | [.zip](archives/think.zip) |
-| [`ui`](.claude/skills/ui/SKILL.md) | Interfaces frontend distinctives, avec itération esthétique pilotée par capture d'écran — direction assumée plutôt que défauts génériques. | [.zip](archives/ui.zip) |
-| [`check`](.claude/skills/check/SKILL.md) | Revue de diff après une tâche, avant merge ou release : contraintes propres au projet, suivi de release/publish/push, vérification par preuves. | [.zip](archives/check.zip) |
-| [`hunt`](.claude/skills/hunt/SKILL.md) | Debug systématique de bug ou régression — cause racine confirmée avant tout correctif, surtout quand quelque chose fonctionnait avant. | [.zip](archives/hunt.zip) |
-| [`write`](.claude/skills/write/SKILL.md) | Réécrit la prose pour sonner naturel en français comme en anglais (chinois/anglais dans la version source), coupe les formulations rigides. | [.zip](archives/write.zip) |
-| [`learn`](.claude/skills/learn/SKILL.md) | Workflow de recherche en 6 phases pour un domaine inconnu : collecter, digérer, structurer, compléter, affiner, relire et publier. | [.zip](archives/learn.zip) |
-| [`read`](.claude/skills/read/SKILL.md) | Lit URLs et PDF avec routage spécifique par plateforme — résumé concis en lecture simple, sortie Markdown si conversion/citation/sauvegarde demandée. | [.zip](archives/read.zip) |
-| [`health`](.claude/skills/health/SKILL.md) | Audit de santé d'agent IA : vérifie Codex, Claude Code, les instructions de projet, la sortie du vérificateur, la maintenabilité — avec un passage résumé avant l'inspection profonde. | [.zip](archives/health.zip) |
-| [`build-graph`](.claude/skills/build-graph/SKILL.md) ⚠️ | Construit ou met à jour le graphe de connaissance du code (SQLite, `.code-review-graph/graph.db`) — préalable aux 6 autres skills de ce groupe. | [.zip](archives/build-graph.zip) |
-| [`debug-issue`](.claude/skills/debug-issue/SKILL.md) ⚠️ | Debug systématique via navigation du code par le graphe de dépendances. | [.zip](archives/debug-issue.zip) |
-| [`explore-codebase`](.claude/skills/explore-codebase/SKILL.md) ⚠️ | Navigue et comprend la structure d'une codebase via le graphe de connaissance. | [.zip](archives/explore-codebase.zip) |
-| [`refactor-safely`](.claude/skills/refactor-safely/SKILL.md) ⚠️ | Planifie et exécute un refactoring sûr via analyse de dépendances. | [.zip](archives/refactor-safely.zip) |
-| [`review-changes`](.claude/skills/review-changes/SKILL.md) ⚠️ | Revue de code structurée via détection de changements et analyse d'impact. | [.zip](archives/review-changes.zip) |
-| [`review-delta`](.claude/skills/review-delta/SKILL.md) ⚠️ | Revue des seuls changements depuis le dernier commit, économe en tokens, avec détection automatique du rayon d'impact. | [.zip](archives/review-delta.zip) |
-| [`review-pr`](.claude/skills/review-pr/SKILL.md) ⚠️ | Revue d'une PR ou d'un diff de branche avec le contexte structurel complet du graphe, analyse du rayon d'impact incluse. | [.zip](archives/review-pr.zip) |
-
-> ⚠️ **Ces 7 skills (`build-graph` à `review-pr`) ne fonctionnent pas seuls.**
-> Contrairement à tous les autres skills de cette bibliothèque, ils ne
-> contiennent que des instructions qui appellent des **outils MCP**
-> (`list_graph_stats_tool`, `build_or_update_graph_tool`…) — aucun script,
-> aucune donnée embarquée. Ces outils sont fournis par un serveur MCP externe,
-> le moteur d'analyse Python `code-review-graph`, à installer et configurer
-> **avant** que ces skills ne servent à quoi que ce soit :
-> ```bash
-> pip install code-review-graph
-> code-review-graph install   # detecte l'outil IA et configure le MCP
-> ```
-> Sans cette étape, copier ces dossiers ne fait rien — les outils qu'ils
-> appellent n'existent pas.
-
-**Les 7 skills `build-graph` à `review-pr` viennent d'un dépôt tiers** :
-[tirth8205/code-review-graph](https://github.com/tirth8205/code-review-graph)
-(licence MIT, incluse dans chacun de ces dossiers via `LICENSE.txt`).
-
-**Les 8 skills `think` à `health` viennent d'un dépôt tiers** :
-[tw93/Waza](https://github.com/tw93/Waza) (licence MIT, incluse dans chacun de
-ces dossiers via `LICENSE.txt`). Aucun correctif nécessaire à l'import :
-chaque skill est autonome, sans référence croisée vers un autre skill du
-même dépôt ni variable d'environnement de plugin. Ils sont conçus pour
-s'enchaîner en flux de travail (`think` → `check`, `hunt` → `check`, `read` →
-`learn` → `write`…), mais chaque transition reste une étape manuelle
-déclenchée par le pilote — aucune dépendance technique entre eux.
-
-**`impeccable` vient d'un dépôt tiers** :
-[pbakaus/impeccable](https://github.com/pbakaus/impeccable) (licence Apache
-2.0, incluse via `LICENSE.txt` ; `NOTICE.md` copié aussi — deux fichiers de
-référence de ce skill, `reference/ios.md` et `reference/android.md`, sont
-eux-mêmes distillés d'un troisième projet sous licence MIT, crédité dans
-`NOTICE.md`). Aucun correctif nécessaire à l'import : les chemins sont déjà
-écrits en relatif au projet, sans dépendre d'une variable d'environnement de
-plugin. Un script fait référence à `react` comme dépendance externe — sans
-incidence hors d'un projet React qui l'a déjà dans son `node_modules`.
-
-**Les 7 skills `ui-ux-pro-max` à `ui-styling` viennent d'un dépôt tiers** :
-[nextlevelbuilder/ui-ux-pro-max-skill](https://github.com/nextlevelbuilder/ui-ux-pro-max-skill)
-(licence MIT, incluse dans chacun de ces dossiers via `LICENSE.txt`). Un
-correctif leur a été apporté à l'import : leur `SKILL.md` appelait son script
-via `${CLAUDE_PLUGIN_ROOT}`, une variable que Claude Code ne définit que pour
-une installation via `/plugin install` — remplacée par un chemin relatif qui
-fonctionne aussi en copie manuelle (le mode d'installation de cette
-bibliothèque). Le reste du code (`core.py`) résolvait déjà ses données via son
-propre chemin de fichier, sans dépendre de cette variable.
-
-À savoir : `banner-design` mentionne dans sa description des skills
-compagnons (`frontend-design`, `ai-artist`, `ai-multimodal`) qui ne font
-**pas** partie de ce dépôt tiers et ne sont donc pas dans cette bibliothèque —
-il fonctionnera, mais sans ces capacités additionnelles.
-
----
-
-## Télécharger un seul skill
-
-Chaque skill a sa propre archive dans `archives/` — pas besoin de cloner tout
-le dépôt pour en récupérer un seul :
-
-1. Clique sur le lien `.zip` de la table ci-dessus (ou ouvre directement
-   `archives/<nom-du-skill>.zip` sur GitHub).
-2. Bouton **Download** (ou **⋯ → Download**) sur la page du fichier.
-3. Dézippe dans `.claude/skills/<nom-du-skill>/` du projet où tu veux
-   l'utiliser — le zip contient directement `SKILL.md` et les fichiers
-   annexes à la racine, sans dossier parasite au-dessus.
-
-Ces archives sont régénérées à chaque modification d'un skill : si le
-contenu d'un dossier change, retélécharge son `.zip` pour rester à jour.
-
----
-
-## Profils `CLAUDE.md`
-
-Des fichiers `CLAUDE.md` prêts à l'emploi pour réduire la verbosité et le
-coût en tokens de sortie — à déposer tels quels à la racine d'un projet.
-**Pas des skills** : rien à installer dans `.claude/skills/`, aucune commande
-`/`, Claude Code les charge automatiquement dès qu'ils sont présents.
-Source : [drona23/claude-token-efficient](https://github.com/drona23/claude-token-efficient)
-(licence MIT, `LICENSE.txt` inclus).
-
-| Profil | Pour quoi | Fichier |
-|---|---|---|
-| `CLAUDE.md` (principal) | Profil universel — le point de départ recommandé | [ouvrir](claude-md-profiles/CLAUDE.md) |
-| `CLAUDE.agents.md` | Pipelines d'automatisation, systèmes multi-agents, bots, tâches planifiées | [ouvrir](claude-md-profiles/CLAUDE.agents.md) |
-| `CLAUDE.analysis.md` | Analyse de données, recherche, analyse financière, reporting | [ouvrir](claude-md-profiles/CLAUDE.analysis.md) |
-| `CLAUDE.benchmark.md` | Benchmarks code — minimise l'overhead en préservant le taux de réussite | [ouvrir](claude-md-profiles/CLAUDE.benchmark.md) |
-| `CLAUDE.coding.md` | Projets de dev, revue de code, debug, refactoring | [ouvrir](claude-md-profiles/CLAUDE.coding.md) |
-| `CLAUDE.compressed.md` | Workloads à fort volume de sortie où le coût en tokens domine (mesuré : -62% Opus, -32% Sonnet, -22% Haiku vs baseline) | [ouvrir](claude-md-profiles/CLAUDE.compressed.md) |
-
-**Utilisation** : télécharge le fichier voulu (bouton Download sur sa page
-GitHub) et dépose-le à la racine du projet cible sous le nom `CLAUDE.md` —
-un seul profil actif à la fois, ils ne se combinent pas. N'en mets un que sur
-des workflows à fort volume de sortie (pipelines, automatisation) : sur des
-échanges courts et ponctuels, le fichier coûte plus de tokens en entrée qu'il
-n'en économise en sortie — l'auteur le dit lui-même dans son README.
-
-Le dépôt source contient aussi 3 dossiers d'expérimentation versionnés
-(`J/K/M-drona23-v5/v6/v8`, variantes de test du benchmark) volontairement
-laissés de côté ici — pas des profils prêts à l'emploi.
-
-## Utiliser un skill d'ici dans un autre projet
-
-Copie le dossier du skill dans le nouveau projet :
-
+```text
+.claude/skills/<nom>/SKILL.md
 ```
+
+Les skills sont des commandes directement utilisables dans Claude Code :
+
+```text
+/<nom-du-skill>
+```
+
+Dès qu'un projet contient ce dossier, Claude Code détecte automatiquement le skill et le rend disponible.
+
+---
+
+## 📄 Profils `CLAUDE.md`
+
+**Emplacement :**
+
+```text
+claude-md-profiles/
+```
+
+Les profils **ne sont pas des skills** et ne créent aucune commande.
+
+Ils doivent être copiés :
+
+### À la racine du projet
+
+```text
+MonProjet/
+└── CLAUDE.md
+```
+
+### Ou globalement
+
+```text
+~/.claude/CLAUDE.md
+```
+
+Claude Code les charge automatiquement à chaque message.
+
+---
+
+# 🚀 Skills disponibles
+
+La bibliothèque regroupe actuellement plusieurs familles de skills.
+
+## 🧠 Agents & Tests
+
+| Skill | Description |
+|---------|-------------|
+| `test-agent` | Framework de test pour agents IA avec génération automatique de scénarios, exécution sandboxée et rapport détaillé. |
+
+---
+
+## 🎤 Présentation & Communication
+
+| Skill | Description |
+|---------|-------------|
+| `academic-pptx-skill` | Structure des présentations académiques et de recherche. |
+| `speech-script` | Génération de scripts de discours naturels et fluides. |
+| `slides` | Présentations HTML stratégiques avec design system intégré. |
+
+---
+
+## 🎨 Design & Branding
+
+| Skill | Description |
+|---------|-------------|
+| `brand` | Positionnement, voix et cohérence de marque. |
+| `design` | Branding complet : logos, identité, assets marketing. |
+| `design-system` | Architecture de design systems et bibliothèques de composants. |
+| `brandkit` | Génération de kits de marque complets. |
+| `banner-design` | Création de bannières marketing et visuels promotionnels. |
+| `canvas-design` | Production d'œuvres visuelles, affiches et posters. |
+| `brand-guidelines` | Application de la charte visuelle officielle Anthropic. |
+
+---
+
+## 💎 UI / UX
+
+| Skill | Description |
+|---------|-------------|
+| `ui-ux-pro-max` | Base de connaissances massive UI/UX (styles, palettes, typographies, règles UX...). |
+| `ui-styling` | Interfaces accessibles avec shadcn/ui et Tailwind. |
+| `ui` | Création d'interfaces distinctives orientées direction artistique. |
+| `soft-skill` | UI premium, épurée et haut de gamme. |
+| `minimalist-skill` | Design éditorial inspiré de Notion et Linear. |
+| `brutalist-skill` | Interfaces radicales à inspiration brutaliste. |
+| `taste-skill` | Anti-slop frontend pour IA. |
+| `gpt-tasteskill` | Variante optimisée pour GPT/Codex. |
+| `redesign-skill` | Audit et amélioration d'interfaces existantes. |
+| `impeccable` | Ensemble de commandes de critique, polish et amélioration frontend. |
+
+---
+
+## 🖼️ Génération visuelle
+
+| Skill | Description |
+|---------|-------------|
+| `imagegen-frontend-web` | Génération de maquettes web de référence. |
+| `imagegen-frontend-mobile` | Génération de références mobiles iOS/Android. |
+| `image-to-code-skill` | Pipeline image → analyse → implémentation frontend. |
+
+---
+
+## 💻 Développement
+
+| Skill | Description |
+|---------|-------------|
+| `figma-design-to-code` | Transformation rigoureuse de designs Figma en composants réels. |
+| `stitch-skill` | Workflow compatible Google Stitch. |
+| `output-skill` | Force des livrables complets sans placeholders. |
+
+---
+
+## 🔍 Analyse, Recherche & Productivité
+
+| Skill | Description |
+|---------|-------------|
+| `think` | Remise en question du problème et planification stratégique. |
+| `read` | Lecture de pages web et PDF. |
+| `learn` | Recherche structurée en plusieurs phases. |
+| `write` | Réécriture de textes naturels et fluides. |
+| `check` | Revue de livraison avant merge ou release. |
+| `hunt` | Recherche systématique de causes racines. |
+| `health` | Audit de santé d'agents IA. |
+
+---
+
+## 🌐 Graphe de connaissance du code
+
+> ⚠️ Ces skills nécessitent l'installation préalable du moteur **code-review-graph**.
+
+| Skill | Description |
+|---------|-------------|
+| `build-graph` | Construction du graphe de connaissance. |
+| `debug-issue` | Débogage guidé par le graphe. |
+| `explore-codebase` | Exploration structurelle du code. |
+| `refactor-safely` | Refactoring piloté par les dépendances. |
+| `review-changes` | Revue d'impact des modifications. |
+| `review-delta` | Revue des changements depuis le dernier commit. |
+| `review-pr` | Revue complète de Pull Request. |
+
+### Installation
+
+```bash
+pip install code-review-graph
+code-review-graph install
+```
+
+Sans cette étape, ces skills ne pourront pas fonctionner.
+
+---
+
+# 📦 Télécharger un skill
+
+Chaque skill dispose de sa propre archive dans :
+
+```text
+archives/
+```
+
+Pour récupérer un seul skill :
+
+1. Ouvre son lien `.zip`.
+2. Clique sur **Download**.
+3. Décompresse le contenu dans :
+
+```text
+.claude/skills/<nom-du-skill>/
+```
+
+Les archives sont régénérées à chaque mise à jour du skill.
+
+---
+
+# 📄 Profils `CLAUDE.md`
+
+Ces profils visent à réduire la verbosité et le coût en tokens selon différents cas d'usage.
+
+| Profil | Usage |
+|----------|-----------|
+| `CLAUDE.md` | Profil général recommandé. |
+| `CLAUDE.agents.md` | Automatisation et agents. |
+| `CLAUDE.analysis.md` | Analyse de données et reporting. |
+| `CLAUDE.benchmark.md` | Benchmarks et tests. |
+| `CLAUDE.coding.md` | Développement logiciel. |
+| `CLAUDE.compressed.md` | Optimisation extrême des coûts en tokens. |
+
+## Utilisation
+
+Télécharge le profil souhaité puis renomme-le :
+
+```text
+CLAUDE.md
+```
+
+Ensuite, place-le à la racine du projet :
+
+```text
+MonProjet/
+├── CLAUDE.md
+├── src/
+└── ...
+```
+
+> ⚠️ Un seul profil peut être actif à la fois.
+
+---
+
+# 📥 Installer un skill dans un autre projet
+
+Copie simplement son dossier :
+
+```text
 MonProjet/
 └── .claude/
     └── skills/
-        └── <nom-du-skill>/    ← copié depuis ce dépôt
+        └── <nom-du-skill>/
 ```
 
-Claude Code le découvre automatiquement au lancement suivant — la commande
-`/<nom-du-skill>` devient disponible.
+Au prochain lancement de Claude Code, la commande :
 
-Pour le rendre disponible **partout**, sans le copier projet par projet, place-le
-plutôt dans le dossier utilisateur global :
-
+```text
+/<nom-du-skill>
 ```
+
+sera disponible.
+
+---
+
+# 🌍 Installation globale
+
+Pour rendre un skill disponible dans tous tes projets :
+
+```text
 ~/.claude/skills/<nom-du-skill>/
 ```
 
-## Ajouter un skill à la bibliothèque
+Une seule installation suffit ensuite pour l'ensemble de ton environnement.
 
-1. Crée `.claude/skills/<nom>/SKILL.md` avec un bloc frontmatter `name` +
-   `description` en tête de fichier.
-2. Ajoute les fichiers annexes dont le skill a besoin (scripts, gabarits,
-   références) dans le même dossier.
-3. Commit et push.
+---
 
-Le nom du dossier **doit** être exactement celui utilisé dans `name:` — c'est
-lui qui détermine la commande slash.
+# ➕ Ajouter un skill à la bibliothèque
+
+### 1. Créer le dossier
+
+```text
+.claude/skills/<nom>/
+```
+
+### 2. Ajouter un fichier
+
+```text
+SKILL.md
+```
+
+avec un frontmatter contenant :
+
+```yaml
+name: mon-skill
+description: Description du skill
+```
+
+### 3. Ajouter les ressources nécessaires
+
+Ajoute les éventuels :
+
+- scripts
+- templates
+- documents de référence
+- assets
+
+dans le même dossier.
+
+### 4. Commit et push
+
+Le skill est désormais intégré à la bibliothèque.
+
+> ⚠️ Le nom du dossier doit être strictement identique à la valeur du champ `name:`. C'est ce nom qui détermine la commande `/mon-skill`.
+
+---
+
+# 📊 En un coup d'œil
+
+- ✅ Skills réutilisables entre projets
+- ✅ Archives ZIP individuelles
+- ✅ Profils `CLAUDE.md` prêts à l'emploi
+- ✅ Documentation des licences et origines
+- ✅ Installation locale ou globale
+- ✅ Bibliothèque centralisée et pérenne
+
+---
+
+> **Une organisation simple : un dépôt, tous les skills, tous les profils, réutilisables partout. 🚀**
