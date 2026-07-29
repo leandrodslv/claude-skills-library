@@ -110,6 +110,14 @@ La bibliothèque regroupe actuellement plusieurs familles de skills.
 
 ---
 
+## 🧭 Composition de stack
+
+| Skill | Description | Source |
+|---------|-------------|--------|
+| `stack-ia` | Compose une "stack" de skills à partir de **cette bibliothèque** (pas de l'écosystème externe, voir `find-skills` pour ça) pour un projet donné — appli, site, logiciel, workflow n8n, branding... Analyse le projet, consulte le catalogue interne (`references/catalog.md`), et recommande un sous-ensemble pertinent organisé par phase. | Original (skill personnel) |
+
+---
+
 ## 🪨 Caveman (économie de tokens)
 
 > Skills [JuliusBrussee/caveman](https://github.com/JuliusBrussee/caveman), sous licence MIT.
