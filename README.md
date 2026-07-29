@@ -76,6 +76,14 @@ La bibliothèque regroupe actuellement plusieurs familles de skills.
 
 ---
 
+## 🔎 Découverte de skills
+
+| Skill | Description | Source |
+|---------|-------------|--------|
+| `find-skills` | Aide à découvrir et installer des skills de l'écosystème open (via `npx skills find`), avec vérification de la réputation/popularité avant recommandation. | [vercel-labs/skills](https://github.com/vercel-labs/skills) (officiel Vercel Labs) |
+
+---
+
 ## 🎤 Présentation & Communication
 
 | Skill | Description | Source |
