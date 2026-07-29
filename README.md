@@ -94,6 +94,7 @@ La bibliothèque regroupe actuellement plusieurs familles de skills.
 | Skill | Description | Source |
 |---------|-------------|--------|
 | `test-agent` | Framework de test pour agents IA avec génération automatique de scénarios, exécution sandboxée et rapport détaillé. | Original (aucun dépôt public identifié) |
+| `context-keeper` | Crée, met à jour et restaure un fichier de contexte maître capturant l'état de tous les projets en cours pour reprendre instantanément dans n'importe quelle conversation. | Original (skill personnel) |
 
 ---
 
