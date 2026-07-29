@@ -1,5 +1,7 @@
 # 📚 Bibliothèque de Skills
 
+> Bibliothèque personnelle de skills Claude Code — design/UX, branding, animation GSAP, automatisation n8n, revue de code, économie de tokens, et frameworks de référence (BMAD), prêts à installer.
+
 > Mon espace personnel pour **Claude Code** : un dépôt unique où je centralise les skills et profils `CLAUDE.md` que j'utilise ou développe.
 >
 > **Objectif :** ne rien perdre entre les projets, partager facilement des composants réutilisables et disposer d'une bibliothèque prête à l'emploi partout.
