@@ -95,6 +95,7 @@ La bibliothèque regroupe actuellement plusieurs familles de skills.
 |---------|-------------|--------|
 | `test-agent` | Framework de test pour agents IA avec génération automatique de scénarios, exécution sandboxée et rapport détaillé. | Original (aucun dépôt public identifié) |
 | `context-keeper` | Crée, met à jour et restaure un fichier de contexte maître capturant l'état de tous les projets en cours pour reprendre instantanément dans n'importe quelle conversation. | Original (skill personnel) |
+| `brainstorming` | Facilitation de sessions de brainstorming/idéation (HMW, SCAMPER, Crazy 8s, brainwriting...), sélection automatique de la méthode adaptée. | Original (skill personnel) |
 
 ---
 
@@ -186,6 +187,16 @@ La bibliothèque regroupe actuellement plusieurs familles de skills.
 | `figma-design-to-code` | Transformation rigoureuse de designs Figma en composants réels. | [figma/mcp-server-guide](https://github.com/figma/mcp-server-guide) (officiel Figma) |
 | `stitch-skill` | Workflow compatible Google Stitch. | [Leonxlnx/taste-skill](https://github.com/Leonxlnx/taste-skill) |
 | `output-skill` | Force des livrables complets sans placeholders. | [Leonxlnx/taste-skill](https://github.com/Leonxlnx/taste-skill) |
+| `figma-to-code` | Convertit une maquette Figma en code HTML/CSS, React ou Vue pixel-perfect. | Original (skill personnel) |
+| `html-to-figma` | Convertit des fichiers HTML/CSS en maquette Figma pixel-perfect via le MCP Figma. | Original (skill personnel) |
+
+---
+
+## ♿ Accessibilité
+
+| Skill | Description | Source |
+|---------|-------------|--------|
+| `color-contrast-checker` | Analyse le contraste de couleurs d'une image (maquette, capture d'écran) et produit un rapport d'accessibilité WCAG/RGAA. | Original (skill personnel) |
 
 ---
 
