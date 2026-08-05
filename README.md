@@ -212,6 +212,48 @@ La bibliothèque regroupe actuellement plusieurs familles de skills.
 
 ---
 
+## 🧠 Méthodologie & discipline dev (Superpowers)
+
+> Skills [obra/superpowers-skills](https://github.com/obra/superpowers-skills) (Jesse Vincent, 200K+ ⭐, accepté au marketplace officiel Anthropic), sous licence MIT — plus `karpathy-guidelines` (auteur distinct, voir en bas de tableau).
+> ⚠️ `superpowers-brainstorming` est le skill `brainstorming` d'origine du dépôt, renommé pour éviter la collision avec le skill personnel `brainstorming` déjà présent dans cette bibliothèque.
+
+| Skill | Description | Source |
+|---------|-------------|--------|
+| `using-skills` | Point d'entrée du wiki de skills — workflows obligatoires, outil de recherche, déclencheurs de brainstorming. | [obra/superpowers-skills](https://github.com/obra/superpowers-skills) |
+| `superpowers-brainstorming` | Affinage interactif d'idées par méthode socratique, avant tout code ou plan d'implémentation. | [obra/superpowers-skills](https://github.com/obra/superpowers-skills) |
+| `writing-plans` | Rédige des plans d'implémentation détaillés, en tâches digestes, pour un développeur sans contexte du code. | [obra/superpowers-skills](https://github.com/obra/superpowers-skills) |
+| `executing-plans` | Exécute un plan détaillé par lots, avec points de contrôle de revue. | [obra/superpowers-skills](https://github.com/obra/superpowers-skills) |
+| `subagent-driven-development` | Exécute un plan en dispatchant un sous-agent frais par tâche, avec revue de code entre chaque tâche. | [obra/superpowers-skills](https://github.com/obra/superpowers-skills) |
+| `dispatching-parallel-agents` | Utilise plusieurs agents en parallèle pour investiguer/corriger des problèmes indépendants. | [obra/superpowers-skills](https://github.com/obra/superpowers-skills) |
+| `requesting-code-review` | Dispatch un sous-agent reviewer pour vérifier une implémentation avant de continuer. | [obra/superpowers-skills](https://github.com/obra/superpowers-skills) |
+| `receiving-code-review` | Traite les retours de revue avec rigueur technique, sans accord de façade ni application aveugle. | [obra/superpowers-skills](https://github.com/obra/superpowers-skills) |
+| `using-git-worktrees` | Crée des worktrees git isolés avec sélection intelligente du répertoire et vérifications de sécurité. | [obra/superpowers-skills](https://github.com/obra/superpowers-skills) |
+| `finishing-a-development-branch` | Options structurées pour merge/PR/nettoyage une fois l'implémentation terminée et testée. | [obra/superpowers-skills](https://github.com/obra/superpowers-skills) |
+| `remembering-conversations` | Recherche sémantique/texte dans l'historique des conversations Claude Code passées. | [obra/superpowers-skills](https://github.com/obra/superpowers-skills) |
+| `systematic-debugging` | Framework de debug en 4 phases — jamais de correctif avant d'avoir investigué la cause racine. | [obra/superpowers-skills](https://github.com/obra/superpowers-skills) |
+| `root-cause-tracing` | Remonte systématiquement la pile d'appels pour trouver le déclencheur d'origine d'un bug. | [obra/superpowers-skills](https://github.com/obra/superpowers-skills) |
+| `defense-in-depth` | Valide à chaque couche que traversent les données pour rendre les bugs impossibles. | [obra/superpowers-skills](https://github.com/obra/superpowers-skills) |
+| `verification-before-completion` | Exécute les commandes de vérification et confirme le résultat avant d'annoncer un travail terminé. | [obra/superpowers-skills](https://github.com/obra/superpowers-skills) |
+| `test-driven-development` | Écrit le test d'abord, le regarde échouer, puis écrit le minimum de code pour le faire passer. | [obra/superpowers-skills](https://github.com/obra/superpowers-skills) |
+| `testing-anti-patterns` | Ne jamais tester le comportement d'un mock, ni ajouter des méthodes test-only au code de prod. | [obra/superpowers-skills](https://github.com/obra/superpowers-skills) |
+| `condition-based-waiting` | Remplace les timeouts arbitraires par du polling de condition pour des tests async fiables. | [obra/superpowers-skills](https://github.com/obra/superpowers-skills) |
+| `when-stuck` | Redirige vers la bonne technique de résolution de problème selon le type de blocage. | [obra/superpowers-skills](https://github.com/obra/superpowers-skills) |
+| `collision-zone-thinking` | Force le rapprochement de concepts sans rapport pour révéler des propriétés émergentes. | [obra/superpowers-skills](https://github.com/obra/superpowers-skills) |
+| `inversion-exercise` | Inverse les hypothèses de base pour révéler des contraintes cachées et d'autres approches. | [obra/superpowers-skills](https://github.com/obra/superpowers-skills) |
+| `meta-pattern-recognition` | Repère les motifs qui apparaissent dans 3+ domaines pour trouver des principes universels. | [obra/superpowers-skills](https://github.com/obra/superpowers-skills) |
+| `scale-game` | Teste aux extrêmes (1000x plus grand/petit, instantané/annuel) pour exposer des vérités fondamentales. | [obra/superpowers-skills](https://github.com/obra/superpowers-skills) |
+| `simplification-cascades` | Cherche l'insight unique qui élimine plusieurs composants d'un coup. | [obra/superpowers-skills](https://github.com/obra/superpowers-skills) |
+| `preserving-productive-tensions` | Reconnaît quand un désaccord révèle un contexte précieux, plutôt que de forcer une résolution prématurée. | [obra/superpowers-skills](https://github.com/obra/superpowers-skills) |
+| `tracing-knowledge-lineages` | Comprend comment une idée a évolué dans le temps pour éviter de répéter d'anciens échecs. | [obra/superpowers-skills](https://github.com/obra/superpowers-skills) |
+| `writing-skills` | TDD appliqué à la documentation de process — teste avec des sous-agents avant d'écrire un skill. | [obra/superpowers-skills](https://github.com/obra/superpowers-skills) |
+| `testing-skills-with-subagents` | RED-GREEN-REFACTOR pour la documentation de process — vérifie qu'un skill résiste à la pression. | [obra/superpowers-skills](https://github.com/obra/superpowers-skills) |
+| `gardening-skills-wiki` | Maintient la santé du wiki de skills — liens, naming, références croisées, couverture. | [obra/superpowers-skills](https://github.com/obra/superpowers-skills) |
+| `sharing-skills` | Contribue un skill en amont via branche et PR vers le dépôt upstream. | [obra/superpowers-skills](https://github.com/obra/superpowers-skills) |
+| `pulling-updates-from-skills-repository` | Synchronise la bibliothèque locale avec les changements upstream du dépôt superpowers-skills. | [obra/superpowers-skills](https://github.com/obra/superpowers-skills) |
+| `karpathy-guidelines` | 4 principes comportementaux dérivés des observations d'Andrej Karpathy pour réduire les erreurs classiques des agents de code IA (réfléchir avant de coder, simplicité, changements chirurgicaux, critères de succès). | [forrestchang/andrej-karpathy-skills](https://github.com/forrestchang/andrej-karpathy-skills) |
+
+---
+
 ## 🔄 Automatisation (n8n)
 
 > Skills [czlonkowski/n8n-skills](https://github.com/czlonkowski/n8n-skills) (Romuald Członkowski, auteur de [n8n-mcp](https://github.com/czlonkowski/n8n-mcp)), sous licence MIT.
