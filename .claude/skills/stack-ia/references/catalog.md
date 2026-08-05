@@ -5,7 +5,7 @@ principal — une ligne par skill installé dans `.claude/skills/`, groupée
 par catégorie. Si un skill récemment ajouté n'apparaît pas ici, se rabattre
 sur un scan direct de `.claude/skills/*/SKILL.md`.
 
-**Total : 82 skills.**
+**Total : 83 skills.**
 
 ## 🧠 Agents & Tests
 
@@ -78,6 +78,10 @@ sur un scan direct de `.claude/skills/*/SKILL.md`.
 ## ♿ Accessibilité
 
 - **`color-contrast-checker`** — Analyse le contraste de couleurs d'une image (maquette, capture d'écran) et produit un rapport d'accessibilité WCAG/RGAA. _(source : Original (skill personnel))_
+
+## 📁 Conversion de fichiers
+
+- **`entrants-to-markdown-gemini`** — Convertit en masse un dossier d'entrants hétérogènes (SVG, PPTX, PDF, DOCX, XLSX, images, schémas, HTML, CSV, JSON, ZIP, audio...) en fichiers Markdown, barre de progression incluse. Les fichiers visuels sont décrits automatiquement via l'API Gemini plutôt que par la vision de Claude. _(source : Original (skill personnel))_
 
 ## 🔄 Automatisation (n8n)
 

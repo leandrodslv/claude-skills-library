@@ -212,6 +212,14 @@ La bibliothèque regroupe actuellement plusieurs familles de skills.
 
 ---
 
+## 📁 Conversion de fichiers
+
+| Skill | Description | Source |
+|---------|-------------|--------|
+| `entrants-to-markdown-gemini` | Convertit en masse un dossier d'entrants hétérogènes (SVG, PPTX, PDF, DOCX, XLSX, images, schémas, HTML, CSV, JSON, ZIP, audio...) en fichiers Markdown, barre de progression incluse. Les fichiers visuels (SVG, images, schémas) sont décrits automatiquement via l'API Gemini plutôt que par la vision de Claude — scalable sur de gros dossiers. | Original (skill personnel) |
+
+---
+
 ## 🧠 Méthodologie & discipline dev (Superpowers)
 
 > Skills [obra/superpowers-skills](https://github.com/obra/superpowers-skills) (Jesse Vincent, 200K+ ⭐, accepté au marketplace officiel Anthropic), sous licence MIT — plus `karpathy-guidelines` (auteur distinct, voir en bas de tableau).
