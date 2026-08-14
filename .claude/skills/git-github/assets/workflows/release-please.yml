@@ -1,0 +1,59 @@
+name: Release
+
+# release-please maintient une PR de release ouverte en permanence, alimentée par les
+# commits conventionnels mergés sur main. Merger cette PR crée le tag + la GitHub Release,
+# et — dans le même workflow — déclenche le déploiement.
+#
+# Le job deploy est volontairement dans CE fichier : le GITHUB_TOKEN par défaut ne
+# déclenche pas d'autres workflows, donc un workflow séparé en "on: release" ne partirait
+# jamais. Supprimer le job deploy si le projet n'en a pas besoin.
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  release-please:
+    name: Release Please
+    runs-on: ubuntu-latest
+    outputs:
+      released: ${{ steps.release.outputs.release_created }}
+      tag: ${{ steps.release.outputs.tag_name }}
+      version: ${{ steps.release.outputs.version }}
+    steps:
+      - uses: googleapis/release-please-action@v4
+        id: release
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+  # ── Déploiement, uniquement quand une release vient d'être créée ──────────────
+  # Adapter la cible (Vercel / Netlify / Pages / SSH) puis décommenter.
+  #
+  # deploy:
+  #   name: Deploy
+  #   needs: [release-please]
+  #   if: needs.release-please.outputs.released == 'true'
+  #   runs-on: ubuntu-latest
+  #   environment: production
+  #   steps:
+  #     - uses: actions/checkout@v4
+  #       with:
+  #         ref: ${{ needs.release-please.outputs.tag }}
+  #     - uses: actions/setup-node@v4
+  #       with:
+  #         node-version: '20'
+  #         cache: 'npm'
+  #     - run: npm ci
+  #     - run: npm run build
+  #     - name: Deploy
+  #       run: npx vercel deploy --prod --token=$VERCEL_TOKEN --yes
+  #       env:
+  #         VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+  #     - name: Résumé
+  #       run: |
+  #         echo "🚀 **${{ needs.release-please.outputs.tag }}** déployé en production" \
+  #           >> $GITHUB_STEP_SUMMARY

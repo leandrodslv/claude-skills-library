@@ -1,0 +1,36 @@
+#!/bin/sh
+# Lance lint / typecheck / test avant de pousser — filet local avant que le CI ne le fasse.
+# N'exécute que les scripts npm qui existent réellement dans package.json : rien à
+# configurer, un projet sans script "test" ne bloquera jamais dessus.
+#
+# Installation :
+#   cp ~/.claude/skills/git-github/assets/hooks/pre-push .git/hooks/pre-push
+#   chmod +x .git/hooks/pre-push
+#
+# Contourner ponctuellement : git push --no-verify
+
+if [ ! -f package.json ]; then
+  exit 0
+fi
+
+has_script() {
+  node -e "process.exit(require('./package.json').scripts && require('./package.json').scripts['$1'] ? 0 : 1)" 2>/dev/null
+}
+
+run_script() {
+  if has_script "$1"; then
+    echo "→ npm run $1"
+    if ! npm run "$1" --silent; then
+      echo ""
+      echo "❌ npm run $1 a échoué. Corriger avant de pousser (ou git push --no-verify)."
+      echo ""
+      exit 1
+    fi
+  fi
+}
+
+run_script lint
+run_script typecheck
+run_script test
+
+exit 0

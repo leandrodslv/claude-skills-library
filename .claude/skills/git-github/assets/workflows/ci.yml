@@ -1,0 +1,82 @@
+name: CI
+
+# CI parallélisé : lint et typecheck servent de garde rapide aux jobs lents.
+# Le job final "CI" est le seul à mettre en required status check — il reste stable
+# quand on ajoute ou renomme des jobs en amont.
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+      - run: npm ci --prefer-offline --no-audit
+      - run: npm run lint
+
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    needs: [lint]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+      - run: npm ci --prefer-offline --no-audit
+      - name: Cache build intermédiaire
+        uses: actions/cache@v4
+        with:
+          path: node_modules/.vite
+          key: vite-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
+          restore-keys: vite-${{ runner.os }}-
+      - run: npm run build
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dist
+          path: dist/
+          retention-days: 1
+
+  # Décommenter dès qu'un script "test" existe dans package.json
+  # test:
+  #   name: Tests
+  #   runs-on: ubuntu-latest
+  #   needs: [lint]
+  #   steps:
+  #     - uses: actions/checkout@v4
+  #     - uses: actions/setup-node@v4
+  #       with:
+  #         node-version: '20'
+  #         cache: 'npm'
+  #     - run: npm ci --prefer-offline --no-audit
+  #     - run: npm test
+
+  ci-ok:
+    name: CI
+    runs-on: ubuntu-latest
+    needs: [lint, build]
+    if: always()
+    steps:
+      - name: Vérifier qu'aucun job n'a échoué
+        run: |
+          if ${{ contains(needs.*.result, 'failure') || contains(needs.*.result, 'cancelled') }}; then
+            echo "❌ Au moins un job a échoué."
+            exit 1
+          fi
+          echo "✅ Tous les jobs sont verts."
