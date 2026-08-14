@@ -1,0 +1,55 @@
+#!/bin/sh
+# Valide que le message de commit respecte la spec Conventional Commits.
+# Installation :
+#   cp ~/.claude/skills/git-github/assets/hooks/commit-msg .git/hooks/commit-msg
+#   chmod +x .git/hooks/commit-msg
+#
+# Contourner ponctuellement : git commit --no-verify
+
+MSG_FILE="$1"
+
+# Première ligne non vide et non commentée
+HEADER=$(grep -v '^#' "$MSG_FILE" | sed '/^[[:space:]]*$/d' | head -n 1)
+
+# Laisser passer les messages générés par git (merge, revert, fixup, squash)
+case "$HEADER" in
+  "Merge "*|"Revert "*|"fixup! "*|"squash! "*|"Reapply "*) exit 0 ;;
+esac
+
+PATTERN='^(feat|fix|docs|style|refactor|perf|test|chore|ci|build|revert)(\([a-z0-9._/-]+\))?!?: [^ ].*$'
+
+fail() {
+  echo ""
+  echo "❌ Message de commit non conventionnel."
+  echo ""
+  echo "   Reçu   : $HEADER"
+  echo "   Attendu: <type>[(scope)][!]: <description>"
+  echo ""
+  echo "   Types  : feat fix docs style refactor perf test chore ci build revert"
+  echo "   Exemple: feat(auth): add magic link login"
+  echo ""
+  echo "   Règles : description à l'impératif, minuscule initiale, pas de point final,"
+  echo "            en-tête ≤ 72 caractères."
+  echo ""
+  echo "   Corriger : git commit --amend"
+  echo ""
+  exit 1
+}
+
+echo "$HEADER" | grep -qE "$PATTERN" || fail
+
+if [ ${#HEADER} -gt 72 ]; then
+  echo ""
+  echo "❌ En-tête trop long : ${#HEADER} caractères (max 72)."
+  echo "   $HEADER"
+  echo ""
+  echo "   Déplacer le détail dans le corps du message."
+  echo ""
+  exit 1
+fi
+
+case "$HEADER" in
+  *.) echo ""; echo "❌ L'en-tête ne doit pas se terminer par un point."; echo "   $HEADER"; echo ""; exit 1 ;;
+esac
+
+exit 0

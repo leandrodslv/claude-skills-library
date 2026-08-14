@@ -1,0 +1,45 @@
+name: PR Title
+
+# Valide que le titre de la PR est un en-tête Conventional Commits.
+# Indispensable en squash-merge : le titre de la PR devient le message de commit
+# sur main, donc la ligne du CHANGELOG lue par release-please.
+#
+# À rendre obligatoire dans la protection de branche (contexte : "PR Title").
+
+on:
+  pull_request:
+    types: [opened, edited, synchronize, reopened]
+
+permissions:
+  pull-requests: read
+
+jobs:
+  lint-title:
+    name: PR Title
+    runs-on: ubuntu-latest
+    steps:
+      - uses: amannn/action-semantic-pull-request@v5
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          types: |
+            feat
+            fix
+            perf
+            revert
+            docs
+            style
+            refactor
+            test
+            build
+            ci
+            chore
+          requireScope: false
+          subjectPattern: ^(?![A-Z])(?!.*\.$).+$
+          subjectPatternError: |
+            La description « {subject} » du titre « {title} » est invalide :
+            elle doit commencer par une minuscule et ne pas se terminer par un point.
+          # Ignore les PR de release générées par le bot
+          ignoreLabels: |
+            autorelease: pending
+            autorelease: tagged

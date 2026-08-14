@@ -1,0 +1,17 @@
+# CODEOWNERS — qui doit relire quoi.
+# Placer ce fichier dans .github/CODEOWNERS (ou racine, ou docs/).
+# La DERNIÈRE règle qui matche gagne : mettre les règles génériques en premier,
+# les plus spécifiques en dernier.
+#
+# Nécessaire pour activer "require_code_owner_reviews" en protection de branche
+# (voir SKILL.md §9f). Sans ça, GitHub n'a personne à désigner comme relecteur obligatoire.
+
+# Défaut : tout le repo
+* @leandrodslv
+
+# Exemples de règles plus spécifiques (décommenter et adapter quand un deuxième
+# contributeur ou une équipe rejoint le repo) :
+# /src/api/            @leandrodslv
+# /.github/            @leandrodslv
+# *.sql                @leandrodslv
+# /supabase/migrations/ @leandrodslv
