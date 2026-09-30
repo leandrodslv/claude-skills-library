@@ -5,6 +5,7 @@ import json
 import os
 import re
 import time
+from urllib.parse import quote
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
@@ -98,7 +99,7 @@ def build_index(entries: List[Dict[str, Any]], out_root: Path, title: str = "Ind
            "error": "erreur", "unchanged": "inchangé"}
     for e in sorted(entries, key=lambda x: x["source"]):
         md = e.get("output")
-        link = f"[{md}]({md.replace(' ', '%20')})" if md else "—"
+        link = f"[{md}]({quote(md, safe='/')})" if md else "—"
         st = sym.get(e["status"], e["status"])
         lines.append(f"| {e['source']} | {link} | {e.get('format', '')} | {int(e.get('words', 0))} | {int(e.get('tokens_est', 0))} | {st} |")
     vis = [(e, v) for e in entries for v in e.get("vision", [])]
@@ -152,7 +153,7 @@ def write_combined(entries: List[Dict[str, Any]], out_root: Path, only: bool, na
         text = re.sub(r"\A---\n.*?\n---\n\n?", "", text, flags=re.S)
         d = Path(md).parent.as_posix()
         if d not in ("", "."):  # les liens d'images doivent rester valides depuis la racine
-            text = re.sub(r"(!\[[^\]]*\]\()(?!https?:|data:|/)", lambda m, prefix=d + "/": m.group(1) + prefix, text)
+            text = re.sub(r"(!\[[^\]]*\]\()(?!https?:|data:|/)", lambda m, prefix=quote(d, safe="/") + "/": m.group(1) + prefix, text)
         parts.append(f"<!-- source: {e['source']} -->\n\n{text.strip()}")
     if not parts:
         return None

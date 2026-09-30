@@ -42,6 +42,8 @@ def pdf_info(path: Path) -> Dict[str, str]:
         return {}
     tail = data[-65536:] + data[:65536]
     out: Dict[str, str] = {}
+    if b"/Encrypt" in tail:      # les chaînes du dictionnaire /Info sont chiffrées : pas de titre lisible sans les déchiffrer
+        return out
     for key, name in ((b"Title", "title"), (b"Author", "author"), (b"Subject", "subject")):
         m = re.search(rb"/" + key + rb"\s*(\((?:\\.|[^\\)])*\)|<[0-9A-Fa-f\s]+>)", tail)
         if not m:

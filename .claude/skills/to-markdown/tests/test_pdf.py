@@ -118,6 +118,29 @@ class NativePdf(Base):
         self.assertEqual(self.conv(self.write("empty.pdf", b"")).status, "unsupported")
 
 
+class EncryptedPdf(Base):
+    """Le lecteur natif ouvre les PDF chiffrés dont le mot de passe utilisateur est vide (RC4, AES-128, AES-256)."""
+
+    def test_every_standard_encryption_scheme_is_read(self):
+        import encrypted_pdfs as enc
+        for name in ("rc4_40", "rc4_128", "aes_128", "aes_256_r5", "aes_256"):
+            out = self.conv(self.write(f"{name}.pdf", enc.pdf_bytes(name)))
+            self.assertIn(out.status, ("ok", "warn"), f"{name}: {out.status} {out.error}")
+            self.assertEqual(out.result.engine, "pdflite", name)
+            self.assertMd(out.body, "<!-- page 1 -->", "Bonjour PDF chiffre 4821", "<!-- page 2 -->", "Page deux contenu confidentiel numero 77")
+
+    def test_a_real_open_password_is_reported_not_bypassed(self):
+        import encrypted_pdfs as enc
+        out = self.conv(self.write("secret.pdf", enc.pdf_bytes("user_pw")))
+        self.assertEqual(out.status, "unsupported")
+        self.assertIn("mot de passe", out.error)
+
+    def test_encrypted_document_metadata_is_not_shown_as_garbage(self):
+        import encrypted_pdfs as enc
+        out = self.conv(self.write("aes.pdf", enc.pdf_bytes("aes_128")))
+        self.assertFalse(out.body.startswith("# "), out.body[:80])
+
+
 @unittest.skipUnless(have("tesseract") and have("pdftoppm"), "tesseract ou poppler absent")
 class OcrPdf(Base):
     """Un « scan » fabriqué en rastérisant un PDF de texte : l'OCR doit retrouver les mots."""

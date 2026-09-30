@@ -55,7 +55,7 @@ Les fixtures (DOCX, PPTX, XLSX, ODF, EPUB, PDF, PNG…) sont fabriquées par `te
 
 - Écriture manuscrite, graphiques collés en image, photos : lecture visuelle (par Claude), pas d'extraction automatique.
 - Sans moteur externe : PDF à colonnes/tableaux complexes moins fins qu'avec pymupdf4llm ; `.doc/.ppt` sans titres ni listes ; pas d'OCR.
-- PDF chiffrés (même sans mot de passe d'ouverture) et Office protégés : à déverrouiller avant.
+- Fichiers protégés par un vrai mot de passe d'ouverture (PDF, Office) : jamais contournés, à déverrouiller avant. (Les PDF « sécurisés » sans mot de passe d'ouverture — RC4, AES-128/256 — sont lus.)
 - Les diapositives dessinées en formes libres (sans connecteurs) ne deviennent pas un diagramme : `--render` pour les vérifier à l'œil.
 
 ## Provenance

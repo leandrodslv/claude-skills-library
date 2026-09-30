@@ -100,8 +100,14 @@ def image_native(path, ctx: Ctx) -> Result:
         parts.append(f"## {head}, confiance {conf:.0f} %)\n\n" + "\n\n".join(esc_inline(t.strip()) for t in ocr_text.split("\n\n") if t.strip()))
         ctx.warn(f"texte lu par OCR (confiance {conf:.0f} %) : vérifier chiffres et noms propres")
     if not substantial:
-        why = ("image sans texte lisible par OCR" if ocr_text.strip() == "" else "OCR insuffisant pour décrire l'image") \
-            if ext.has_ocr() and ctx.opts.ocr != "off" else "image : aucun outil OCR — contenu à lire visuellement"
+        if ctx.opts.ocr == "off":
+            why = "image à lire visuellement (OCR désactivé par --ocr off)"
+        elif not (ctx.opts.external and ext.has_ocr()):
+            why = "image : aucun outil OCR installé — contenu à lire visuellement"
+        elif not ocr_text.strip():
+            why = "image sans texte lisible par OCR — contenu à décrire visuellement"
+        else:
+            why = "OCR insuffisant pour décrire l'image — à lire visuellement"
         ctx.need_vision("image", str(p.resolve()), why)
         parts.append(f"> **[À COMPLÉTER : description visuelle]** {why}.")
     md = "\n\n".join(x for x in parts if x)

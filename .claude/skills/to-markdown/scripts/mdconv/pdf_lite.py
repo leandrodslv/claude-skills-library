@@ -3,7 +3,7 @@
 Couvre les PDF « à texte » courants (Word, LibreOffice, reportlab, pdfTeX, navigateurs) : objets et flux
 compressés (Flate, ASCII85, ASCIIHex, RunLength), flux d'objets (ObjStm), polices simples ou composites avec
 table ToUnicode, codages WinAnsi/MacRoman/Differences, formulaires XObject, position des fragments (lignes,
-espaces, colonnes). Ne lit PAS : PDF scannés (→ OCR / lecture visuelle), polices sans table Unicode, chiffrement AES.
+espaces, colonnes). Ne lit PAS : PDF scannés (→ OCR / lecture visuelle), polices sans table Unicode. PDF chiffrés : lus si le mot de passe d'ouverture est vide (RC4, AES-128/256).
 """
 from __future__ import annotations
 
@@ -14,7 +14,8 @@ import zlib
 from collections import Counter
 from typing import Any, Dict, List, Optional, Tuple
 
-from .core import Protected, Unsupported
+from .core import Unsupported
+from .pdf_crypt import Decryptor, first_id
 
 MAX_PAGES = 5000
 MAX_STREAM = 256 << 20
@@ -32,10 +33,10 @@ class Ref:
 
 
 class Stream:
-    __slots__ = ("d", "raw")
+    __slots__ = ("d", "raw", "num", "gen")
 
-    def __init__(self, d: Dict[str, Any], raw: bytes):
-        self.d, self.raw = d, raw
+    def __init__(self, d: Dict[str, Any], raw: bytes, num: int = 0, gen: int = 0):
+        self.d, self.raw, self.num, self.gen = d, raw, num, gen
 
 
 _WS = b" \t\r\n\f\x00"
@@ -270,12 +271,15 @@ class PdfDoc:
     def __init__(self, data: bytes):
         self.data = data
         self.offsets: Dict[int, int] = {}
+        self.gens: Dict[int, int] = {}
         self.cache: Dict[int, Any] = {}
         self.compressed: Dict[int, Any] = {}
         self.unreadable = 0
         self.notes: List[str] = []
+        self.crypt: Optional[Decryptor] = None
         for m in re.finditer(rb"(?<![\d.])(\d{1,7})\s+(\d{1,5})\s+obj\b", data):
             self.offsets[int(m.group(1))] = m.end()  # la dernière définition l'emporte (mises à jour incrémentales)
+            self.gens[int(m.group(1))] = int(m.group(2))
         self.trailer: Dict[str, Any] = {}
         for m in re.finditer(rb"trailer\s*", data):
             try:
@@ -284,14 +288,20 @@ class PdfDoc:
                     self.trailer.update(t)
             except Exception:
                 pass
-        self._load_objstm()
-        if not self.trailer.get("Root"):
-            for num in list(self.offsets):
+        for num, off in list(self.offsets.items()):        # PDF 1.5 : le « trailer » est le dictionnaire d'un flux /XRef (jamais chiffré)
+            if b"/XRef" in data[off:off + 300]:
                 o = self.get(num)
                 if isinstance(o, Stream) and o.d.get("Type") == "XRef":
-                    self.trailer.update(o.d)
+                    for k, v in o.d.items():
+                        self.trailer.setdefault(k, v)
         if "Encrypt" in self.trailer:
-            raise Protected("PDF chiffré (déchiffrement non pris en charge par le lecteur intégré)")
+            enc = self.get(self.trailer["Encrypt"])
+            if not isinstance(enc, dict):
+                raise Unsupported("dictionnaire /Encrypt illisible")
+            deref = lambda x: self.get(x) if isinstance(x, Ref) else x  # noqa: E731  (get() prend aussi un entier pour un numéro d'objet)
+            self.crypt = Decryptor(enc, first_id(self.trailer, deref), deref)     # lève Protected si mot de passe requis
+            self.cache = {k: v for k, v in self.cache.items() if not isinstance(v, Stream)}
+        self._load_objstm()
 
     # -- accès ----------------------------------------------------------
     def get(self, ref: Any) -> Any:
@@ -325,7 +335,7 @@ class PdfDoc:
                 else:
                     end = self.data.find(b"endstream", p)
                     raw = self.data[p:end if end >= 0 else len(self.data)].rstrip(b"\r\n")
-                obj = Stream(obj, raw)
+                obj = Stream(obj, raw, num, self.gens.get(num, 0))
         except Exception:
             obj = None
         self.cache[num] = obj
@@ -335,11 +345,16 @@ class PdfDoc:
         d = st.d
         filters = self.get(d.get("Filter"))
         parms = self.get(d.get("DecodeParms") or d.get("DP"))
+        data = st.raw
+        if self.crypt is not None and st.num and d.get("Type") != "XRef" and not (
+                d.get("Type") == "Metadata" and not self.crypt.encrypt_metadata):
+            fl0 = filters if isinstance(filters, list) else [filters]
+            if not any(str(self.get(f)) == "Crypt" for f in fl0):        # filtre /Crypt : géré par le flux lui-même (Identity en pratique)
+                data = self.crypt.stream(st.num, st.gen, data)
         if filters is None:
-            return st.raw
+            return data
         fl = filters if isinstance(filters, list) else [filters]
         pl = parms if isinstance(parms, list) else [parms] * len(fl)
-        data = st.raw
         for f, p in zip(fl, pl + [None] * (len(fl) - len(pl))):
             f = str(self.get(f))
             p = self.get(p) if isinstance(p, (dict, Ref)) else p

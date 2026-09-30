@@ -5,6 +5,7 @@ import json
 import re
 import sys
 from pathlib import Path
+from urllib.parse import unquote
 from typing import Any, Dict, List
 
 from .quality import lint_markdown
@@ -34,7 +35,7 @@ def check_file(path: Path, root: Path) -> Dict[str, Any]:
             target = m.group(1).strip("<>")
             if re.match(r"^(https?:|mailto:|tel:|#|data:|ftp:)", target, re.I):
                 continue
-            rel = re.sub(r"%20", " ", target.split("#")[0])
+            rel = unquote(target.split("#")[0])
             if rel and not (path.parent / rel).exists():
                 broken.append(target)
     if broken:

@@ -81,7 +81,7 @@ Relancer est sans risque : les fichiers inchangés sont ignorés (cache incréme
 - **E-mails** : en-têtes, corps, et chaque pièce jointe convertie à son tour (lien depuis le mail). `.msg` Outlook lu nativement.
 - **Archives** : `.zip/.tar/.gz…` ouvertes (protection contre les chemins piégés et les zip bombs) ; chaque membre est converti, les sorties gardent l'arborescence.
 - **Audio / vidéo** : transcription seulement sur demande explicite (`--engines whisper`, nécessite `faster-whisper`) ; sinon ignorés avec un message.
-- **Macros** (`.docm`, `.xlsm`) : jamais exécutées, signalées. **Fichiers protégés** : refusés avec le message qui explique quoi faire.
+- **Macros** (`.docm`, `.xlsm`) : jamais exécutées, signalées. **Fichiers protégés par un vrai mot de passe d'ouverture** : refusés avec le message qui explique quoi faire (jamais contournés) ; les PDF « sécurisés » sans mot de passe d'ouverture sont lus normalement.
 - **Fichier volumineux** : au-delà de 500 Mo (`--max-size-mb`) le fichier est refusé ; les classeurs Excel sont lus en flux (mémoire bornée) et les longs tableaux tronqués avec un CSV complet à côté.
 
 ## Si quelque chose cloche

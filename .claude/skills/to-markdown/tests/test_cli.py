@@ -195,6 +195,22 @@ class Cli(Base):
         self.assertEqual(levels["svg"], "natif")
         self.assertIn("capabilities", data)
 
+    def test_special_characters_in_file_names_give_valid_links(self):
+        d = self.tmp / "in"
+        (d / "Sous dossier (v2)").mkdir(parents=True)
+        fx.make_docx(d / "Compte rendu #3 (final).docx", fx.para("Titre", "Heading1") + fx.para(fx.drawing("rId7", "Schéma")),
+                     media={"pic.png": fx.png()}, rels=fx.image_rel("rId7", "pic.png"))
+        (d / "Sous dossier (v2)" / "note % 100.txt").write_text("Texte", encoding="utf-8")
+        out = self.tmp / "o"
+        self.run_cli(d, "-o", out, "--combined")
+        index = (out / "INDEX.md").read_text(encoding="utf-8")
+        self.assertIn("(Compte%20rendu%20%233%20%28final%29.md)", index)
+        self.assertIn("(Sous%20dossier%20%28v2%29/note%20%25%20100.md)", index)
+        text, _ = self.run_cli("--check", out)
+        self.assertIn("aucun problème détecté", text)
+        combined = (out / "combined.md").read_text(encoding="utf-8")
+        self.assertIn("![Schéma](Compte-rendu-3-final_assets/img-01.png)", combined)
+
     def test_missing_input_and_empty_folder(self):
         _o, err = self.run_cli(self.tmp / "nexiste-pas", expect=1)
         self.assertIn("introuvable", err)

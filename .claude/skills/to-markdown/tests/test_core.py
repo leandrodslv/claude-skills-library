@@ -60,6 +60,28 @@ class TextHelpers(unittest.TestCase):
         self.assertLess(util.est_tokens("abc"), util.est_tokens("abc " * 100))
 
 
+class Ciphers(Base):
+    """AES et RC4 écrits en Python pur : vecteurs de test officiels (FIPS-197, RFC 6229)."""
+
+    def test_aes_known_answers_and_cbc_round_trip(self):
+        from mdconv.pdf_crypt import AES
+        pt = bytes.fromhex("00112233445566778899aabbccddeeff")
+        k128 = bytes.fromhex("000102030405060708090a0b0c0d0e0f")
+        k192 = bytes.fromhex("000102030405060708090a0b0c0d0e0f1011121314151617")
+        k256 = bytes.fromhex("000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f")
+        for key, ct in ((k128, "69c4e0d86a7b0430d8cdb78070b4c55a"), (k192, "dda97ca4864cdfe06eaf70a0ec0d7191"), (k256, "8ea2b7ca516745bfeafc49904b496089")):
+            self.assertEqual(AES(key).encrypt_block(pt).hex(), ct)
+            self.assertEqual(AES(key).decrypt_block(bytes.fromhex(ct)), pt)
+        data = bytes(range(256)) * 3
+        iv = bytes(range(16))
+        self.assertEqual(AES(k256).cbc_decrypt(iv, AES(k256).cbc_encrypt(iv, data)), data)
+
+    def test_rc4_known_answer(self):
+        from mdconv.pdf_crypt import rc4
+        self.assertEqual(rc4(b"Key", b"Plaintext").hex().upper(), "BBF316E8D940AF0AD3")
+        self.assertEqual(rc4(b"Wiki", b"pedia").hex().upper(), "1021BF0420")
+
+
 class LegacyEncodings(Base):
     """Devinette d'encodage sans dépendance : chaque texte est encodé à l'ancienne puis relu."""
     SAMPLES = [
