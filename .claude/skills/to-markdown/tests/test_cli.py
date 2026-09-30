@@ -225,6 +225,31 @@ class Cli(Base):
         self.assertEqual(doctor.returncode, 0, doctor.stderr.decode("utf-8", "replace"))
         self.assertIn("✓", doctor.stdout.decode("utf-8"))
 
+    def test_watch_converts_files_that_arrive_later(self):
+        import subprocess, sys, time
+        d = self.tmp / "entrants"
+        d.mkdir()
+        (d / "a.txt").write_text("Premier", encoding="utf-8")
+        out = self.tmp / "md"
+        script = Path(__file__).resolve().parent.parent / "scripts" / "convert.py"
+        proc = subprocess.Popen([sys.executable, str(script), "--no-external", "--watch", "--interval", "1", str(d), "-o", str(out), "-q"],
+                                stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        try:
+            deadline = time.time() + 20
+            while time.time() < deadline and not (out / "a.md").exists():
+                time.sleep(0.5)
+            self.assertTrue((out / "a.md").exists())
+            (d / "b.txt").write_text("Second", encoding="utf-8")
+            while time.time() < deadline and not (out / "b.md").exists():
+                time.sleep(0.5)
+            self.assertIn("Second", (out / "b.md").read_text(encoding="utf-8"))
+        finally:
+            proc.terminate()
+            proc.wait(10)
+
+    def test_watch_refuses_incompatible_options(self):
+        self.run_cli("--watch", "--in-place", self.tmp, expect=2)
+
     def test_missing_input_and_empty_folder(self):
         _o, err = self.run_cli(self.tmp / "nexiste-pas", expect=1)
         self.assertIn("introuvable", err)

@@ -29,7 +29,7 @@ python3 <skill>/scripts/convert.py --doctor                        # ce que cett
 python3 <skill>/scripts/convert.py --check md/                     # vérifie un dossier converti
 ```
 
-Relancer est sans risque : les fichiers inchangés sont ignorés (cache incrémental, `--force` pour tout refaire), et un dossier de sortie placé dans le dossier d'entrée n'est pas reconverti. **Boîte d'entrée permanente** : `convert.py entrants/ -o entrants_md/` à chaque arrivée de nouveaux fichiers — seuls les nouveaux ou modifiés sont convertis.
+Relancer est sans risque : les fichiers inchangés sont ignorés (cache incrémental, `--force` pour tout refaire), et un dossier de sortie placé dans le dossier d'entrée n'est pas reconverti. **Boîte d'entrée permanente** : `convert.py entrants/ -o entrants_md/ --watch` surveille le dossier (vérification toutes les 5 s, `--interval N` pour changer) et convertit chaque fichier nouveau ou modifié dès qu'il est stable ; Ctrl+C pour arrêter. Sans `--watch`, relance la même commande à la main : seuls les nouveaux ou modifiés sont convertis.
 
 ## Marche à suivre
 
@@ -72,6 +72,7 @@ Relancer est sans risque : les fichiers inchangés sont ignorés (cache incréme
 | OCR (PDF scannés, images) | `--ocr auto` (défaut) · `off` · `force` ; `--ocr-lang fra+eng` |
 | Comparer les moteurs | `--compare` (essaie tous les moteurs et affiche le score de chacun) · `--engines native,pandoc` |
 | Aperçus PNG pour vérifier à l'œil | `--render` |
+| Surveiller un dossier | `--watch` (`--interval 5`) — incompatible avec `--in-place` et `-o -` |
 | Lots | `-j 4` (processus), `--include '*.pdf'`, `--exclude 'brouillons/*'`, `--force`, `--json` |
 
 ## Améliorer les PDF complexes : proposer pymupdf4llm

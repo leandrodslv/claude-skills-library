@@ -80,6 +80,8 @@ def build_parser() -> argparse.ArgumentParser:
     r.add_argument("--timeout", type=int, default=180, help="délai par outil externe, en secondes")
     r.add_argument("--chunk-tokens", type=int, default=0, help="découpe les sorties longues en parties d'environ N jetons")
     m = p.add_argument_group("divers")
+    m.add_argument("--watch", action="store_true", help="surveille les dossiers d'entrée et convertit les fichiers nouveaux ou modifiés (Ctrl+C pour arrêter)")
+    m.add_argument("--interval", type=int, default=5, help="secondes entre deux vérifications avec --watch (défaut : 5)")
     m.add_argument("--doctor", action="store_true", help="diagnostic : moteurs disponibles et ce qu'ils apportent")
     m.add_argument("--check", metavar="DOSSIER", help="vérifie un dossier de Markdown converti")
     m.add_argument("-q", "--quiet", action="store_true")
@@ -309,10 +311,48 @@ def _utf8_console() -> None:
             pass
 
 
+def _snapshot(files: List[InputFile]) -> Dict[str, tuple]:
+    snap: Dict[str, tuple] = {}
+    for f in files:
+        try:
+            st = f.src.stat()
+            snap[f.rel] = (st.st_size, st.st_mtime_ns)
+        except OSError:
+            pass
+    return snap
+
+
+def _watch(args: argparse.Namespace, argv: List[str]) -> int:
+    """Boucle de surveillance : à chaque changement (fichier stable depuis 2 s), relance la conversion incrémentale."""
+    out_root = Path(args.output).expanduser().resolve() if args.output and args.output != "-" else Path(DEFAULT_OUT).resolve()
+    base = [a for a in argv if a != "--watch"]
+    print(f"Surveillance de {', '.join(args.inputs)} toutes les {args.interval} s — Ctrl+C pour arrêter.", file=sys.stderr)
+    last: Optional[Dict[str, tuple]] = None
+    try:
+        while True:
+            snap = _snapshot(collect_inputs(args.inputs, args.include, args.exclude, out_root))
+            newest = max((m for _s, m in snap.values()), default=0)
+            settled = time.time_ns() - newest > 2_000_000_000
+            if snap != last and settled:
+                main(base)
+                last = snap
+                print(f"[{time.strftime('%H:%M:%S')}] en attente de nouveaux fichiers…", file=sys.stderr)
+            time.sleep(max(1, args.interval))
+    except KeyboardInterrupt:
+        print("Surveillance arrêtée.", file=sys.stderr)
+        return 0
+
+
 def main(argv: Optional[List[str]] = None) -> int:
     _utf8_console()
     parser = build_parser()
+    argv = list(sys.argv[1:] if argv is None else argv)
     args = parser.parse_args(argv)
+    if args.watch:
+        if not args.inputs or args.in_place or args.output == "-":
+            print("--watch demande au moins un dossier d'entrée et n'est pas compatible avec --in-place ni -o -.", file=sys.stderr)
+            return 2
+        return _watch(args, argv)
     if args.doctor:
         from .doctor import run_doctor
 
