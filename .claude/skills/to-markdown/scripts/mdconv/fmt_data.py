@@ -167,6 +167,16 @@ def _cell(v: Any) -> str:
     return s if len(s) <= 200 else s[:197] + "…"
 
 
+class _Sample(list):
+    """Premiers enregistrements d'un très gros fichier JSON/JSONL ; ``total`` = nombre réel d'enregistrements."""
+
+    total = 0
+
+
+def _n_records(items: List[Any]) -> int:
+    return getattr(items, "total", len(items))
+
+
 def _records_table(items: List[dict], cap: int) -> Optional[str]:
     if len(items) < 2 or not all(isinstance(i, dict) for i in items):
         return None
@@ -186,8 +196,8 @@ def _records_table(items: List[dict], cap: int) -> Optional[str]:
     shown = flat[:cap] if cap else flat
     grid = [[esc_inline(k) for k in keys]] + [[r.get(k, "") for k in keys] for r in shown]
     md = md_table(grid)
-    if len(items) > len(shown):
-        md += f"\n\n_… {len(items) - len(shown)} enregistrement(s) de plus (aperçu limité à {cap})._"
+    if _n_records(items) > len(shown):
+        md += f"\n\n_… {_n_records(items) - len(shown)} enregistrement(s) de plus (aperçu limité à {cap})._"
     return md
 
 
@@ -206,7 +216,7 @@ def json_markdown(obj: Any, cap: int, name: str) -> str:
     if isinstance(obj, list):
         t = _records_table(obj, cap)
         if t:
-            return f"_{len(obj)} enregistrement(s)_\n\n{t}"
+            return f"_{_n_records(obj)} enregistrement(s)_\n\n{t}"
     if isinstance(obj, dict) and len(obj) <= 6:
         for k, v in obj.items():
             if isinstance(v, list) and len(v) >= 3 and all(isinstance(i, dict) for i in v):
@@ -223,8 +233,76 @@ def json_markdown(obj: Any, cap: int, name: str) -> str:
     return out
 
 
+BIG_JSON = 48 << 20      # au-delà : lecture en flux, mémoire bornée (json.loads demande ~7× la taille du fichier)
+_CHUNK = 4 << 20
+
+
+def _stream_json_array(path: Path, keep: int) -> Optional[_Sample]:
+    """Premiers ``keep`` éléments d'un tableau JSON racine et nombre total d'éléments, sans charger le fichier.
+
+    Renvoie None si le fichier n'est pas un tableau JSON en UTF-8. Un élément incomplet en fin de tampon est
+    relu après le bloc suivant.
+    """
+    dec = json.JSONDecoder()
+    sample = _Sample()
+    buf, idx, started = "", 0, False
+    with open(path, "r", encoding="utf-8-sig", errors="strict") as f:
+        eof = False
+        while True:
+            if idx > _CHUNK:                           # on jette ce qui est déjà consommé
+                buf, idx = buf[idx:], 0
+            if not eof and len(buf) - idx < _CHUNK // 4:
+                chunk = f.read(_CHUNK)
+                if chunk:
+                    buf += chunk
+                else:
+                    eof = True
+            while idx < len(buf) and buf[idx] in " \t\r\n,":
+                idx += 1
+            if not started:
+                if idx >= len(buf):
+                    if eof:
+                        return None
+                    continue
+                if buf[idx] != "[":
+                    return None
+                started, idx = True, idx + 1
+                continue
+            if idx >= len(buf):
+                if eof:
+                    return sample if sample.total else None
+                continue
+            if buf[idx] == "]":
+                return sample
+            try:
+                obj, end = dec.raw_decode(buf, idx)
+            except ValueError:
+                if eof:
+                    raise
+                more = f.read(_CHUNK)
+                if not more:
+                    eof = True
+                buf += more
+                continue
+            idx = end
+            sample.total += 1
+            if len(sample) < keep:
+                sample.append(obj)
+
+
 @engine(["json"], name="native", prio=10)
 def json_native(path, ctx: Ctx) -> Result:
+    cap = ctx.opts.table_rows
+    if Path(path).stat().st_size > BIG_JSON:
+        try:
+            big = _stream_json_array(Path(path), (cap or 1000) + 1000)
+        except (ValueError, UnicodeDecodeError) as exc:
+            raise Unsupported(f"JSON invalide ou d'encodage inattendu : {exc}")
+        if big is not None:
+            ctx.warn(f"fichier volumineux : aperçu des {len(big)} premiers enregistrements sur {big.total} (lecture en flux)")
+            res = Result(markdown=json_markdown(big, cap, Path(path).stem), fmt="json", engine="native", title=Path(path).stem)
+            res.stats["partial_source"] = True
+            return res
     text, _enc = _read_text(path)
     try:
         obj = json.loads(text)
@@ -235,19 +313,41 @@ def json_native(path, ctx: Ctx) -> Result:
     return res
 
 
+def _stream_jsonl(path: Path, keep: int) -> Tuple[_Sample, int]:
+    """Premières lignes JSON valides + nombre total de lignes non vides d'un gros JSONL (lecture ligne à ligne)."""
+    sample, bad = _Sample(), 0
+    with open(path, "rb") as f:
+        for raw in f:
+            if not raw.strip():
+                continue
+            sample.total += 1
+            if len(sample) < keep:
+                try:
+                    sample.append(json.loads(raw.decode("utf-8-sig", "replace")))
+                except ValueError:
+                    bad += 1
+                    sample.total -= 1
+    return sample, bad
+
+
 @engine(["jsonl"], name="native", prio=10)
 def jsonl_native(path, ctx: Ctx) -> Result:
-    text, _enc = _read_text(path)
-    items = []
-    bad = 0
-    for ln in text.splitlines():
-        ln = ln.strip()
-        if not ln:
-            continue
-        try:
-            items.append(json.loads(ln))
-        except ValueError:
-            bad += 1
+    if Path(path).stat().st_size > BIG_JSON:
+        cap = ctx.opts.table_rows
+        items, bad = _stream_jsonl(Path(path), (cap or 1000) + 1000)
+        ctx.warn(f"fichier volumineux : aperçu des {len(items)} premiers enregistrements sur {items.total} (lecture en flux)")
+    else:
+        text, _enc = _read_text(path)
+        items = []
+        bad = 0
+        for ln in text.splitlines():
+            ln = ln.strip()
+            if not ln:
+                continue
+            try:
+                items.append(json.loads(ln))
+            except ValueError:
+                bad += 1
     if not items:
         raise Unsupported("aucune ligne JSON valide")
     if bad:

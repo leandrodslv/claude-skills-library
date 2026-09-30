@@ -285,6 +285,44 @@ class UnsafeArchive(ValueError):
     """Archive refusée : trop volumineuse, trop de membres ou ratio suspect (zip bomb)."""
 
 
+class _CappedStream:
+    """Enveloppe un flux ZIP : compte les octets lus (le ``file_size`` déclaré peut mentir) et peut rendre des octets déjà lus."""
+
+    def __init__(self, raw, cap: int, name: str):
+        self.raw, self.cap, self.name, self.count = raw, cap, name, 0
+        self._pending = b""
+
+    def unread(self, data: bytes) -> None:
+        self._pending = data + self._pending
+        self.count -= len(data)
+
+    def read(self, n: int = -1) -> bytes:
+        if self._pending:
+            if n < 0 or n >= len(self._pending):
+                out, self._pending = self._pending, b""
+                if n < 0:
+                    return out + self.read(-1)
+                return out
+            out, self._pending = self._pending[:n], self._pending[n:]
+            return out
+        data = self.raw.read(n if n >= 0 else 1 << 20)
+        self.count += len(data)
+        if self.count > self.cap:
+            raise UnsafeArchive(f"membre trop volumineux : {self.name}")
+        if n < 0 and data:
+            return data + self.read(-1)
+        return data
+
+    def close(self) -> None:
+        self.raw.close()
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, *_exc) -> None:
+        self.close()
+
+
 class SafeZip:
     """Accès en lecture à un ZIP avec plafonds de taille et recherche insensible à la casse."""
 
@@ -344,6 +382,16 @@ class SafeZip:
             return self.read(name)
         except KeyError:
             return None
+
+    def stream(self, name: str):
+        """Flux de lecture d'un membre, sans le charger en mémoire ; lève UnsafeArchive au-delà du plafond de taille."""
+        real = self.resolve(name)
+        if real is None:
+            raise KeyError(name)
+        info = self._index[real]
+        if info.file_size > self.max_member:
+            raise UnsafeArchive(f"membre trop volumineux : {real} ({info.file_size} o)")
+        return _CappedStream(self.zf.open(info), self.max_member, real)
 
     def size(self, name: str) -> int:
         real = self.resolve(name)

@@ -24,7 +24,7 @@ from .util import Rels, SafeZip, UnsafeXML, clean_text, esc_inline, local, slugi
 SS = NS["x"]
 T = lambda tag: "{%s}%s" % (SS, tag)  # noqa: E731
 _STRICT_SS = b"http://purl.oclc.org/ooxml/spreadsheetml/main"
-MAX_CELLS = 3_000_000
+MAX_CELLS = 600_000      # cellules gardées en mémoire pour le Markdown ; la suite n'alimente que le CSV complet
 
 _BUILTIN_FMT = {
     0: "General", 1: "0", 2: "0.00", 3: "#,##0", 4: "#,##0.00", 9: "0%", 10: "0.00%", 11: "0.00E+00",
@@ -37,14 +37,24 @@ _DATE_IDS = set(range(14, 18)) | set(range(27, 37)) | set(range(50, 59)) | {22}
 _TIME_IDS = {18, 19, 20, 21, 45, 46, 47}
 
 
+_REF = re.compile(r"([A-Za-z]+)(\d+)")
+_COLS: Dict[str, int] = {}
+_C, _V, _F, _IS, _ROW = T("c"), T("v"), T("f"), T("is"), T("row")
+_MERGE, _LINK, _DRAWING, _TEXT = T("mergeCell"), T("hyperlink"), T("drawing"), T("t")
+
+
 def col_index(ref: str) -> Tuple[int, int]:
     """« AB12 » → (ligne 12, colonne 28), indices à partir de 1."""
-    m = re.match(r"([A-Za-z]+)(\d+)", ref)
+    m = _REF.match(ref)
     if not m:
         return 0, 0
-    col = 0
-    for ch in m.group(1).upper():
-        col = col * 26 + (ord(ch) - 64)
+    letters = m.group(1)
+    col = _COLS.get(letters)
+    if col is None:
+        col = 0
+        for ch in letters.upper():
+            col = col * 26 + (ord(ch) - 64)
+        _COLS[letters] = col
     return int(m.group(2)), col
 
 
@@ -111,6 +121,7 @@ class XlsxConverter:
         self.kinds: List[Tuple[str, int]] = []
         self.date1904 = False
         self.string_src: List[str] = []
+        self.src_chars = 0
         self.truncated = False
         self.formulas_missing = 0
         self.sheet_parts: Dict[str, str] = {}
@@ -120,7 +131,19 @@ class XlsxConverter:
         return load_xml(self.zf, name)
 
     def _iter(self, part: str):
-        """iterparse sur une partie (fin de balise), sans construire l'arbre complet."""
+        """iterparse sur une partie (fin de balise), sans construire l'arbre complet.
+
+        Les grandes parties (feuilles de centaines de Mo) sont lues en flux. Le prologue est inspecté d'abord : une
+        déclaration DOCTYPE/ENTITY doit précéder l'élément racine, donc si la racine apparaît sans DOCTYPE dans les
+        premiers Ko, aucune entité n'est possible ; sinon on retombe sur la lecture complète (et son contrôle).
+        """
+        if self.zf.size(part) > 8 << 20:
+            stream = self.zf.stream(part)
+            head = stream.read(65536)
+            if b"<!DOCTYPE" not in head and b"<!ENTITY" not in head and b"<worksheet" in head and _STRICT_SS not in head[:2048]:
+                stream.unread(head)
+                return ET.iterparse(stream, events=("end",))
+            stream.close()
         data = self.zf.read(part)
         if b"<!ENTITY" in data:
             raise UnsafeXML("entité XML refusée")
@@ -222,12 +245,16 @@ class XlsxConverter:
         writer = csv.writer(csv_buf, lineterminator="\n")
         keep_csv = True
         last_csv_row = 0
+        last_row = 0
         for _ev, el in self._iter(part):
             tag = el.tag
-            if tag == T("row"):
-                r_idx = int(el.get("r", "0") or 0) or (max(rows) + 1 if rows else 1)
+            if tag == _ROW:
+                r_idx = int(el.get("r", "0") or 0) or (last_row + 1)
+                last_row = r_idx
                 cells: Dict[int, str] = {}
-                for c in el.findall("x:c", NS):
+                for c in el:
+                    if c.tag != _C:
+                        continue
                     ref = c.get("r", "")
                     r_i, c_i = col_index(ref) if ref else (r_idx, len(cells) + 1)
                     text = self.cell_value(c)
@@ -250,12 +277,12 @@ class XlsxConverter:
                         if csv_buf.tell() > 200 << 20:
                             keep_csv = False
                 el.clear()
-            elif tag == T("mergeCell"):
+            elif tag == _MERGE:
                 a, _, b = (el.get("ref") or "").partition(":")
                 if b:
                     (r0, c0), (r1, c1) = col_index(a), col_index(b)
                     merges.append((r0, c0, r1, c1))
-            elif tag == T("hyperlink"):
+            elif tag == _LINK:
                 ref, rid = el.get("ref", ""), el.get("{%s}id" % NS["r"])
                 if rid and rels.is_external(rid):
                     url = rels.target(rid) or ""
@@ -265,7 +292,7 @@ class XlsxConverter:
                         for rr in range(r0, r1 + 1):
                             for cc in range(c0, c1 + 1):
                                 links[(rr, cc)] = url
-            elif tag == T("drawing"):
+            elif tag == _DRAWING:
                 drawing_rid = el.get("{%s}id" % NS["r"])
         if merges:
             self.apply_merges(rows, merges)
@@ -304,14 +331,20 @@ class XlsxConverter:
 
     def cell_value(self, c: ET.Element) -> str:
         t = c.get("t", "n")
-        v = c.find("x:v", NS)
-        f = c.find("x:f", NS)
+        v = f = is_ = None
+        for ch in c:                      # un seul passage : find() avec espaces de noms coûte cher sur des millions de cellules
+            tg = ch.tag
+            if tg == _V:
+                v = ch
+            elif tg == _F:
+                f = ch
+            elif tg == _IS:
+                is_ = ch
         raw = v.text if v is not None and v.text is not None else None
         if t == "inlineStr":
-            is_ = c.find("x:is", NS)
-            txt = clean_text("".join((x.text or "") for x in is_.iter(T("t")))) if is_ is not None else ""
+            txt = clean_text("".join((x.text or "") for x in is_.iter(_TEXT))) if is_ is not None else ""
             if txt:
-                self.string_src.append(txt)
+                self.note_text(txt)
             return txt
         if raw is None:
             if f is not None and (f.text or "").strip():
@@ -324,12 +357,12 @@ class XlsxConverter:
             except (ValueError, IndexError):
                 return ""
             if txt:
-                self.string_src.append(txt)
+                self.note_text(txt)
             out = txt
         elif t == "str":
             out = clean_text(raw)
             if out:
-                self.string_src.append(out)
+                self.note_text(out)
         elif t == "b":
             out = "TRUE" if raw.strip() in ("1", "true") else "FALSE"
         elif t == "e":
@@ -341,6 +374,14 @@ class XlsxConverter:
         if f is not None and self.opts.formulas and (f.text or "").strip():
             out = f"{out} (={f.text.strip()})"
         return esc_cell_text(out) if t in ("s", "str", "inlineStr") else out
+
+    def note_text(self, txt: str) -> None:
+        """Texte des cellules pour le contrôle qualité ; abandonné sur les très grandes feuilles (sortie tronquée de toute façon)."""
+        if self.src_chars <= 8_000_000:
+            self.string_src.append(txt)
+            self.src_chars += len(txt)
+        else:
+            self.truncated = True
 
     def number(self, raw: str, style: int) -> str:
         kind, dec = self.kinds[style] if 0 <= style < len(self.kinds) else ("number", 0)

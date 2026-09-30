@@ -40,7 +40,7 @@ to-markdown/
 │       ├── fmt_legacy / fmt_binary ← .doc/.xls/.ppt (LibreOffice, sinon lecteurs natifs)
 │       ├── quality / textflow   ← notes de qualité, remise en paragraphes
 │       └── cli / writer / check / chunk / doctor / preview   ← sorties, rapport, index, découpage
-└── tests/                       ← 130 tests (fixtures construites à la main, sans dépendance)
+└── tests/                       ← plus de 130 tests (fixtures construites à la main, sans dépendance)
 ```
 
 ## Tests

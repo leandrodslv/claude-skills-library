@@ -153,6 +153,30 @@ class Tabular(Base):
         md = self.md(self.write("obj.json", json.dumps({"name": "cfg", "server": {"port": 8080}})))
         self.assertMd(md, "```json", '"port": 8080')
 
+    def test_very_large_json_array_is_streamed_with_bounded_memory(self):
+        from unittest import mock
+        from mdconv import fmt_data
+        items = [{"id": i, "note": 'texte avec ] , } et "guillemets" \\ ' + str(i), "sub": {"k": [i, i + 1]}} for i in range(3000)]
+        p = self.write("gros.json", json.dumps(items, ensure_ascii=False, indent=1))
+        # seuil et taille de bloc minuscules : force la lecture en flux et les éléments coupés entre deux blocs
+        with mock.patch.object(fmt_data, "BIG_JSON", 1000), mock.patch.object(fmt_data, "_CHUNK", 257):
+            out = self.conv(p, table_rows=10)
+        self.assertMd(out.body, "3000 enregistrement(s)", "| id | note | sub.k |", "| 9 | texte avec ] , } et \"guillemets\"", "| [9,10] |",
+                      "2990 enregistrement(s) de plus")
+        self.assertNotMd(out.body, "| 10 |")
+        self.assertTrue(any("lecture en flux" in w for w in out.ctx.warnings))
+        with mock.patch.object(fmt_data, "BIG_JSON", 1000), mock.patch.object(fmt_data, "_CHUNK", 257):
+            bad = self.conv(self.write("casse.json", json.dumps(items)[:-40] + "}}}"))
+        self.assertEqual(bad.status, "unsupported")
+
+    def test_very_large_jsonl_is_streamed(self):
+        from unittest import mock
+        from mdconv import fmt_data
+        lines = "\n".join(json.dumps({"a": i, "b": "x" * (i % 7)}) for i in range(2500))
+        with mock.patch.object(fmt_data, "BIG_JSON", 1000):
+            out = self.conv(self.write("gros.jsonl", lines + "\n"), table_rows=5)
+        self.assertMd(out.body, "2500 enregistrement(s)", "| a | b |", "2495 enregistrement(s) de plus")
+
     def test_jsonl(self):
         md = self.md(self.write("l.jsonl", '{"a":1,"b":"x"}\n{"a":2,"b":"y"}\n'))
         self.assertMd(md, "| a | b |", "| 1 | x |", "| 2 | y |")

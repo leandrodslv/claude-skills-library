@@ -16,7 +16,7 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from .core import Protected, Unsupported
 
-MAX_PAGES = 400
+MAX_PAGES = 5000
 MAX_STREAM = 256 << 20
 
 
