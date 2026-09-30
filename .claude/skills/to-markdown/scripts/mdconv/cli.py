@@ -299,7 +299,18 @@ def _progress(i: int, n: int, e: Dict[str, Any], quiet: bool) -> None:
     print(f"[{i:>{len(str(n))}}/{n}] [{tag}] {e['source']}{extra}", file=sys.stderr, flush=True)
 
 
+def _utf8_console() -> None:
+    """Sorties standard en UTF-8 : sous Windows (ou avec LANG=C) une console cp1252 planterait sur « → », « ✓ » ou « ≈ »,
+    et le Markdown envoyé sur la sortie standard (-o -) doit être en UTF-8 quelle que soit la machine."""
+    for stream in (sys.stdout, sys.stderr):
+        try:
+            stream.reconfigure(encoding="utf-8", errors="replace")  # type: ignore[union-attr]
+        except (AttributeError, ValueError, OSError):
+            pass
+
+
 def main(argv: Optional[List[str]] = None) -> int:
+    _utf8_console()
     parser = build_parser()
     args = parser.parse_args(argv)
     if args.doctor:

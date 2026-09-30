@@ -15,7 +15,7 @@ Tout se passe en local : aucun envoi de données, aucun accès réseau, macros j
 - « Convertis / transforme / mets en Markdown », « mes entrants », « prépare ces documents pour l'IA / pour un RAG ».
 - Un autre skill ou une autre étape a besoin du contenu d'un document binaire.
 
-Ne pas l'utiliser pour : un fichier déjà en `.md`/`.txt`/code (le lire directement) ; une page web par URL (WebFetch ou le skill `read`) ; **créer ou modifier** un `.docx/.pptx/.xlsx` (c'est l'autre sens).
+Ne pas l'utiliser pour : un fichier déjà en `.md`/`.txt`/code (le lire directement) ; une page web par URL (WebFetch ou le skill `read`) ; **créer ou modifier** un `.docx/.pptx/.xlsx` (c'est l'autre sens). Un seul PDF court ou une seule image à consulter ponctuellement : l'outil Read suffit — to-markdown apporte de la valeur dès qu'il y a de l'Office, plusieurs fichiers, un dossier, un texte à garder, des tableaux à ne pas déformer, un PDF long ou scanné.
 
 ## Démarrage rapide
 
@@ -29,7 +29,7 @@ python3 <skill>/scripts/convert.py --doctor                        # ce que cett
 python3 <skill>/scripts/convert.py --check md/                     # vérifie un dossier converti
 ```
 
-Relancer est sans risque : les fichiers inchangés sont ignorés (cache incrémental, `--force` pour tout refaire), et un dossier de sortie placé dans le dossier d'entrée n'est pas reconverti.
+Relancer est sans risque : les fichiers inchangés sont ignorés (cache incrémental, `--force` pour tout refaire), et un dossier de sortie placé dans le dossier d'entrée n'est pas reconverti. **Boîte d'entrée permanente** : `convert.py entrants/ -o entrants_md/` à chaque arrivée de nouveaux fichiers — seuls les nouveaux ou modifiés sont convertis.
 
 ## Marche à suivre
 

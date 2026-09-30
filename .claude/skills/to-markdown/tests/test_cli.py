@@ -2,6 +2,7 @@
 import contextlib
 import io
 import json
+import os
 import unittest
 import zipfile
 from pathlib import Path
@@ -210,6 +211,19 @@ class Cli(Base):
         self.assertIn("aucun problème détecté", text)
         combined = (out / "combined.md").read_text(encoding="utf-8")
         self.assertIn("![Schéma](Compte-rendu-3-final_assets/img-01.png)", combined)
+
+    def test_output_is_utf8_even_when_the_console_encoding_is_not(self):
+        import subprocess
+        import sys
+        f = fx.make_docx(self.tmp / "acc.docx", fx.para("Élève → ≈ 3 € ‹ok›"))
+        script = Path(__file__).resolve().parent.parent / "scripts" / "convert.py"
+        env = {**os.environ, "PYTHONIOENCODING": "cp1252", "PYTHONUTF8": "0"}
+        done = subprocess.run([sys.executable, str(script), "--no-external", "-o", "-", "--frontmatter", "none", str(f)], capture_output=True, env=env)
+        self.assertEqual(done.returncode, 0, done.stderr.decode("utf-8", "replace"))
+        self.assertEqual(done.stdout.decode("utf-8").strip(), "Élève → ≈ 3 € ‹ok›")
+        doctor = subprocess.run([sys.executable, str(script), "--doctor"], capture_output=True, env=env)
+        self.assertEqual(doctor.returncode, 0, doctor.stderr.decode("utf-8", "replace"))
+        self.assertIn("✓", doctor.stdout.decode("utf-8"))
 
     def test_missing_input_and_empty_folder(self):
         _o, err = self.run_cli(self.tmp / "nexiste-pas", expect=1)
