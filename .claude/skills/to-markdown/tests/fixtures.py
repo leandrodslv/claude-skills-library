@@ -23,9 +23,14 @@ W = ('xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" '
 XML = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n'
 
 
-def png(w: int = 40, h: int = 40, rgb: Tuple[int, int, int] = (200, 30, 30)) -> bytes:
+def png(w: int = 40, h: int = 40, rgb: Tuple[int, int, int] = (200, 30, 30), noisy: bool = False) -> bytes:
     """PNG valide (RVB, unicolore) ; assez gros pour passer le filtre « image décorative »."""
-    raw = b"".join(b"\x00" + bytes(rgb) * w for _ in range(h))
+    if noisy:
+        import random
+        rnd = random.Random(7)
+        raw = b"".join(b"\x00" + bytes(rnd.randrange(256) for _ in range(3 * w)) for _ in range(h))
+    else:
+        raw = b"".join(b"\x00" + bytes(rgb) * w for _ in range(h))
 
     def chunk(t: bytes, d: bytes) -> bytes:
         return struct.pack(">I", len(d)) + t + d + struct.pack(">I", zlib.crc32(t + d) & 0xFFFFFFFF)

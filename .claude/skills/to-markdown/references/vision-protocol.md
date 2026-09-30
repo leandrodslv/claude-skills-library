@@ -51,7 +51,7 @@ Beaucoup d'éléments (plus d'une trentaine) : commence par ceux dont dépend la
 
 ## 4. Autres images à regarder (sans marqueur)
 
-Les images d'un Word, d'un HTML, d'un EPUB… sont **extraites et référencées** (`![texte alternatif](x_assets/img-01.png)`). Quand leur contenu compte pour la tâche (graphique collé en image, capture, schéma) et que le texte alternatif est vide ou vague, ouvre-les : l'outil ajoute alors l'avertissement « N image(s) sans texte alternatif ». Une fois lue, complète le texte alternatif ou ajoute une ligne de description sous l'image.
+Les images d'un Word, d'un HTML, d'un EPUB… sont **extraites et référencées** (`![texte alternatif](x_assets/img-01.png)`). Quand leur contenu compte pour la tâche (graphique collé en image, capture, schéma) et que le texte alternatif est vide ou vague, ouvre-les : l'outil ajoute alors l'avertissement « N image(s) sans texte alternatif » et, pour les grandes images (probables graphiques, schémas ou captures), les ajoute lui-même à la liste « à lire » (`vision_needed`, statut `needs_vision`). Une fois lue, complète le texte alternatif ou ajoute une ligne de description sous l'image.
 
 ## 5. Vérifier un texte OCR
 

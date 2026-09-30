@@ -138,6 +138,23 @@ class DocxImages(Base):
         self.assertTrue(any("1 image(s) sans texte alternatif" in w for w in out.ctx.warnings), out.ctx.warnings)
 
 
+class DocxBigImages(Base):
+    def test_large_unlabeled_image_is_added_to_the_reading_list(self):
+        body = fx.para(fx.drawing("rId7", ""))
+        out = self.conv(fx.make_docx(self.tmp / "big.docx", body, media={"pic.png": fx.png(300, 200, noisy=True)}, rels=fx.image_rel("rId7", "pic.png")))
+        self.assertEqual(out.status, "needs_vision")
+        self.assertIn("graphique", out.ctx.vision[0].reason)
+
+
+class DocxOle(Base):
+    def test_embedded_object_is_extracted_as_an_attachment(self):
+        body = fx.para("Voir : " + '<w:r><w:object><v:shape xmlns:v="urn:schemas-microsoft-com:vml"/><o:OLEObject xmlns:o="urn:schemas-microsoft-com:office:office" r:id="rId9"/></w:object></w:r>')
+        rel = '<Relationship Id="rId9" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/package" Target="embeddings/tableau.xlsx"/>'
+        out = self.conv(fx.make_docx(self.tmp / "ole.docx", body, rels=rel, extra_parts={"word/embeddings/tableau.xlsx": "PK-fake"}))
+        self.assertMd(out.body, "[objet incorporé : tableau.xlsx](assets/tableau.xlsx)")
+        self.assertIn("tableau.xlsx", out.assets)
+
+
 class Pptx(Base):
     def test_slides_follow_presentation_order_not_file_order(self):
         s1 = fx.slide_xml(fx.sp(2, "T", ["Premier"], ph="title"))
@@ -205,8 +222,8 @@ class Pptx(Base):
                     f'<a:prstGeom prst="rightArrow"/></p:spPr></p:sp>')
         shapes = fx.sp(2, "T", ["Flux"], ph="title") + "".join(box(10 + i, f"Étape {i}", i * 900000) for i in range(6)) + "".join(arrow(30 + i, i * 900000 + 800000) for i in range(3))
         out = self.conv(fx.make_pptx(self.tmp / "free.pptx", [fx.slide_xml(shapes)]))
-        self.assertMd(out.body, "Étape 0", "Étape 5")
-        self.assertTrue(any("schéma de 9 formes dont 3 flèches/lignes sans connecteurs" in w for w in out.ctx.warnings), out.ctx.warnings)
+        self.assertMd(out.body, "Étape 0", "Étape 5", "```mermaid", "-->")
+        self.assertTrue(any("schéma reconstitué" in w for w in out.ctx.warnings), out.ctx.warnings)
 
     def test_reading_order_is_spatial(self):
         shapes = (fx.sp(2, "T", ["Titre"], ph="title") + fx.sp(3, "B", ["En bas"], off=(0, 5000000)) + fx.sp(4, "A", ["Au milieu"], off=(0, 2000000)))

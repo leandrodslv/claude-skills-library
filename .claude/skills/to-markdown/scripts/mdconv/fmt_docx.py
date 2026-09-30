@@ -848,8 +848,26 @@ class DocxConverter:
         return spans
 
     # -- images, graphiques, zones de texte -------------------------------
+    def _ole(self, el: ET.Element) -> List[Span]:
+        """Objet incorporé (feuille Excel, document…) : fichier extrait en annexe, à convertir à part."""
+        out: List[Span] = []
+        for ole in el.iter():
+            if local(ole.tag) != "OLEObject":
+                continue
+            tgt = self.rels.target(ole.get(R("id")))
+            data = self.zf.read_opt(tgt) if tgt else None
+            if not data:
+                continue
+            name = tgt.rsplit("/", 1)[-1]
+            link = self.ctx.add_file(name, data)
+            out.append(Span("raw", f"[objet incorporé : {name}]({link})"))
+            self.ctx.warn(f"objet incorporé « {name} » extrait dans les annexes (non converti : relancer to-markdown dessus s'il compte)")
+        return out
+
     def _drawing(self, el: ET.Element, f: Fmt) -> List[Span]:
         out: List[Span] = []
+        if el.tag == W("object"):
+            out.extend(self._ole(el))
         for blip in el.iter(A("blip")):
             rid = blip.get(R("embed")) or blip.get(R("link"))
             alt = ""

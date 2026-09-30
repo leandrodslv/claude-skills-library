@@ -59,6 +59,8 @@ class PptxConverter:
         self.pres_part = "ppt/presentation.xml"
         self._geom_cache: Dict[str, Dict[Tuple[str, str], Tuple[float, float, float, float]]] = {}
         self.shape_stats = {"shapes": 0, "arrows": 0}
+        self.slide_boxes: List[tuple] = []
+        self.slide_arrows: List[tuple] = []
         self._bullets_cache: Dict[str, bool] = {}
         self.src_parts: List[str] = []
         self.slide_w = 12192000.0
@@ -135,6 +137,8 @@ class PptxConverter:
         tree = root.find("p:cSld/p:spTree", NS)
         counter = [0]
         self.shape_stats = {"shapes": 0, "arrows": 0}
+        self.slide_boxes: List[tuple] = []
+        self.slide_arrows: List[tuple] = []
         if tree is not None:
             self.walk(tree, rels, layout, (0.0, 0.0, 1.0, 1.0), items, connectors, shapes_text, counter, num)
         # titre : placeholder, sinon plus gros texte proche du haut de la diapositive
@@ -162,6 +166,8 @@ class PptxConverter:
         parts = [head]
         parts.extend(i.md for i in body_items if i.md.strip())
         graph = self.diagram(connectors, shapes_text)
+        if not graph:
+            graph = self.infer_diagram(shapes_text)
         if graph:
             parts.append(graph)
         elif self.shape_stats["shapes"] >= 8 and self.shape_stats["arrows"] >= 2:
@@ -332,6 +338,21 @@ class PptxConverter:
         tx = sp.find("p:txBody", NS)
         x, y = self.geometry(sp, layout, ph_type, ph_idx, tf)
         counter[0] += 1
+        xf = sp.find("p:spPr/a:xfrm", NS)
+        ext = xf.find("a:ext", NS) if xf is not None else None
+        bw = float(ext.get("cx", 0)) * tf[2] if ext is not None else 0.0
+        bh = float(ext.get("cy", 0)) * tf[3] if ext is not None else 0.0
+        if ph is None and x >= 0 and bw and bh:          # boîtes et flèches pour reconstituer un schéma sans connecteurs
+            g0 = sp.find("p:spPr/a:prstGeom", NS)
+            pr = g0.get("prst", "") if g0 is not None else ""
+            ln = sp.find("p:spPr/a:ln", NS)
+            tail = ln is not None and ln.find("a:tailEnd", NS) is not None and ln.find("a:tailEnd", NS).get("type", "none") != "none"
+            head = ln is not None and ln.find("a:headEnd", NS) is not None and ln.find("a:headEnd", NS).get("type", "none") != "none"
+            is_arrow = "rrow" in pr or (pr in ("line", "straightConnector1") and (tail or head))
+            if is_arrow:
+                self.slide_arrows.append((x, y, bw, bh, pr, xf.get("flipH") == "1", xf.get("flipV") == "1", tail, head))
+            elif sp.find("p:txBody", NS) is not None:
+                self.slide_boxes.append((sid, x, y, bw, bh))
         if ph is None:                                   # statistiques « schéma dessiné » de la diapositive
             geom = sp.find("p:spPr/a:prstGeom", NS)
             prst = geom.get("prst", "") if geom is not None else ("custom" if sp.find("p:spPr/a:custGeom", NS) is not None else "")
@@ -592,6 +613,52 @@ class PptxConverter:
             arrow = "<-->" if (c.head and c.tail) else ("<--" if c.head else ("-->" if c.tail else "---"))
             lines.append(f"    {node(c.start)} {arrow} {node(c.end)}")
         return "**Diagramme (connecteurs de la diapositive) :**\n\n```mermaid\n" + "\n".join(lines) + "\n```"
+
+    def infer_diagram(self, shapes_text: Dict[str, str]) -> str:
+        """Schéma de formes libres : chaque flèche relie la boîte la plus proche de sa queue à celle la plus proche de sa pointe."""
+        boxes = [b for b in self.slide_boxes if shapes_text.get(b[0])]
+        if len(boxes) < 2 or len(self.slide_arrows) < 1:
+            return ""
+
+        def nearest(px: float, py: float) -> Optional[str]:
+            best, bd = None, 1e18
+            for sid, x, y, w, h in boxes:
+                dx = max(x - px, 0, px - (x + w))
+                dy = max(y - py, 0, py - (y + h))
+                d = (dx * dx + dy * dy) ** 0.5
+                if d < bd:
+                    best, bd = sid, d
+            return best if bd <= 0.12 * self.slide_w else None
+
+        edges = []
+        for x, y, w, h, prst, fh, fv, tail, head in self.slide_arrows:
+            cx, cy = x + w / 2, y + h / 2
+            horiz = w >= h
+            if prst in ("line", "straightConnector1"):
+                sx, sy = (x + w if fh else x), (y + h if fv else y)
+                ex, ey = (x if fh else x + w), (y if fv else y + h)
+                a, b = ((sx, sy), (ex, ey)) if tail or not head else ((ex, ey), (sx, sy))
+            elif "leftArrow" in prst or "upArrow" in prst:
+                a, b = ((x + w, cy), (x, cy)) if "left" in prst else ((cx, y + h), (cx, y))
+            else:
+                a, b = ((x, cy), (x + w, cy)) if horiz else ((cx, y), (cx, y + h))
+            if "leftRight" in prst or "upDown" in prst:
+                continue
+            src, dst = nearest(*a), nearest(*b)
+            if src and dst and src != dst and (src, dst) not in edges:
+                edges.append((src, dst))
+        if len(edges) < 2:
+            return ""
+        from .fmt_diagram import Graph, to_mermaid
+
+        g = Graph()
+        for sid, _x, _y, _w, _h in boxes:
+            g.nodes[sid] = shapes_text[sid]
+        g.edges = [(a, b, "", "->") for a, b in edges]
+        used = {x for e in edges for x in e}
+        g.nodes = {k: v for k, v in g.nodes.items() if k in used}
+        self.ctx.warn(f"diapositive : schéma reconstitué d'après la position des formes et des flèches ({len(edges)} liens) — à vérifier (--render)")
+        return "**Diagramme (déduit de la position des formes) :**\n\n" + to_mermaid(g)
 
     # -- notes et commentaires ------------------------------------------
     def notes(self, rels: Rels) -> str:

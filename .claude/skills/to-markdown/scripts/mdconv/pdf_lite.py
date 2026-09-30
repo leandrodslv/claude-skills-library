@@ -658,6 +658,10 @@ class Interp:
     def __init__(self, doc: PdfDoc, resources: Dict[str, Any], depth: int = 0, ctm=_IDENT):
         self.doc, self.res, self.depth = doc, resources if isinstance(resources, dict) else {}, depth
         self.frags: List[Frag] = []
+        self.segs: List[Tuple[float, float, float, float]] = []      # traits dessinés (bordures de tableaux), coordonnées de page
+        self._path: List[Tuple[float, float, float, float, bool]] = []
+        self._cur: Tuple[float, float] = (0.0, 0.0)
+        self._start: Tuple[float, float] = (0.0, 0.0)
         self.unreadable = 0
         self.ctm = ctm
         self.stack: List[Tuple] = []
@@ -711,6 +715,35 @@ class Interp:
                 (self.ctm, self.tm, self.tlm, self.font, self.size, self.leading, self.tc, self.tw, self.tz, self.rise) = self.stack.pop()
         elif op == "cm" and len(a) >= 6:
             self.ctm = _mul((f(0), f(1), f(2), f(3), f(4), f(5)), self.ctm)
+        elif op == "m" and len(a) >= 2:
+            self._cur = self._start = self._pt(f(0), f(1))
+        elif op == "l" and len(a) >= 2:
+            p2 = self._pt(f(0), f(1))
+            self._path.append((*self._cur, *p2, False))
+            self._cur = p2
+        elif op == "h":
+            self._path.append((*self._cur, *self._start, False))
+            self._cur = self._start
+        elif op == "re" and len(a) >= 4:
+            x, y, w, h = f(0), f(1), f(2), f(3)
+            if abs(h) <= 3 or abs(w) <= 3:                      # rectangle plat rempli = trait
+                if abs(h) <= 3:
+                    p0, p1 = self._pt(x, y + h / 2), self._pt(x + w, y + h / 2)
+                else:
+                    p0, p1 = self._pt(x + w / 2, y), self._pt(x + w / 2, y + h)
+                self._path.append((*p0, *p1, True))
+            else:
+                c = [self._pt(x, y), self._pt(x + w, y), self._pt(x + w, y + h), self._pt(x, y + h)]
+                for i in range(4):
+                    self._path.append((*c[i], *c[(i + 1) % 4], False))
+        elif op in ("S", "s", "B", "B*", "b", "b*"):
+            self.segs.extend(seg[:4] for seg in self._path)
+            self._path = []
+        elif op in ("f", "F", "f*"):
+            self.segs.extend(seg[:4] for seg in self._path if seg[4])
+            self._path = []
+        elif op == "n":
+            self._path = []
         elif op == "BT":
             self.tm = self.tlm = _IDENT
         elif op == "Tf" and len(a) >= 2:
@@ -766,7 +799,12 @@ class Interp:
                     sub.ctm = _mul(tuple(float(self.doc.get(x)) for x in mat), self.ctm)
                 sub.run(self.doc.decode(st))
                 self.frags.extend(sub.frags)
+                self.segs.extend(sub.segs)
                 self.unreadable += sub.unreadable
+
+    def _pt(self, x: float, y: float) -> Tuple[float, float]:
+        c = self.ctm
+        return c[0] * x + c[2] * y + c[4], c[1] * x + c[3] * y + c[5]
 
     def _pos(self) -> Tuple[float, float]:
         m = _mul(self.tm, self.ctm)
@@ -797,6 +835,11 @@ class Interp:
             return ""
         sizes = sorted(f.size for f in frags if f.size)
         med = sizes[len(sizes) // 2] if sizes else 10.0
+        grids = _grid_tables(self.segs, frags, med)
+        for gi, (bbox, _rows) in enumerate(grids):
+            inside = {id(f) for f in frags if bbox[0] - 2 <= f.x <= bbox[2] + 2 and bbox[1] - 2 <= f.y <= bbox[3] + 2}
+            frags = [f for f in frags if id(f) not in inside]
+            frags.append(Frag(bbox[0], bbox[3] - med, 1.0, med, f"⟪TBL{gi}⟫"))
         ordered = sorted(frags, key=lambda f: (-round(f.y / max(med * 0.35, 1.0)), f.x))
         lines: List[List[Frag]] = []
         for f in ordered:
@@ -844,12 +887,87 @@ class Interp:
                     out_lines.append((_HEAD % head if head else "") + text)
                 prev_y, prev_head = y, head
             out_lines.append("")
+        for gi, (_bbox, rows) in enumerate(grids):
+            mark = f"⟪TBL{gi}⟫"
+            block = [_ROW + _CELL.join(r) for r in rows]
+            out_lines = [x for ln in out_lines for x in (["", *block, ""] if mark in ln else [ln])]
         return "\n".join(out_lines)
 
 
 _HEAD = "⟪H%d⟫"
 _ROW = "⟪R⟫"
 _CELL = "⟪|⟫"
+
+
+def _grid_tables(segs: List[Tuple[float, float, float, float]], frags: List[Frag], med: float) -> List[Tuple[Tuple[float, float, float, float], List[List[str]]]]:
+    """Tableaux délimités par des traits dessinés : (boîte, lignes de cellules). Cellules fusionnées verticalement : texte répété."""
+    hs, vs = [], []
+    for x0, y0, x1, y1 in segs:
+        if abs(y0 - y1) <= 1.5 and abs(x0 - x1) >= med:
+            hs.append([(y0 + y1) / 2, min(x0, x1), max(x0, x1)])
+        elif abs(x0 - x1) <= 1.5 and abs(y0 - y1) >= med:
+            vs.append([(x0 + x1) / 2, min(y0, y1), max(y0, y1)])
+    if len(hs) < 2 or len(vs) < 2 or len(hs) + len(vs) > 4000:
+        return []
+    lines = [("h", *h) for h in hs] + [("v", *v) for v in vs]
+    parent = list(range(len(lines)))
+
+    def find(i: int) -> int:
+        while parent[i] != i:
+            parent[i] = parent[parent[i]]
+            i = parent[i]
+        return i
+
+    tol = 2.0
+    for i, (ki, ai, bi, ci) in enumerate(lines):
+        for j in range(i + 1, len(lines)):
+            kj, aj, bj, cj = lines[j]
+            if ki == kj:
+                continue
+            h, v = (lines[i], lines[j]) if ki == "h" else (lines[j], lines[i])
+            if h[2] - tol <= v[1] <= h[3] + tol and v[2] - tol <= h[1] <= v[3] + tol:
+                parent[find(i)] = find(j)
+    clusters: Dict[int, List[int]] = {}
+    for i in range(len(lines)):
+        clusters.setdefault(find(i), []).append(i)
+    out = []
+    for idx in clusters.values():
+        ch = [lines[i] for i in idx if lines[i][0] == "h"]
+        cv = [lines[i] for i in idx if lines[i][0] == "v"]
+        ys = sorted({round(h[1] / tol) * tol for h in ch}, reverse=True)
+        xs = sorted({round(v[1] / tol) * tol for v in cv})
+        if len(ys) < 2 or len(xs) < 2 or (len(ys) - 1) * (len(xs) - 1) < 2:
+            continue
+        bbox = (xs[0], ys[-1], xs[-1], ys[0])
+        cells = [[[] for _ in range(len(xs) - 1)] for _ in range(len(ys) - 1)]
+        for f in frags:
+            cx, cy = f.x + f.w / 2, f.y + f.size * 0.3
+            if not (bbox[0] - 2 <= cx <= bbox[2] + 2 and bbox[1] - 2 <= cy <= bbox[3] + 2):
+                continue
+            c = next((k for k in range(len(xs) - 1) if cx < xs[k + 1] + 1), len(xs) - 2)
+            r = next((k for k in range(len(ys) - 1) if cy > ys[k + 1] - 1), len(ys) - 2)
+            cells[r][c].append(f)
+        rows: List[List[str]] = []
+        for r, row in enumerate(cells):
+            texts = []
+            for c, fr in enumerate(row):
+                fr.sort(key=lambda f: (-round(f.y / max(med * 0.5, 1)), f.x))
+                t, last_y = "", None
+                for f in fr:
+                    t += (" " if t and (last_y is None or abs(f.y - last_y) > med * 0.4 or not t.endswith(" ")) else "") + f.text.strip()
+                    last_y = f.y
+                texts.append(re.sub(r"\s+", " ", t).strip())
+            rows.append(texts)
+        for r in range(1, len(rows)):                      # fusion verticale : pas de trait entre deux lignes → texte du dessus répété
+            for c in range(len(xs) - 1):
+                if rows[r][c] == "" and rows[r - 1][c] and not any(
+                        abs(h[1] - ys[r]) <= 2 * tol and h[2] <= xs[c] + tol and h[3] >= xs[c + 1] - tol for h in ch):
+                    rows[r][c] = rows[r - 1][c]
+        rows = [r for r in rows if any(r)]
+        if len(rows) >= 2 and sum(1 for r in rows for c in r if c) >= 4:
+            out.append((bbox, rows))
+    out.sort(key=lambda t: -t[0][3])
+    return out
 
 
 def _cells(ln: List[Frag], med: float) -> List[Tuple[float, str]]:

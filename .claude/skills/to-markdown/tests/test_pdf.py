@@ -71,6 +71,19 @@ class NativePdf(Base):
         self.assertMd(md, "| Produit | Prix | Stock |", "| --- | --- | --- |", "| Stylo | 1,20 | 340 |", "| Gomme | 0,80 | 95 |", "Catalogue des fournitures")
         self.assertNotMd(md, "# Produit")
 
+    def test_ruled_table_with_merged_cells_is_rebuilt_from_drawn_lines(self):
+        xs, ys = [50, 200, 350, 500], [700, 670, 640, 610]
+        draw = b"0.5 w\n" + b"".join(f"{x} {ys[-1]} m {x} {ys[0]} l S\n".encode() for x in xs)
+        draw += b"".join(f"{xs[0]} {y} m {xs[-1]} {y} l S\n".encode() for y in (ys[0], ys[1], ys[3]))      # pas de trait en y=640 sous la 1re colonne : cellule fusionnée
+        draw += f"{xs[1]} {ys[2]} m {xs[3]} {ys[2]} l S\n".encode()
+        text = b"BT /F1 11 Tf\n"
+        for x, y, t in [(60, 680, "Region"), (210, 680, "T1"), (360, 680, "T2"), (60, 650, "Europe"), (210, 650, "10"), (360, 650, "12"),
+                        (210, 620, "20"), (360, 620, "22")]:
+            text += f"1 0 0 1 {x} {y} Tm ({t}) Tj\n".encode()
+        text += b"ET\n1 0 0 1 50 730 Tm BT /F1 12 Tf (Tableau des ventes) Tj ET"
+        md = self.md(fx.make_pdf(self.tmp / "grid.pdf", [draw + text], compress=False))
+        self.assertMd(md, "| Region | T1 | T2 |", "| Europe | 10 | 12 |", "| Europe | 20 | 22 |")
+
     def test_two_columns_are_read_column_by_column(self):
         left = [f"gauche {k:02d} " + " ".join(["mot"] * 6) for k in range(22)]
         right = [f"droite {k:02d} " + " ".join(["mot"] * 6) for k in range(22)]

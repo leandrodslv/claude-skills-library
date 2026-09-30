@@ -103,6 +103,24 @@ def front_matter(out: "Outcome", opts: Options, src: Path) -> str:
     return "\n".join(lines) + "\n\n"
 
 
+def _flag_informative_images(body: str, ctx: Ctx) -> None:
+    """Grandes images sans texte alternatif (graphique, schéma, capture collés en image) : ajoutées à la liste « à lire »."""
+    from .util import image_info
+
+    n = 0
+    for m in re.finditer(r"(?<!\\)!\[\]\(([^)\s]+)\)", body):
+        name = m.group(1).rsplit("/", 1)[-1]
+        a = ctx.assets.get(name)
+        if a is None or name.lower().endswith((".svg", ".emf", ".wmf")):
+            continue
+        fmt, w, h = image_info(a.data)
+        if w and h and min(w, h) >= 120 and max(w, h) >= 240 and len(a.data) >= 15_000:
+            ctx.need_vision("image", f"{ctx.assets_dir}/{name}", "image sans texte alternatif, peut-être un graphique ou un schéma à décrire")
+            n += 1
+            if n >= 12:
+                break
+
+
 OPT_IN_ENGINES = {"whisper"}  # lourds ou à modèles téléchargeables : jamais lancés sans demande explicite
 
 
@@ -229,6 +247,7 @@ def convert_to_memory(src: Path, opts: Options, rel: str = "", assets_dir: str =
         ctx.warn("structure Markdown : " + p)
     blind = len(re.findall(r"(?<!\\)!\[\]\(", body))      # image extraite sans texte alternatif : son contenu n'a pas été lu
     if blind:
+        _flag_informative_images(body, ctx)
         ctx.warn(f"{blind} image(s) sans texte alternatif (![](…)) : à ouvrir si leur contenu compte (schéma, capture, graphique)")
     for n in score.notes:
         ctx.warn(n)
