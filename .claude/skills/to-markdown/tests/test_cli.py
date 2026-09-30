@@ -196,6 +196,20 @@ class Cli(Base):
         self.assertEqual(levels["svg"], "natif")
         self.assertIn("capabilities", data)
 
+    def test_plan_lists_choices_before_converting(self):
+        d = self.tmp / "in"
+        d.mkdir()
+        (d / "a.txt").write_text("bonjour", encoding="utf-8")
+        (d / "son.mp3").write_bytes(b"ID3\x03\x00\x00\x00\x00\x00\x00" + b"x" * 64)
+        out, _ = self.run_cli("--plan", str(d), "--json")
+        plan = json.loads(out)
+        self.assertEqual(plan["fichiers"]["total"], 2)
+        self.assertEqual(plan["fichiers"]["formats"]["audio"], 1)
+        ids = {c["id"]: c for c in plan["choix"]}
+        self.assertIn("whisper", ids)
+        self.assertTrue(ids["whisper"]["bloquant"])
+        self.assertFalse((self.tmp / "markdown_output").exists())
+
     def test_special_characters_in_file_names_give_valid_links(self):
         d = self.tmp / "in"
         (d / "Sous dossier (v2)").mkdir(parents=True)

@@ -34,8 +34,9 @@ Relancer est sans risque : les fichiers inchangés sont ignorés (cache incréme
 ## Marche à suivre
 
 1. **Repérer les entrants.** `ls` du dossier ou du fichier ; ne devine rien sur le contenu. Choisis un dossier de sortie explicite (`-o md/` à côté des sources, ou celui que l'utilisateur demande) pour ne pas laisser de `markdown_output/` traîner.
-2. **Convertir** avec la commande ci-dessus. Première utilisation sur une machine, ou résultat décevant (`.doc/.ppt` anciens, PDF complexes, scans) : lance d'abord `--doctor` — il dit quels moteurs optionnels (LibreOffice, poppler, tesseract, pandoc, pymupdf4llm…) sont présents et quoi installer pour gagner en fidélité.
-3. **Lire le résumé** affiché en fin de commande (stderr) : nombre de fichiers par statut, éléments à lire visuellement, avertissements. Détail par fichier dans `md/_report.json` (statut, moteur, note de qualité, mots, avertissements, `vision_needed`). Statuts :
+2. **Proposer les choix AVANT de convertir.** Lance `convert.py --plan <entrées> [--json]` : il détecte les formats (sans rien convertir) et liste, pour ces fichiers précis, les outils optionnels utiles — installés ou absents, avec l'apport et la commande d'installation. Quand `a_proposer` n'est pas vide, **présente les choix à l'utilisateur et attends sa réponse** (AskUserQuestion si disponible) : installer tel outil lui-même puis relancer `--plan`, ou convertir tel quel. Un outil marqué `bloquant` (audio sans faster-whisper, Parquet sans pyarrow) veut dire que ces fichiers ne seront pas convertis sans lui. N'installe jamais rien toi-même sans son accord explicite ; `pymupdf4llm` : voir la section dédiée. `a_proposer` vide : enchaîne directement. `--doctor` donne la vue d'ensemble de la machine.
+3. **Convertir** avec la commande ci-dessus.
+4. **Lire le résumé** affiché en fin de commande (stderr) : nombre de fichiers par statut, éléments à lire visuellement, avertissements. Détail par fichier dans `md/_report.json` (statut, moteur, note de qualité, mots, avertissements, `vision_needed`). Statuts :
 
    | Statut | Sens | Que faire |
    |---|---|---|
@@ -45,9 +46,9 @@ Relancer est sans risque : les fichiers inchangés sont ignorés (cache incréme
    | `needs_vision` | du contenu est visuel (scan, image, schéma sans texte) | **étape 4** |
    | `unsupported` / `error` | format non géré, fichier chiffré/corrompu | lire le message : il propose une piste (exporter en PDF, retirer le mot de passe…) |
 
-4. **Traiter la lecture visuelle** (`needs_vision`, ou tout marqueur `> **[À COMPLÉTER : …]**` dans un `.md`). Pour chaque entrée de `vision_needed` du rapport : ouvre `path` avec l'outil Read (PNG d'une page/d'une image, ou PDF avec les pages indiquées), **décris ce que tu vois**, puis remplace le marqueur par ta transcription avec Edit. Suis `references/vision-protocol.md` (gabarits par type : scan, graphique → tableau de données, schéma → Mermaid, capture d'écran, photo) ; règle absolue : **ne rien inventer**, écrire `[illisible]` plutôt que deviner un chiffre ou un nom. Pour vérifier un diaporama chargé en schémas ou une mise en page complexe, ajoute `--render` : un PNG par page/diapositive est écrit dans le dossier d'assets (non inséré dans le Markdown).
-5. **Vérifier** : `convert.py --check md/` doit répondre « aucun problème détecté » (plus de marqueur `[À COMPLÉTER`, liens et images valides, pas de caractères illisibles, Markdown bien formé).
-6. **Livrer** : indique où sont les `.md` (et `INDEX.md`), ce qui a été converti, ce qui a demandé une lecture visuelle et ce qui reste limité. N'affiche pas des milliers de lignes de Markdown : ouvre seulement les fichiers utiles à la demande.
+5. **Traiter la lecture visuelle** (`needs_vision`, ou tout marqueur `> **[À COMPLÉTER : …]**` dans un `.md`). Pour chaque entrée de `vision_needed` du rapport : ouvre `path` avec l'outil Read (PNG d'une page/d'une image, ou PDF avec les pages indiquées), **décris ce que tu vois**, puis remplace le marqueur par ta transcription avec Edit. Suis `references/vision-protocol.md` (gabarits par type : scan, graphique → tableau de données, schéma → Mermaid, capture d'écran, photo) ; règle absolue : **ne rien inventer**, écrire `[illisible]` plutôt que deviner un chiffre ou un nom. Pour vérifier un diaporama chargé en schémas ou une mise en page complexe, ajoute `--render` : un PNG par page/diapositive est écrit dans le dossier d'assets (non inséré dans le Markdown).
+6. **Vérifier** : `convert.py --check md/` doit répondre « aucun problème détecté » (plus de marqueur `[À COMPLÉTER`, liens et images valides, pas de caractères illisibles, Markdown bien formé).
+7. **Livrer** : indique où sont les `.md` (et `INDEX.md`), ce qui a été converti, ce qui a demandé une lecture visuelle et ce qui reste limité. N'affiche pas des milliers de lignes de Markdown : ouvre seulement les fichiers utiles à la demande.
 
 ## Ce que tu peux attendre (et ne pas attendre)
 
@@ -72,6 +73,7 @@ Relancer est sans risque : les fichiers inchangés sont ignorés (cache incréme
 | OCR (PDF scannés, images) | `--ocr auto` (défaut) · `off` · `force` ; `--ocr-lang fra+eng` |
 | Comparer les moteurs | `--compare` (essaie tous les moteurs et affiche le score de chacun) · `--engines native,pandoc` |
 | Aperçus PNG pour vérifier à l'œil | `--render` |
+| Voir les choix avant de convertir | `--plan <entrées> [--json]` — analyse seule : formats trouvés, outils utiles installés ou absents, commandes d'installation |
 | Surveiller un dossier | `--watch` (`--interval 5`) — incompatible avec `--in-place` et `-o -` |
 | Lots | `-j 4` (processus), `--include '*.pdf'`, `--exclude 'brouillons/*'`, `--force`, `--json` |
 

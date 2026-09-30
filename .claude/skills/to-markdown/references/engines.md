@@ -41,7 +41,7 @@ Autres avertissements (informatifs, sans effet sur la note) : diapositives/feuil
 
 ## Installer des moteurs (rien n'est jamais installé automatiquement)
 
-`convert.py --doctor` teste chaque outil pour de vrai et affiche les commandes adaptées. Repères :
+`convert.py --plan <entrées>` propose, avant toute conversion, les outils utiles pour les fichiers réellement présents (installés ou non, avec l'apport et la commande) ; rien n'est installé sans choix de l'utilisateur. `convert.py --doctor` teste chaque outil pour de vrai et affiche les commandes adaptées. Repères :
 
 | Apporte | Debian/Ubuntu | macOS | Windows / pip |
 |---|---|---|---|

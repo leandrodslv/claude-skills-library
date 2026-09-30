@@ -39,6 +39,7 @@ def build_parser() -> argparse.ArgumentParser:
                "  convert.py rapport.docx                    → markdown_output/rapport.md\n"
                "  convert.py entrants/ -o md/ --combined     → un .md par fichier + combined.md\n"
                "  convert.py deck.pptx -o - --images skip    → Markdown sur la sortie standard\n"
+               "  convert.py --plan entrants/                → choix disponibles avant de convertir (outils utiles)\n"
                "  convert.py --doctor                        → moteurs disponibles sur cette machine\n"
                "  convert.py --check md/                     → vérifie un dossier converti")
     p.add_argument("inputs", nargs="*", help="fichiers ou dossiers à convertir")
@@ -82,6 +83,7 @@ def build_parser() -> argparse.ArgumentParser:
     m = p.add_argument_group("divers")
     m.add_argument("--watch", action="store_true", help="surveille les dossiers d'entrée et convertit les fichiers nouveaux ou modifiés (Ctrl+C pour arrêter)")
     m.add_argument("--interval", type=int, default=5, help="secondes entre deux vérifications avec --watch (défaut : 5)")
+    m.add_argument("--plan", action="store_true", help="avant de convertir : analyse les entrées et propose les choix disponibles (outils à installer), sans rien convertir")
     m.add_argument("--doctor", action="store_true", help="diagnostic : moteurs disponibles et ce qu'ils apportent")
     m.add_argument("--check", metavar="DOSSIER", help="vérifie un dossier de Markdown converti")
     m.add_argument("-q", "--quiet", action="store_true")
@@ -353,6 +355,10 @@ def main(argv: Optional[List[str]] = None) -> int:
             print("--watch demande au moins un dossier d'entrée et n'est pas compatible avec --in-place ni -o -.", file=sys.stderr)
             return 2
         return _watch(args, argv)
+    if args.plan:
+        from .plan import run_plan
+
+        return run_plan(args.inputs, args.include, args.exclude, as_json=args.json, timeout=args.timeout)
     if args.doctor:
         from .doctor import run_doctor
 

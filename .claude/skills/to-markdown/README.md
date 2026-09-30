@@ -16,6 +16,7 @@ Le skill est conçu pour que tous tes « entrants » arrivent dans le même form
 python3 scripts/convert.py rapport.docx                    # → ./markdown_output/rapport.md
 python3 scripts/convert.py entrants/ -o md/ --combined     # dossier entier : .md + INDEX.md + combined.md + _report.json
 python3 scripts/convert.py deck.pptx -o - --images skip    # Markdown sur la sortie standard
+python3 scripts/convert.py --plan entrants/                 # AVANT de convertir : formats trouvés + outils utiles à installer (au choix)
 python3 scripts/convert.py --doctor                        # moteurs disponibles sur cette machine
 python3 scripts/convert.py --check md/                     # vérifie un dossier converti (marqueurs restants, liens…)
 ```
