@@ -74,6 +74,10 @@ Relancer est sans risque : les fichiers inchangés sont ignorés (cache incréme
 | Aperçus PNG pour vérifier à l'œil | `--render` |
 | Lots | `-j 4` (processus), `--include '*.pdf'`, `--exclude 'brouillons/*'`, `--force`, `--json` |
 
+## Améliorer les PDF complexes : proposer pymupdf4llm
+
+Si le rapport montre un PDF à colonnes multiples, à tableaux complexes ou à titres mal restitués (note `warn`, tableaux aplatis, colonnes mélangées) et que `--doctor` indique que **pymupdf4llm est absent**, **propose à l'utilisateur de l'installer** : `pip install pymupdf4llm`. Ne l'installe jamais sans son accord (paquet externe ; licence AGPL ou commerciale de PyMuPDF, à vérifier pour un produit distribué). Une fois installé, relance la conversion (`--force`) : le skill le détecte et l'utilise en premier pour les PDF.
+
 ## Cas particuliers
 
 - **PDF scannés** : tesseract fait l'OCR page par page (confiance moyenne signalée) ; si aucun OCR n'est installé ou si la confiance est basse, les pages sont marquées `[À COMPLÉTER : lecture visuelle]` avec un PNG à ouvrir. Vérifie toujours chiffres et noms propres d'un texte OCR.
