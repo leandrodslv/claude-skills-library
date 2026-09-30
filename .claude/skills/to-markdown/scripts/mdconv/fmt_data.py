@@ -358,6 +358,71 @@ def jsonl_native(path, ctx: Ctx) -> Result:
 
 
 # --------------------------------------------------------------------------
+# SQLite
+# --------------------------------------------------------------------------
+
+def _sqlite_cell(v: Any) -> str:
+    if v is None:
+        return ""
+    if isinstance(v, (bytes, bytearray, memoryview)):
+        return f"‹binaire {len(bytes(v))} o›"
+    if isinstance(v, float):
+        return format(v, ".15g")
+    s = clean_text(str(v))
+    return esc_inline(s if len(s) <= 300 else s[:297] + "…")
+
+
+@engine(["sqlite"], name="native", prio=10)
+def sqlite_native(path, ctx: Ctx) -> Result:
+    """Base SQLite : tables et vues (schéma, nombre de lignes, aperçu). Ouverte en lecture seule, sans jamais l'écrire."""
+    import sqlite3
+    from urllib.parse import quote
+
+    try:
+        con = sqlite3.connect(f"file:{quote(str(Path(path).resolve()))}?mode=ro&immutable=1", uri=True)
+    except sqlite3.Error as exc:
+        raise Unsupported(f"base SQLite illisible : {exc}")
+    try:
+        con.execute("PRAGMA query_only=ON")
+        con.text_factory = lambda b: b.decode("utf-8", "replace")
+        try:
+            objs = con.execute("SELECT type, name FROM sqlite_master WHERE type IN ('table','view') AND name NOT LIKE 'sqlite\\_%' ESCAPE '\\' ORDER BY type, name").fetchall()
+        except sqlite3.Error as exc:
+            raise Unsupported(f"base SQLite illisible ou chiffrée : {exc}")
+        cap = ctx.opts.table_rows
+        n_tables = sum(1 for t, _n in objs if t == "table")
+        preview = (cap or 1000) if len(objs) == 1 else min(cap or 50, 20)
+        parts: List[str] = [f"_SQLite — {n_tables} table(s), {len(objs) - n_tables} vue(s)_"]
+        for kind, name in objs[:100]:
+            ident = '"' + name.replace('"', '""') + '"'
+            try:
+                cols = con.execute(f"PRAGMA table_info({ident})").fetchall()
+                total = con.execute(f"SELECT COUNT(*) FROM {ident}").fetchone()[0]
+                rows = con.execute(f"SELECT * FROM {ident} LIMIT {preview}").fetchall()
+            except sqlite3.Error as exc:
+                parts.append(f"## {'Vue' if kind == 'view' else 'Table'} `{name}`\n\n_illisible : {esc_inline(str(exc))}_")
+                continue
+            head = f"## {'Vue' if kind == 'view' else 'Table'} `{name}` — {total} ligne(s)"
+            schema = ", ".join(f"`{c[1]}` {c[2] or ''}{' PK' if c[5] else ''}{' NOT NULL' if c[3] else ''}".replace("  ", " ") for c in cols)
+            block = [head, f"Colonnes : {schema}"]
+            if rows:
+                block.append(md_table([[esc_inline(c[1]) for c in cols]] + [[_sqlite_cell(v) for v in r] for r in rows]))
+                if total > len(rows):
+                    block.append(f"_… {total - len(rows)} ligne(s) de plus (aperçu limité à {len(rows)})._")
+            parts.append("\n\n".join(block))
+        if len(objs) > 100:
+            parts.append(f"_… {len(objs) - 100} autre(s) objet(s) non détaillé(s)._")
+            ctx.warn(f"{len(objs)} tables/vues : les 100 premières seulement")
+        if not objs:
+            parts.append("_(base vide)_")
+        res = Result(markdown="\n\n".join(parts), fmt="sqlite", engine="native", title=Path(path).stem)
+        res.stats["partial_source"] = True
+        return res
+    finally:
+        con.close()
+
+
+# --------------------------------------------------------------------------
 # Notebooks Jupyter
 # --------------------------------------------------------------------------
 

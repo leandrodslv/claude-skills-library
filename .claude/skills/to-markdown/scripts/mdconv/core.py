@@ -255,7 +255,7 @@ def load_all() -> None:
 
     for mod in (
         "fmt_docx", "fmt_pptx", "fmt_xlsx", "fmt_odf", "fmt_html", "fmt_epub", "fmt_svg",
-        "fmt_data", "fmt_rtf", "fmt_mail", "fmt_pdf", "fmt_image", "fmt_archive", "fmt_legacy", "fmt_binary", "fmt_diagram",
+        "fmt_data", "fmt_rtf", "fmt_mail", "fmt_pdf", "fmt_image", "fmt_archive", "fmt_legacy", "fmt_binary", "fmt_diagram", "fmt_visio", "fmt_xml2003",
     ):
         try:
             importlib.import_module(f"{__package__}.{mod}")

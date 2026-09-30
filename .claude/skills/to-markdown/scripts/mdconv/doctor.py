@@ -18,7 +18,8 @@ FORMATS = [
     ("epub", "EPUB", ".epub"), ("csv", "CSV / TSV", ".csv .tsv"), ("json", "JSON / JSONL", ".json .jsonl"),
     ("ipynb", "Notebook Jupyter", ".ipynb"), ("xml", "XML / RSS", ".xml"), ("md", "Markdown / texte / code", ".md .txt .py …"),
     ("eml", "E-mail", ".eml .mbox"), ("msg", "Outlook", ".msg"), ("image", "Images", ".png .jpg .gif .webp .tiff"),
-    ("markup", "LaTeX / reST / Org", ".tex .rst .org"), ("audio", "Audio / vidéo", ".mp3 .wav .mp4"),
+    ("markup", "LaTeX / reST / Org", ".tex .rst .org"), ("sqlite", "Base SQLite", ".db .sqlite .sqlite3"),
+    ("odg", "OpenDocument dessin", ".odg"), ("vsdx", "Visio", ".vsdx"), ("xml2003-sheet", "Excel XML 2003", ".xml .xls"), ("xml2003-word", "Word XML 2003", ".xml"), ("audio", "Audio / vidéo", ".mp3 .wav .mp4"),
 ]
 
 INSTALL = {

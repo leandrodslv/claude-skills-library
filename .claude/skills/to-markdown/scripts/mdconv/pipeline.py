@@ -22,7 +22,6 @@ UNSUPPORTED_HINTS: Dict[str, str] = {
     "encrypted": "fichier Office chiffré : retirer le mot de passe dans Office puis relancer",
     "iwork": "format Apple iWork : exporter en PDF, DOCX, PPTX ou XLSX depuis Pages/Keynote/Numbers",
     "sketch": "fichier Sketch : exporter les artboards en PDF ou PNG",
-    "sqlite": "base SQLite : exporter les tables en CSV",
     "parquet": "fichier Parquet : installer pyarrow ou exporter en CSV",
     "odf-other": "document ODF non textuel (formule, graphique, base) : exporter en PDF",
     "xps": "format XPS : convertir en PDF",
@@ -31,6 +30,9 @@ UNSUPPORTED_HINTS: Dict[str, str] = {
     "empty": "fichier vide",
     "pub": "Microsoft Publisher : exporter en PDF",
     "vsd": "Visio binaire : exporter en PDF/SVG ou enregistrer en .vsdx",
+    "7z": "archive 7-Zip : extraire d'abord (7z x archive.7z) puis relancer sur le dossier",
+    "rar": "archive RAR : extraire d'abord (unrar x archive.rar) puis relancer sur le dossier",
+    "fig": "fichier Figma (.fig) : exporter les frames en SVG, PDF ou PNG depuis Figma",
 }
 
 

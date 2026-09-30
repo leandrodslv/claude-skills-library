@@ -486,7 +486,7 @@ def odp_native(path, ctx: Ctx) -> Result:
         return res
 
 
-def _odp_slide(conv: OdfConverter, page: ET.Element, num: int) -> str:
+def _odp_slide(conv: OdfConverter, page: ET.Element, num: int, label: str = "Slide") -> str:
     title = ""
     items: List[Tuple[float, float, str]] = []
     notes: List[str] = []
@@ -534,7 +534,11 @@ def _odp_slide(conv: OdfConverter, page: ET.Element, num: int) -> str:
     nt = page.find(q("presentation", "notes"))
     if nt is not None and conv.opts.notes:
         walk(nt)
-    head = f"## Slide {num}" + (f" — {esc_inline(title)}" if title else "")
+    if not title and label != "Slide":            # dessin : le nom de page, sauf « page1 » et consorts
+        nm = (page.get(q("draw", "name")) or "").strip()
+        if nm and not re.fullmatch(r"(?i)(page|slide|diapositive|feuille)\s*-?\d*", nm):
+            title = nm
+    head = f"## {label} {num}" + (f" — {esc_inline(title)}" if title else "")
     parts = [head] + [md for _y, _x, md in sorted(items, key=lambda t: (t[0], t[1]))]
     linked = [(a, b) for a, b in edges if a in ids and b in ids]
     if len(linked) >= 2:
@@ -548,6 +552,37 @@ def _odp_slide(conv: OdfConverter, page: ET.Element, num: int) -> str:
     if notes and conv.opts.notes:
         parts.append("**Notes du présentateur :**\n\n" + "\n".join(("> " + ln) if ln.strip() else ">" for ln in "\n\n".join(notes).split("\n")))
     return "\n\n".join(p for p in parts if p.strip())
+
+
+@engine("odg", name="native", prio=10)
+def odg_native(path, ctx: Ctx) -> Result:
+    """Dessin OpenDocument (LibreOffice Draw) : une section par page, texte des formes, connecteurs → Mermaid."""
+    zf, flat = _open(path)
+    with _ctxmgr(zf):
+        content, styles, props = _content(zf, flat, path)
+        conv = OdfConverter(zf, ctx, "odg")
+        conv.load_styles(content.find(q("office", "automatic-styles")), styles, content)
+        drawing = content.find(q("office", "body") + "/" + q("office", "drawing"))
+        if drawing is None:
+            raise Unsupported("pas de dessin")
+        pages = drawing.findall(q("draw", "page"))
+        parts = [_odp_slide(conv, page, n, label="Page") for n, page in enumerate(pages, 1)]
+        title = props.get("title", "")
+        md = "\n\n".join(parts)
+        if title:
+            md = f"# {esc_inline(title)}\n\n{md}"
+        tail = conv.tail()
+        if tail:
+            md += "\n\n" + tail
+        words = len(re.findall(r"\w+", re.sub(r"(?m)^## Page \d+.*$", "", md)))
+        if pages and words < 3:
+            ctx.need_vision("page", str(path), "dessin sans texte extractible : à décrire depuis un rendu (exporter en PDF/PNG depuis LibreOffice Draw)")
+            md += "\n\n> **[À COMPLÉTER : description visuelle]** dessin sans texte extractible."
+        res = Result(markdown=md, fmt="odg", engine="native", title=title, meta=props)
+        res.units, res.unit_name, res.units_found = len(pages), "page", len(re.findall(r"(?m)^## Page \d+", md))
+        res.source_text = " ".join(conv.src)
+        res.stats["partial_source"] = True
+        return res
 
 
 # --------------------------------------------------------------------------

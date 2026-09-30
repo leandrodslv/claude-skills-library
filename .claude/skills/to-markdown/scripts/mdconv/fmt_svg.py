@@ -534,6 +534,22 @@ def simplify_svg(raw: bytes) -> str:
     return s.strip()
 
 
+def svg_outline(root: ET.Element, raw: bytes, ctx: Ctx) -> Dict[str, object]:
+    """Ce qu'un SVG intégré (page HTML, EPUB, e-mail…) apporte en texte : nom accessible, description, diagramme, libellés.
+
+    Utilise un contexte jetable : aucune image ni avertissement n'est ajouté au document hôte.
+    """
+    conv = SvgConverter(root, raw, Ctx(ctx.src, ctx.opts, ctx.assets_dir), Path("inline.svg"))
+    title = next((clean_text("".join(c.itertext())).strip() for c in root if local(c.tag) == "title"), "") or (root.get("aria-label") or "").strip()
+    desc = next((clean_text("".join(c.itertext())).strip() for c in root if local(c.tag) == "desc"), "")
+    if _AUTO_DESC.match(desc):
+        desc = ""
+    graph, kind = conv.recognize_graph()
+    conv.walk(root, (1, 0, 0, 1, 0, 0), 12.0, 0)
+    return {"title": title, "desc": desc, "graph": graph if graph is not None and graph.is_meaningful() else None, "kind": kind,
+            "texts": conv.reading_order(), "shapes": sum(conv.counts[k] for k in _SHAPES)}
+
+
 @engine("svg", name="native", prio=10)
 def svg_native(path, ctx: Ctx) -> Result:
     path = Path(path)

@@ -58,6 +58,7 @@ class PptxConverter:
         self.zf, self.ctx, self.opts = zf, ctx, ctx.opts
         self.pres_part = "ppt/presentation.xml"
         self._geom_cache: Dict[str, Dict[Tuple[str, str], Tuple[float, float, float, float]]] = {}
+        self.shape_stats = {"shapes": 0, "arrows": 0}
         self._bullets_cache: Dict[str, bool] = {}
         self.src_parts: List[str] = []
         self.slide_w = 12192000.0
@@ -133,6 +134,7 @@ class PptxConverter:
         shapes_text: Dict[str, str] = {}
         tree = root.find("p:cSld/p:spTree", NS)
         counter = [0]
+        self.shape_stats = {"shapes": 0, "arrows": 0}
         if tree is not None:
             self.walk(tree, rels, layout, (0.0, 0.0, 1.0, 1.0), items, connectors, shapes_text, counter, num)
         # titre : placeholder, sinon plus gros texte proche du haut de la diapositive
@@ -162,6 +164,9 @@ class PptxConverter:
         graph = self.diagram(connectors, shapes_text)
         if graph:
             parts.append(graph)
+        elif self.shape_stats["shapes"] >= 8 and self.shape_stats["arrows"] >= 2:
+            self.ctx.warn(f"diapositive {num} : schéma de {self.shape_stats['shapes']} formes dont {self.shape_stats['arrows']} flèches/lignes "
+                          "sans connecteurs — les liens ne sont pas restitués (--render pour regarder la diapositive)")
         # notes et commentaires
         if self.opts.notes:
             notes = self.notes(rels)
@@ -327,6 +332,12 @@ class PptxConverter:
         tx = sp.find("p:txBody", NS)
         x, y = self.geometry(sp, layout, ph_type, ph_idx, tf)
         counter[0] += 1
+        if ph is None:                                   # statistiques « schéma dessiné » de la diapositive
+            geom = sp.find("p:spPr/a:prstGeom", NS)
+            prst = geom.get("prst", "") if geom is not None else ("custom" if sp.find("p:spPr/a:custGeom", NS) is not None else "")
+            self.shape_stats["shapes"] += 1
+            if "rrow" in prst or "onnector" in prst or prst in ("line", "custom") and tx is None:
+                self.shape_stats["arrows"] += 1
         if tx is None:
             return
         paras = tx.findall("a:p", NS)

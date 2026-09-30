@@ -98,9 +98,17 @@ class TreeBuilder(HTMLParser):
         if n is not None and n is not self.root and n.tag in names:
             self.cur = n.parent or self.root
 
+    def _in_svg(self) -> bool:
+        n: Optional[Node] = self.cur
+        while n is not None:
+            if n.tag == "svg":
+                return True
+            n = n.parent
+        return False
+
     def handle_starttag(self, tag, attrs):
         a = {k: (v if v is not None else "") for k, v in attrs}
-        if tag == "title":
+        if tag == "title" and not self._in_svg():      # le <title> d'un <svg> n'est pas celui du document
             self._in_title = True
             return
         if tag == "meta":
@@ -135,7 +143,7 @@ class TreeBuilder(HTMLParser):
         self.cur.children.append(node)
 
     def handle_endtag(self, tag):
-        if tag == "title":
+        if tag == "title" and self._in_title:
             self._in_title = False
             return
         if tag in VOID:
@@ -169,6 +177,44 @@ def parse_html(text: str) -> TreeBuilder:
 # Rendu
 # --------------------------------------------------------------------------
 
+_SVG_CASE = {"viewbox": "viewBox", "preserveaspectratio": "preserveAspectRatio", "foreignobject": "foreignObject", "textpath": "textPath",
+             "lineargradient": "linearGradient", "radialgradient": "radialGradient", "clippath": "clipPath",
+             "gradienttransform": "gradientTransform", "gradientunits": "gradientUnits", "patterntransform": "patternTransform",
+             "textlength": "textLength", "startoffset": "startOffset", "markerwidth": "markerWidth", "markerheight": "markerHeight",
+             "refx": "refX", "refy": "refY", "lengthadjust": "lengthAdjust"}
+_SVG_DROP = {"metadata", "script", "style"}
+
+
+def _svg_xml(n: "Node") -> str:
+    """Re-sérialise un <svg> lu par l'analyseur HTML (noms mis en minuscules) en XML SVG valide."""
+    def esc(s: str, attr: bool = False) -> str:
+        s = s.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
+        return s.replace('"', "&quot;") if attr else s
+
+    def rec(node: "Node", root: bool = False) -> str:
+        tag = _SVG_CASE.get(node.tag, node.tag)
+        if ":" in tag or tag in _SVG_DROP:
+            return ""
+        attrs = []
+        for k, v in node.attrs.items():
+            k = _SVG_CASE.get(k, k)
+            if ":" in k and k not in ("xlink:href", "xml:space"):
+                continue
+            if k == "xmlns" or k.startswith("on"):
+                continue
+            attrs.append(f' {k}="{esc(v, True)}"')
+        ns = ' xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"' if root else ""
+        inner = "".join(esc(c) if isinstance(c, str) else rec(c) for c in node.children)
+        return f"<{tag}{ns}{''.join(attrs)}>{inner}</{tag}>"
+
+    return rec(n, True)
+
+
+def _px(v: str) -> float:
+    m = re.match(r"^\s*([\d.]+)\s*(?:px)?\s*$", v or "")
+    return float(m.group(1)) if m else 0.0
+
+
 class HtmlRenderer:
     def __init__(self, ctx: Ctx, base: str = "", stem: str = "img", image_loader: Optional[Callable[[str], Optional[bytes]]] = None):
         self.ctx, self.opts = ctx, ctx.opts
@@ -178,6 +224,7 @@ class HtmlRenderer:
         self.src_parts: List[str] = []
         self.footnotes: List[str] = []
         self.counter = 0
+        self.svg_blind = 0
 
     # -- filtrage ---------------------------------------------------------
     def hidden(self, n: Node) -> bool:
@@ -237,6 +284,12 @@ class HtmlRenderer:
             if isinstance(c, str):
                 inline_buf.append(c)
                 continue
+            if c.tag == "svg" and not (fn and self.noise(c)):        # SVG en ligne : légende, libellés, diagramme
+                flush()
+                block = self.svg_block(c)
+                if block:
+                    out.append(block)
+                continue
             if c.tag in SKIP or self.hidden(c) or (fn and self.noise(c)):
                 continue
             if c.tag in BLOCKS:
@@ -281,6 +334,49 @@ class HtmlRenderer:
         if t in ("li", "dd", "dt"):
             return self.blocks(n, fn)
         return self.blocks(n, fn)
+
+    def svg_block(self, n: Node) -> str:
+        """Texte d'un <svg> en ligne : nom accessible, libellés dans l'ordre de lecture, ou diagramme Mermaid.
+        Icônes et décorations (masquées, petites, sans texte) sont ignorées sans bruit."""
+        a = n.attrs
+        if a.get("aria-hidden") == "true" or a.get("role") in ("presentation", "none") or a.get("focusable") == "false":
+            return ""
+        w, h = _px(a.get("width", "")), _px(a.get("height", ""))
+        vb = [float(x) for x in re.findall(r"[-\d.]+", a.get("viewbox", ""))]
+        if (w or h) and max(w, h) <= 48 or (not (w or h) and len(vb) == 4 and max(vb[2], vb[3]) <= 48):
+            return ""
+        from .fmt_diagram import to_mermaid
+        from .fmt_svg import svg_outline
+        from .util import parse_xml
+
+        xml = _svg_xml(n).encode("utf-8")
+        try:
+            info = svg_outline(parse_xml(xml), xml, self.ctx)
+        except Exception:
+            return ""
+        title, desc, texts, graph = str(info["title"]), str(info["desc"]), list(info["texts"]), info["graph"]  # type: ignore[arg-type]
+        label = esc_inline(title) if title else ""
+        if graph is not None:
+            head = f"**Figure SVG — {label} (diagramme)**" if label else "**Figure SVG (diagramme)**"
+            return head + "\n\n" + to_mermaid(graph)  # type: ignore[arg-type]
+        shown, size = [], 0
+        for t in texts:
+            t = re.sub(r"\s+", " ", t).strip()[:80]
+            if t and size + len(t) < 700 and len(shown) < 40:
+                shown.append(esc_inline(t))
+                size += len(t)
+        more = f" … (+{len(texts) - len(shown)})" if len(texts) > len(shown) else ""
+        bits = []
+        if desc and desc != title:
+            bits.append(esc_inline(desc))
+        if shown:
+            bits.append(" · ".join(shown) + more)
+        if not label and not bits:
+            if int(info["shapes"]) >= 20:  # type: ignore[arg-type]
+                self.svg_blind += 1
+            return ""
+        head = f"**Figure SVG — {label}**" if label else "**Figure SVG**"
+        return head + (" : " + " — ".join(bits) if bits else "")
 
     def pre(self, n: Node) -> str:
         code = next((c for c in n.children if isinstance(c, Node) and c.tag == "code"), None)
@@ -563,6 +659,18 @@ class HtmlRenderer:
             return urljoin(self.base, url)
         return url
 
+    def svg_alt(self, data: bytes) -> str:
+        """Texte alternatif de secours pour une image SVG : son titre, sinon ses premiers libellés."""
+        from .fmt_svg import svg_outline
+        from .util import parse_xml
+
+        try:
+            info = svg_outline(parse_xml(data), data, self.ctx)
+        except Exception:
+            return ""
+        label = str(info["title"]) or " · ".join(str(t) for t in list(info["texts"])[:12])  # type: ignore[call-overload]
+        return alt_clean(label)[:200]
+
     def image(self, n: Node) -> str:
         src = n.get("src") or n.get("data-src") or ""
         alt = alt_clean(n.get("alt") or n.get("title") or "")
@@ -578,6 +686,7 @@ class HtmlRenderer:
             except Exception:
                 return f"*[image : {alt}]*" if alt else ""
             ext = {"jpeg": "jpg", "svg+xml": "svg"}.get(m.group(1).lower(), m.group(1).lower())
+            alt = alt or (self.svg_alt(data) if ext == "svg" else "")
             link = self.ctx.add_asset(data, ext, stem=self.stem, alt=alt)
             return f"![{alt}]({link})" if link else (f"*[image : {alt}]*" if alt else "")
         if not src:
@@ -585,6 +694,7 @@ class HtmlRenderer:
         if self.image_loader and not re.match(r"^(https?:|//)", src):
             blob = self.image_loader(src)
             if blob:
+                alt = alt or (self.svg_alt(blob) if src.lower().split("?")[0].endswith(".svg") else "")
                 link = self.ctx.add_asset(blob, "", stem=self.stem, alt=alt)
                 if link:
                     return f"![{alt}]({link})"
@@ -611,6 +721,8 @@ def html_to_markdown(text: str, ctx: Ctx, stem: str = "img",
     if not title:
         title = meta.get("og:title", "")
     src = " ".join(r.src_parts)
+    if r.svg_blind:
+        ctx.warn(f"{r.svg_blind} SVG intégré(s) sans texte (illustration ou graphique) non restitué(s) : voir --render")
     if scope == "contenu principal":
         meta["_scope"] = "contenu principal"
     return md, title, meta, src

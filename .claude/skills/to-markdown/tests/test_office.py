@@ -195,6 +195,19 @@ class Pptx(Base):
         md = self.md(fx.make_pptx(self.tmp / "g.pptx", [fx.slide_xml(shapes)]))
         self.assertMd(md, "```mermaid", 'N1["Frontend"] --> N2["API"]', 'N2["API"] --> N3["Base"]')
 
+    def test_free_form_diagram_without_connectors_is_flagged(self):
+        def box(i, label, x):
+            return (f'<p:sp><p:nvSpPr><p:cNvPr id="{i}" name="b{i}"/><p:cNvSpPr/><p:nvPr/></p:nvSpPr><p:spPr><a:xfrm><a:off x="{x}" y="2000000"/><a:ext cx="800000" cy="400000"/></a:xfrm>'
+                    f'<a:prstGeom prst="rect"/></p:spPr><p:txBody><a:bodyPr/><a:p><a:r><a:t>{label}</a:t></a:r></a:p></p:txBody></p:sp>')
+
+        def arrow(i, x):
+            return (f'<p:sp><p:nvSpPr><p:cNvPr id="{i}" name="a{i}"/><p:cNvSpPr/><p:nvPr/></p:nvSpPr><p:spPr><a:xfrm><a:off x="{x}" y="2100000"/><a:ext cx="300000" cy="200000"/></a:xfrm>'
+                    f'<a:prstGeom prst="rightArrow"/></p:spPr></p:sp>')
+        shapes = fx.sp(2, "T", ["Flux"], ph="title") + "".join(box(10 + i, f"Étape {i}", i * 900000) for i in range(6)) + "".join(arrow(30 + i, i * 900000 + 800000) for i in range(3))
+        out = self.conv(fx.make_pptx(self.tmp / "free.pptx", [fx.slide_xml(shapes)]))
+        self.assertMd(out.body, "Étape 0", "Étape 5")
+        self.assertTrue(any("schéma de 9 formes dont 3 flèches/lignes sans connecteurs" in w for w in out.ctx.warnings), out.ctx.warnings)
+
     def test_reading_order_is_spatial(self):
         shapes = (fx.sp(2, "T", ["Titre"], ph="title") + fx.sp(3, "B", ["En bas"], off=(0, 5000000)) + fx.sp(4, "A", ["Au milieu"], off=(0, 2000000)))
         md = self.md(fx.make_pptx(self.tmp / "ro.pptx", [fx.slide_xml(shapes)]))
@@ -287,6 +300,98 @@ class OpenDocument(Base):
                 '</draw:page></office:presentation>')
         md = self.md(fx.make_odf(self.tmp / "a.odp", "application/vnd.oasis.opendocument.presentation", body))
         self.assertMd(md, "## Slide 1 — Titre diapo", "- puce")
+
+
+class OpenDocumentDraw(Base):
+    def test_odg_shapes_texts_and_connectors(self):
+        body = ('<office:drawing><draw:page draw:name="Architecture">'
+                '<draw:custom-shape draw:id="a" svg:x="1cm" svg:y="1cm"><text:p>Client</text:p></draw:custom-shape>'
+                '<draw:custom-shape draw:id="b" svg:x="6cm" svg:y="1cm"><text:p>Serveur</text:p></draw:custom-shape>'
+                '<draw:custom-shape draw:id="c" svg:x="11cm" svg:y="1cm"><text:p>Base</text:p></draw:custom-shape>'
+                '<draw:connector draw:start-shape="a" draw:end-shape="b"/><draw:connector draw:start-shape="b" draw:end-shape="c"/>'
+                '</draw:page><draw:page draw:name="page2"><draw:frame svg:x="1cm" svg:y="1cm"><draw:text-box><text:p>Seconde page</text:p></draw:text-box></draw:frame></draw:page></office:drawing>')
+        md = self.md(fx.make_odf(self.tmp / "a.odg", "application/vnd.oasis.opendocument.graphics", body))
+        self.assertMd(md, "## Page 1 — Architecture", "Client", "```mermaid", 'N1["Client"] --> N2["Serveur"]', "## Page 2", "Seconde page")
+        self.assertNotMd(md, "page2")
+
+    def test_odg_without_text_requests_visual_reading(self):
+        body = '<office:drawing><draw:page draw:name="page1"><draw:ellipse svg:x="1cm" svg:y="1cm"/></draw:page></office:drawing>'
+        out = self.conv(fx.make_odf(self.tmp / "b.odg", "application/vnd.oasis.opendocument.graphics", body))
+        self.assertEqual(out.status, "needs_vision")
+
+
+class Visio(Base):
+    NS = 'xmlns="http://schemas.microsoft.com/office/visio/2012/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"'
+
+    def make(self, name, page_xml):
+        return fx.write_zip(self.tmp / name, {
+            "[Content_Types].xml": fx.XML + '<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="xml" ContentType="application/xml"/></Types>',
+            "_rels/.rels": fx.XML + '<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.microsoft.com/visio/2010/relationships/document" Target="visio/document.xml"/></Relationships>',
+            "visio/document.xml": fx.XML + f'<VisioDocument {self.NS}/>',
+            "visio/pages/pages.xml": fx.XML + f'<Pages {self.NS}><Page ID="0" Name="Flux de commande" NameU="Flux"><Rel r:id="rId1"/></Page></Pages>',
+            "visio/pages/_rels/pages.xml.rels": fx.XML + '<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.microsoft.com/visio/2010/relationships/page" Target="page1.xml"/></Relationships>',
+            "visio/pages/page1.xml": fx.XML + page_xml,
+        })
+
+    @staticmethod
+    def shape(sid, text, x, y, extra=""):
+        t = f"<Text><cp IX=\"0\"/>{text}</Text>" if text else ""
+        return f'<Shape ID="{sid}" NameU="Process" Type="Shape"><Cell N="PinX" V="{x}"/><Cell N="PinY" V="{y}"/>{extra}{t}</Shape>'
+
+    def test_shapes_and_connectors_become_a_mermaid_graph(self):
+        conn = '<Shape ID="9" NameU="Dynamic connector" Type="Shape"><Cell N="EndArrow" V="13"/><Text>oui</Text></Shape>'
+        conn2 = '<Shape ID="10" NameU="Dynamic connector" Type="Shape"/>'
+        page = (f'<PageContents {self.NS}><Shapes>' + self.shape(1, "Commande reçue", 2, 8) + self.shape(2, "Stock vérifié", 5, 8) + self.shape(3, "Expédier", 8, 8)
+                + self.shape(4, "Note : livraison sous 48 h", 5, 2) + conn + conn2 +
+                '</Shapes><Connects>'
+                '<Connect FromSheet="9" FromCell="BeginX" ToSheet="1" ToCell="PinX"/><Connect FromSheet="9" FromCell="EndX" ToSheet="2" ToCell="PinX"/>'
+                '<Connect FromSheet="10" FromCell="BeginX" ToSheet="2" ToCell="PinX"/><Connect FromSheet="10" FromCell="EndX" ToSheet="3" ToCell="PinX"/>'
+                '</Connects></PageContents>')
+        out = self.conv(self.make("flux.vsdx", page))
+        self.assertEqual(out.status, "ok", out.error)
+        self.assertMd(out.body, "## Page 1 — Flux de commande", "```mermaid", 'n1["Commande reçue"]', 'n2["Stock vérifié"]', 'n3["Expédier"]',
+                      "n1 -->|oui| n2", "n2 --> n3", "**Textes :**", "- Note : livraison sous 48 h")
+
+    def test_page_without_text_requests_visual_reading(self):
+        page = f'<PageContents {self.NS}><Shapes>' + self.shape(1, "", 2, 8) + '</Shapes></PageContents>'
+        out = self.conv(self.make("vide.vsdx", page))
+        self.assertEqual(out.status, "needs_vision")
+
+    def test_unlinked_texts_are_listed_in_reading_order(self):
+        page = f'<PageContents {self.NS}><Shapes>' + self.shape(1, "Bas", 2, 1) + self.shape(2, "Haut", 2, 9) + '</Shapes></PageContents>'
+        md = self.md(self.make("t.vsdx", page))
+        self.assertLess(md.index("Haut"), md.index("Bas"))
+
+
+class Office2003Xml(Base):
+    SHEET = """<?xml version="1.0"?><?mso-application progid="Excel.Sheet"?>
+<Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet" xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet" xmlns:o="urn:schemas-microsoft-com:office:office">
+<Worksheet ss:Name="Ventes"><Table>
+<Row><Cell><Data ss:Type="String">Région</Data></Cell><Cell><Data ss:Type="String">Date</Data></Cell><Cell><Data ss:Type="String">Montant</Data></Cell><Cell><Data ss:Type="String">Payé</Data></Cell></Row>
+<Row><Cell ss:MergeDown="1"><Data ss:Type="String">Europe</Data></Cell><Cell><Data ss:Type="DateTime">2024-01-15T00:00:00.000</Data></Cell><Cell><Data ss:Type="Number">12.5</Data></Cell><Cell><Data ss:Type="Boolean">1</Data></Cell></Row>
+<Row><Cell ss:Index="2"><Data ss:Type="DateTime">2024-02-01T10:30:00.000</Data></Cell><Cell><Data ss:Type="Number">1000</Data></Cell><Cell><Data ss:Type="Boolean">0</Data></Cell></Row>
+</Table></Worksheet>
+<Worksheet ss:Name="Cachée"><Table><Row><Cell><Data ss:Type="String">secret</Data></Cell></Row></Table><WorksheetOptions><Visible>SheetHidden</Visible></WorksheetOptions></Worksheet>
+</Workbook>"""
+
+    WORD = """<?xml version="1.0"?><?mso-application progid="Word.Document"?>
+<w:wordDocument xmlns:w="http://schemas.microsoft.com/office/word/2003/wordml" xmlns:wx="http://schemas.microsoft.com/office/word/2003/auxHint">
+<w:styles><w:style w:type="paragraph" w:styleId="Heading1"><w:name w:val="heading 1"/></w:style></w:styles>
+<w:body><wx:sect><w:p><w:pPr><w:pStyle w:val="Heading1"/></w:pPr><w:r><w:t>Titre ancien</w:t></w:r></w:p>
+<w:p><w:r><w:t xml:space="preserve">Du </w:t></w:r><w:r><w:rPr><w:b/></w:rPr><w:t>gras</w:t></w:r></w:p>
+<wx:sub-section><w:tbl><w:tr><w:tc><w:p><w:r><w:t>A</w:t></w:r></w:p></w:tc><w:tc><w:p><w:r><w:t>B</w:t></w:r></w:p></w:tc></w:tr>
+<w:tr><w:tc><w:p><w:r><w:t>1</w:t></w:r></w:p></w:tc><w:tc><w:p><w:r><w:t>2</w:t></w:r></w:p></w:tc></w:tr></w:tbl></wx:sub-section></wx:sect></w:body></w:wordDocument>"""
+
+    def test_spreadsheetml_types_merges_and_hidden_sheets(self):
+        p = self.write("old.xml", self.SHEET)
+        md = self.md(p)
+        self.assertMd(md, "## Ventes", "| Région | Date | Montant | Payé |", "| Europe | 2024-01-15 | 12.5 | TRUE |", "| Europe | 2024-02-01 10:30 | 1000 | FALSE |",
+                      "## Cachée *(masquée)*", "secret")
+        self.assertNotMd(self.md(p, hidden=False), "secret")
+
+    def test_wordml_2003_is_converted_through_the_docx_reader(self):
+        md = self.md(self.write("old-word.xml", self.WORD))
+        self.assertMd(md, "# Titre ancien", "Du **gras**", "| A | B |", "| 1 | 2 |")
 
 
 class Rtf(Base):

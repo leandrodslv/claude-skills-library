@@ -14,16 +14,18 @@ Légende des moteurs : **natif** = Python standard, toujours disponible ; *(ext.
 | PowerPoint ancien | `.ppt .pps` | LibreOffice *(ext.)* → lecteur natif |
 | Excel | `.xlsx .xlsm` | natif (lecture en flux) · markitdown *(ext.)* |
 | Excel ancien | `.xls` · `.xlsb` | LibreOffice *(ext.)* → lecteur natif BIFF8 (`.xls`) ; `.xlsb` : LibreOffice seulement |
-| OpenDocument | `.odt .odp .ods` | natif · LibreOffice *(ext.)* · pandoc *(ext.)* |
+| OpenDocument | `.odt .odp .ods .odg` | natif · LibreOffice *(ext.)* · pandoc *(ext.)* |
 | RTF | `.rtf` | natif · LibreOffice *(ext.)* · pandoc *(ext.)* |
+| Office XML 2003 | « Feuille de calcul XML » (`.xml`/`.xls`), « Document Word XML » (`.xml`) | natif |
 | PDF | `.pdf` | pymupdf4llm *(ext.)* · docling *(ext.)* · pdftotext *(ext.)* · pdfplumber *(ext.)* · markitdown · pypdfium2 · pypdf · **lecteur natif** |
 | SVG | `.svg .svgz` | natif |
-| Diagrammes | `.drawio .excalidraw`, SVG Graphviz/Mermaid/draw.io | natif → bloc `mermaid` |
+| Diagrammes | `.drawio .excalidraw .vsdx`, SVG Graphviz/Mermaid/draw.io | natif → bloc `mermaid` |
 | HTML | `.html .htm .xhtml` (et faux `.xls/.doc` HTML) | natif · markitdown · pandoc |
 | E-books | `.epub` | natif · pandoc |
 | Tableaux de données | `.csv .tsv` | natif |
 | Données structurées | `.json .jsonl .yaml .xml` (RSS/Atom) | natif |
 | Notebooks | `.ipynb` | natif · pandoc |
+| Bases de données | `.db .sqlite .sqlite3` | natif (lecture seule) : tables, schéma, aperçu |
 | Texte, Markdown, code | `.txt .md .log` et une soixantaine de langages (`.py .js .sql .sh …`) | natif |
 | Balisage | `.tex .rst .org .adoc .textile …` | pandoc *(ext.)* → natif (texte brut balisé) |
 | E-mails | `.eml .mbox .mhtml .msg` | natif |
@@ -31,7 +33,7 @@ Légende des moteurs : **natif** = Python standard, toujours disponible ; *(ext.
 | Archives | `.zip .tar .tgz .gz .bz2 .xz` | ouverture sûre, puis chaque membre converti |
 | Audio / vidéo | `.mp3 .wav .mp4 …` | **sur demande** : `--engines whisper` (faster-whisper) |
 
-Non convertibles (message explicite + piste) : Apple iWork (exporter en PDF/DOCX), Sketch, Publisher, Visio binaire, XPS, SQLite/Parquet (exporter en CSV), fichiers Office chiffrés (retirer le mot de passe), binaires inconnus.
+Non convertibles (message explicite + piste) : Apple iWork sans LibreOffice (exporter en PDF/DOCX), Sketch, Publisher, Visio binaire `.vsd` (enregistrer en `.vsdx`), XPS, Parquet (exporter en CSV), 7z/RAR (extraire d'abord), fichiers Office chiffrés (retirer le mot de passe), binaires inconnus.
 
 ## Détail par famille
 
@@ -62,11 +64,14 @@ Un marqueur `<!-- page N -->` précède chaque page (`<!-- page N (OCR 87 %) -->
 Avec les moteurs « texte » (pdftotext, pdfplumber, pypdfium2, pypdf, natif) : numéros de page et en-têtes/pieds répétés retirés — jamais plus de la moitié d'une page, et « Chapitre 3 » n'est pas pris pour un en-tête. Pages sans texte → **OCR** (tesseract, 200 dpi) sinon lecture visuelle (PNG de la page fourni quand un outil de rendu existe).
 **Limites** : PDF chiffrés (avec ou sans mot de passe utilisateur) → refusés par le lecteur natif, poppler/pymupdf les ouvrent si le mot de passe utilisateur est vide ; tableaux sans bordures aplatis par les moteurs texte ; formules mathématiques et manuscrits → lecture visuelle ; polices sans table Unicode (`(cid:12)`) → caractères signalés, essayer un autre moteur.
 
+### Visio, OpenDocument Draw, bases SQLite
+**Visio `.vsdx`** : une section par page ; formes étiquetées et connecteurs → `mermaid` (sens d'après les pointes de flèche), textes non reliés listés dans l'ordre de lecture ; page sans texte → lecture visuelle. **`.odg`** : même traitement que les diapositives ODP (texte des formes, connecteurs → Mermaid). **SQLite** : ouverte en lecture seule (jamais modifiée, aucun fichier journal), tables et vues avec colonnes/types/clés, nombre de lignes et aperçu (20 lignes par table, `--table-rows` pour une table unique), binaires résumés (`‹binaire 8 o›`).
+
 ### SVG et diagrammes
 Un SVG est du XML : le texte est **entièrement** récupérable, dans l'ordre de lecture (positions et transformations appliquées ; texte masqué ignoré ; `foreignObject` et `switch` gérés). Détection de structure : Graphviz, draw.io (fichiers `.drawio`, compressés inclus, et SVG exportés), Excalidraw, Mermaid → nœuds et liens en `flowchart` Mermaid (groupes/clusters reconstitués). Petit SVG (icône, logo) : source simplifiée ≤ 8 Ko incluse ; SVG sans texte ni structure → **lecture visuelle** avec rendu PNG (rsvg-convert, Inkscape, cairosvg, ImageMagick, Chrome ou LibreOffice — le premier disponible). Courbes matplotlib (texte en chemins) : texte relu dans les commentaires du fichier.
 
 ### HTML, EPUB
-Titres, listes imbriquées, tableaux (tableaux de mise en page aplatis, cellules avec listes/retours à la ligne), code avec langage, citations, liens, images (data-URI extraites), maths KaTeX/MathJax. **Contenu principal** sélectionné et bruit retiré (menus, cookies, pieds de page) — `--html-mode full` garde tout. Encodage lu depuis `<meta charset>`. EPUB : chapitres dans l'ordre du *spine*, titre du livre en `#` et chapitres en `##`, images extraites.
+Titres, listes imbriquées, tableaux (tableaux de mise en page aplatis, cellules avec listes/retours à la ligne), code avec langage, citations, liens, images (data-URI extraites), maths KaTeX/MathJax. **Contenu principal** sélectionné et bruit retiré (menus, cookies, pieds de page) — `--html-mode full` garde tout. **SVG en ligne** : nom accessible et libellés dans l'ordre de lecture (ou diagramme `mermaid` pour un Graphviz/draw.io/Mermaid), icônes et décorations ignorées ; `<img>` SVG : libellés en texte alternatif. Encodage lu depuis `<meta charset>`. EPUB : chapitres dans l'ordre du *spine*, titre du livre en `#` et chapitres en `##`, images extraites.
 
 ### Données et texte
 - **CSV/TSV** : séparateur et encodage devinés (UTF-8, cp1252, cp1251, CJK…), guillemets et retours à la ligne dans les cellules, tableau + **schéma des colonnes** (type, non-vides, aperçu) ; plafonné à `--table-rows`.
