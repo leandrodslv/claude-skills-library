@@ -60,7 +60,7 @@ Un marqueur `<!-- page N -->` précède chaque page (`<!-- page N (OCR 87 %) -->
 - **pymupdf4llm** : Markdown structuré (titres, tableaux, colonnes, images) — le meilleur choix si le PDF compte ;
 - **pdftotext (poppler)** : texte fiable, ordre de lecture correct sur plusieurs colonnes, très rapide ;
 - **pdfplumber** : tableaux (à demander : `--engines pdfplumber`) ;
-- **lecteur natif** (aucune installation) : objets et flux compressés, polices avec table Unicode, colonnes, paragraphes d'après l'espacement, titres d'après la taille de police et le gras, en-têtes/pieds de page répétés retirés.
+- **lecteur natif** (aucune installation) : objets et flux compressés, polices avec table Unicode, colonnes, tableaux reconnus par l'alignement des colonnes, paragraphes d'après l'espacement, titres d'après la taille de police et le gras, en-têtes/pieds de page répétés retirés.
 Avec les moteurs « texte » (pdftotext, pdfplumber, pypdfium2, pypdf, natif) : numéros de page et en-têtes/pieds répétés retirés — jamais plus de la moitié d'une page, et « Chapitre 3 » n'est pas pris pour un en-tête. Pages sans texte → **OCR** (tesseract, 200 dpi) sinon lecture visuelle (PNG de la page fourni quand un outil de rendu existe).
 **Limites** : PDF chiffrés — ouverts si le mot de passe d'ouverture est vide (cas des PDF « sécurisés » contre la copie ou l'édition : RC4 40/128, AES-128, AES-256, y compris par le lecteur natif) ; un vrai mot de passe d'ouverture est signalé, jamais contourné ; tableaux sans bordures aplatis par les moteurs texte ; formules mathématiques et manuscrits → lecture visuelle ; polices sans table Unicode (`(cid:12)`) → caractères signalés, essayer un autre moteur.
 

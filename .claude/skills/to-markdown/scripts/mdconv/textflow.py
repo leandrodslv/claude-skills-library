@@ -9,7 +9,7 @@ import re
 from collections import Counter
 from typing import List, Optional, Sequence
 
-from .util import clean_text, esc_inline
+from .util import clean_text, esc_inline, md_table
 
 _BULLET = re.compile(r"^\s*([•·▪◦●○■□◆◇➢➤▶►‣⁃–—*-]|\(?\d{1,3}[.)]|\(?[a-zA-Z][.)]|[ivxIVX]{1,4}[.)])\s+(?=\S)")
 _PAGE_NUM = re.compile(r"^\s*(?:page|p\.|-)?\s*\d{1,4}\s*(?:/|sur|of|de)?\s*\d{0,4}\s*-?\s*$", re.I)
@@ -156,6 +156,15 @@ def reflow(text: str, headings: bool = True) -> str:
         s = raw.strip()
         if not s:
             flush()
+            continue
+        if s.startswith("⟪R⟫"):                       # ligne de tableau repérée par le lecteur PDF
+            flush()
+            rows = [s[3:].split("⟪|⟫")]
+            while i + 1 < n and lines[i + 1].strip().startswith("⟪R⟫"):
+                i += 1
+                rows.append(lines[i].strip()[3:].split("⟪|⟫"))
+                lines[i] = ""
+            out.append(md_table([[esc_inline(c) for c in r] for r in rows]))
             continue
         hm = _HEAD_MARK.match(s)
         if hm:

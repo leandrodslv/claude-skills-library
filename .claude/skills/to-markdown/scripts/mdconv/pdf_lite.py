@@ -811,8 +811,17 @@ class Interp:
             pitch = _line_pitch(ys, med)
             prev_y: Optional[float] = None
             prev_head = 0
-            for ln, y in zip(group, ys):
+            tables = _table_rows(group, med)
+            for li, (ln, y) in enumerate(zip(group, ys)):
                 ln.sort(key=lambda f: f.x)
+                if li in tables:                      # ligne d'un tableau reconnu par l'alignement des colonnes
+                    if prev_y is not None and (li - 1) not in tables:
+                        out_lines.append("")
+                    out_lines.append(_ROW + _CELL.join(tables[li]))
+                    prev_y, prev_head = y, 0
+                    if (li + 1) not in tables:
+                        out_lines.append("")
+                    continue
                 buf = ""
                 end_x: Optional[float] = None
                 widest = 0.0
@@ -839,6 +848,55 @@ class Interp:
 
 
 _HEAD = "⟪H%d⟫"
+_ROW = "⟪R⟫"
+_CELL = "⟪|⟫"
+
+
+def _cells(ln: List[Frag], med: float) -> List[Tuple[float, str]]:
+    """Cellules d'une ligne : fragments séparés par un grand blanc horizontal (> 1,2 × corps)."""
+    out: List[Tuple[float, str]] = []
+    end_x: Optional[float] = None
+    for f in sorted(ln, key=lambda f: f.x):
+        if out and end_x is not None and f.x - end_x <= med * 1.2:
+            x0, t = out[-1]
+            out[-1] = (x0, (t + (" " if f.x - end_x > med * 0.18 and not t.endswith(" ") else "") + f.text))
+        else:
+            out.append((f.x, f.text))
+        end_x = max(end_x or f.x, f.x + f.w)
+    return [(x, re.sub(r"\s+", " ", t).strip()) for x, t in out]
+
+
+def _table_rows(group: List[List[Frag]], med: float) -> Dict[int, List[str]]:
+    """Index de ligne → cellules, pour les suites d'au moins 3 lignes à ≥ 2 cellules dont les colonnes s'alignent."""
+    cells = [_cells(ln, med) for ln in group]
+    tol = max(6.0, med * 0.6)
+    result: Dict[int, List[str]] = {}
+    i, n = 0, len(group)
+    while i < n:
+        if len(cells[i]) < 2:
+            i += 1
+            continue
+        j = i
+        while j < n and len(cells[j]) >= 2:
+            j += 1
+        if j - i >= 3:
+            anchors: List[float] = []
+            for row in cells[i:j]:
+                for x, _t in row:
+                    if not any(abs(x - a) <= tol for a in anchors):
+                        anchors.append(x)
+            anchors.sort()
+            support = [sum(1 for row in cells[i:j] if any(abs(x - a) <= tol for x, _t in row)) for a in anchors]
+            good = [a for a, c in zip(anchors, support) if c >= max(2, 0.6 * (j - i))]
+            if len(good) >= 2 and len(anchors) <= len(good) + 1:
+                for k in range(i, j):
+                    row = [""] * len(good)
+                    for x, t in cells[k]:
+                        idx = min(range(len(good)), key=lambda q: abs(good[q] - x))
+                        row[idx] = (row[idx] + " " + t).strip()
+                    result[k] = row
+        i = max(j, i + 1)
+    return result
 
 
 def _line_pitch(ys: List[float], med: float) -> float:

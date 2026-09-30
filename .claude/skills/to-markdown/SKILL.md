@@ -55,7 +55,7 @@ Relancer est sans risque : les fichiers inchangés sont ignorés (cache incréme
 - **Repères** : `<!-- page N -->` pour les PDF, `## Slide N — titre` pour les présentations, `## <nom de la feuille>` pour les classeurs ; contenu masqué signalé (`*(masquée)*`), jamais perdu en silence.
 - **Images** extraites dans `<nom>_assets/` avec leur texte alternatif quand il existe ; scans et images standalone passés à l'OCR (tesseract) s'il est installé, sinon marqués pour lecture visuelle.
 - **Tableaux volumineux** : plafond de 1000 lignes par tableau (`--table-rows`), avec le fichier complet en CSV à côté — dit explicitement dans le Markdown.
-- **Pas magique** : sans outil PDF installé, les PDF à colonnes ou à tableaux complexes sont moins fins qu'avec pymupdf4llm ; PDF très mis en page (colonnes multiples, tableaux sans bordures) → le lecteur natif est correct mais moins fin que pymupdf4llm/pdfplumber (à installer si le PDF compte) ; écriture manuscrite → lecture visuelle ; fichiers chiffrés → l'utilisateur doit retirer le mot de passe. Voir `references/formats.md` pour le détail par format.
+- **Pas magique** : sans outil PDF installé, le lecteur natif lit colonnes et tableaux alignés mais reste moins fin que pymupdf4llm sur les mises en page très complexes ; PDF très mis en page (colonnes multiples, tableaux sans bordures) → le lecteur natif est correct mais moins fin que pymupdf4llm/pdfplumber (à installer si le PDF compte) ; écriture manuscrite → lecture visuelle ; fichiers chiffrés → l'utilisateur doit retirer le mot de passe. Voir `references/formats.md` pour le détail par format.
 
 ## Options utiles
 

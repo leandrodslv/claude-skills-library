@@ -60,6 +60,17 @@ class NativePdf(Base):
         md = self.md(fx.make_pdf(self.tmp / "t.pdf", [items + para]))
         self.assertNotMd(md, "# Nom")
 
+    def test_aligned_columns_become_a_markdown_table(self):
+        rows = [("Produit", "Prix", "Stock"), ("Stylo", "1,20", "340"), ("Cahier", "3,50", "120"), ("Gomme", "0,80", "95")]
+        items = [(50, 780, "Catalogue des fournitures de bureau pour la rentrée scolaire.")]
+        for k, r in enumerate(rows):
+            for x, t in zip((50, 250, 400), r):
+                items.append((x, 740 - 18 * k, t, 12, k == 0))
+        items.append((50, 640, "Les prix s'entendent toutes taxes comprises."))
+        md = self.md(fx.make_pdf(self.tmp / "tab.pdf", [items]))
+        self.assertMd(md, "| Produit | Prix | Stock |", "| --- | --- | --- |", "| Stylo | 1,20 | 340 |", "| Gomme | 0,80 | 95 |", "Catalogue des fournitures")
+        self.assertNotMd(md, "# Produit")
+
     def test_two_columns_are_read_column_by_column(self):
         left = [f"gauche {k:02d} " + " ".join(["mot"] * 6) for k in range(22)]
         right = [f"droite {k:02d} " + " ".join(["mot"] * 6) for k in range(22)]
