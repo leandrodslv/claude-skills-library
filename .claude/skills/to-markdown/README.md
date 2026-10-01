@@ -54,6 +54,11 @@ to-markdown/
 └── tests/                       ← plus de 130 tests (fixtures construites à la main, sans dépendance)
 ```
 
+## Banc d'essai et documents difficiles
+
+- [`benchmark/`](benchmark/README.md) — mesure reproductible (rappel, précision, structure) contre markitdown, pandoc, pymupdf4llm, pdftotext sur des documents à contenu connu ; résultats dans `benchmark/RESULTS.md`.
+- [`benchmark/hard/`](benchmark/hard/README.md) — 42 documents très difficiles (colonnes, cellules fusionnées, scans, formes libres, bruit web, encodages, fichiers abîmés) avec ce qu'on doit y retrouver : sert à repérer les limites et à mesurer chaque amélioration (`HARD_RESULTS.md`).
+
 ## Tests
 
 ```bash

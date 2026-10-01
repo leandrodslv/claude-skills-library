@@ -1,0 +1,1189 @@
+[
+ {
+  "id": "data-archive-imbriquee",
+  "path": "data/archive-imbriquee.zip",
+  "category": "data",
+  "difficulty": 4,
+  "challenge": "zip dans un zip, noms de fichiers Unicode, un membre corrompu",
+  "must": [
+   "Archive de test",
+   "le code d'accès est 4821",
+   "Trois chantiers livrés dans les délais",
+   "メモの内容：確認済み"
+  ],
+  "expect": "ok",
+  "notes": "Les fichiers lisibles doivent être convertis ; le membre corrompu doit être signalé, sans faire échouer le reste."
+ },
+ {
+  "id": "data-docx-tronque",
+  "path": "data/docx-tronque.docx",
+  "category": "data",
+  "difficulty": 4,
+  "challenge": "DOCX tronqué à 60 % (téléchargement interrompu)",
+  "expect": "error",
+  "notes": "Doit répondre par un message clair (fichier abîmé), jamais une sortie vide ou un plantage."
+ },
+ {
+  "id": "data-faux-docx",
+  "path": "data/faux-docx.docx",
+  "category": "data",
+  "difficulty": 2,
+  "challenge": "fichier texte renommé en .docx",
+  "must": [
+   "Ceci est simplement un fichier texte renomme",
+   "Il contient deux lignes"
+  ],
+  "expect": "ok",
+  "notes": "Le format doit être détecté par le contenu, pas par l'extension."
+ },
+ {
+  "id": "data-json-profond",
+  "path": "data/json-profond.json",
+  "category": "data",
+  "difficulty": 3,
+  "challenge": "JSON imbriqué sur 8 niveaux, tableaux d'objets hétérogènes, null, booléens, accents",
+  "must": [
+   "CMD-2025-0042",
+   "Société Lumière",
+   "12 rue des Écoles",
+   "Nantes",
+   "+33 2 40 00 11 22",
+   "8h30",
+   "14h",
+   "Câble réseau 5 m",
+   "Switch 24 ports",
+   "bleu",
+   "Livraison avant le 12 juin — fragile",
+   "2208.6"
+  ],
+  "expect": "ok",
+  "notes": "Lisible par un humain : hiérarchie conservée (titres/listes/tableaux), pas un bloc JSON brut illisible."
+ },
+ {
+  "id": "data-odt-liste-tableau",
+  "path": "data/cahier-des-charges.odt",
+  "category": "data",
+  "difficulty": 3,
+  "challenge": "ODT produit par LibreOffice : liste imbriquée, tableau, caractères spéciaux",
+  "must": [
+   "Cahier des charges",
+   "avant le 30 septembre",
+   "Audit de l'existant",
+   "Analyse des risques",
+   "Recette",
+   "4 semaines",
+   "0,5 % / jour",
+   "12 semaines",
+   "œuvre, naïveté, 5 €"
+  ],
+  "headings": [
+   "Cahier des charges"
+  ],
+  "items": [
+   "Audit de l'existant",
+   "Analyse des risques",
+   "Étude préalable"
+  ],
+  "rows": [
+   [
+    "Étude",
+    "4 semaines",
+    "0,5 % / jour"
+   ],
+   [
+    "Réalisation",
+    "12 semaines",
+    "1 % / jour"
+   ]
+  ],
+  "expect": "ok"
+ },
+ {
+  "id": "data-pdf-tronque",
+  "path": "data/pdf-tronque.pdf",
+  "category": "data",
+  "difficulty": 4,
+  "challenge": "PDF tronqué à 50 % (sans table de références ni fin de fichier)",
+  "must": [
+   "Mesure de la dérive thermique en milieu industriel"
+  ],
+  "expect": "ok",
+  "notes": "Récupération partielle bienvenue (le début du texte), sinon échec propre."
+ },
+ {
+  "id": "data-rtf-liste-tableau",
+  "path": "data/cahier-des-charges.rtf",
+  "category": "data",
+  "difficulty": 3,
+  "challenge": "RTF produit par LibreOffice : liste imbriquée, tableau, caractères spéciaux",
+  "must": [
+   "Cahier des charges",
+   "avant le 30 septembre",
+   "Audit de l'existant",
+   "Analyse des risques",
+   "Recette",
+   "4 semaines",
+   "0,5 % / jour",
+   "12 semaines",
+   "œuvre, naïveté, 5 €"
+  ],
+  "headings": [
+   "Cahier des charges"
+  ],
+  "items": [
+   "Audit de l'existant",
+   "Analyse des risques",
+   "Étude préalable"
+  ],
+  "rows": [
+   [
+    "Étude",
+    "4 semaines",
+    "0,5 % / jour"
+   ],
+   [
+    "Réalisation",
+    "12 semaines",
+    "1 % / jour"
+   ]
+  ],
+  "expect": "ok"
+ },
+ {
+  "id": "data-sqlite-relationnelle",
+  "path": "data/base-relationnelle.sqlite",
+  "category": "data",
+  "difficulty": 3,
+  "challenge": "deux tables liées par clé étrangère, une vue, un BLOB, NULL, accents",
+  "must": [
+   "clients",
+   "commandes",
+   "Boulangerie Léon",
+   "Garage Müller",
+   "Café « Le Zèbre »",
+   "Strasbourg",
+   "Livraison urgente",
+   "Remise fidélité",
+   "980"
+  ],
+  "expect": "ok",
+  "notes": "Le schéma (colonnes, clé étrangère) et un aperçu des lignes doivent apparaître ; le BLOB ne doit pas polluer la sortie."
+ },
+ {
+  "id": "data-texte-cp1252",
+  "path": "data/texte-cp1252.txt",
+  "category": "data",
+  "difficulty": 2,
+  "challenge": "texte non UTF-8 sans déclaration d'encodage (cp1252)",
+  "must": [
+   "Café à 5 € — « guillemets » et œuvre"
+  ],
+  "expect": "ok",
+  "notes": "L'encodage doit être deviné correctement (aucun caractère de remplacement)."
+ },
+ {
+  "id": "data-texte-koi8r",
+  "path": "data/texte-koi8r.txt",
+  "category": "data",
+  "difficulty": 2,
+  "challenge": "texte non UTF-8 sans déclaration d'encodage (koi8_r)",
+  "must": [
+   "Привет мир это проверка кодировки"
+  ],
+  "expect": "ok",
+  "notes": "L'encodage doit être deviné correctement (aucun caractère de remplacement)."
+ },
+ {
+  "id": "data-texte-latin2",
+  "path": "data/texte-latin2.txt",
+  "category": "data",
+  "difficulty": 2,
+  "challenge": "texte non UTF-8 sans déclaration d'encodage (iso8859_2)",
+  "must": [
+   "Zażółć gęślą jaźń, pójdę do łóżka"
+  ],
+  "expect": "ok",
+  "notes": "L'encodage doit être deviné correctement (aucun caractère de remplacement)."
+ },
+ {
+  "id": "data-texte-shiftjis",
+  "path": "data/texte-shiftjis.txt",
+  "category": "data",
+  "difficulty": 2,
+  "challenge": "texte non UTF-8 sans déclaration d'encodage (shift_jis)",
+  "must": [
+   "これは日本語のテストです。東京は日本の首都です。"
+  ],
+  "expect": "ok",
+  "notes": "L'encodage doit être deviné correctement (aucun caractère de remplacement)."
+ },
+ {
+  "id": "data-texte-utf16",
+  "path": "data/texte-utf16.txt",
+  "category": "data",
+  "difficulty": 2,
+  "challenge": "texte non UTF-8 sans déclaration d'encodage (utf-16)",
+  "must": [
+   "Résumé du projet : coût 1 250 € — échéance fixée"
+  ],
+  "expect": "ok",
+  "notes": "L'encodage doit être deviné correctement (aucun caractère de remplacement)."
+ },
+ {
+  "id": "data-xml-namespaces",
+  "path": "data/xml-espaces-de-noms.xml",
+  "category": "data",
+  "difficulty": 3,
+  "challenge": "XML à espaces de noms, CDATA avec chevrons et esperluette, contenu mixte (texte + éléments en ligne)",
+  "must": [
+   "Bureau d'études",
+   "Vanne papillon DN80",
+   "pression max 16 bar",
+   "Clapet anti-retour",
+   "Montage horizontal ou vertical",
+   "fiche technique",
+   "avant toute commande"
+  ],
+  "any_of": [
+   [
+    "Vanne <robuste> & étanche",
+    "Vanne &lt;robuste&gt; &amp; étanche",
+    "Vanne robuste & étanche"
+   ]
+  ],
+  "expect": "ok",
+  "notes": "Le contenu mixte doit rester une phrase continue ; le CDATA doit être restitué littéralement."
+ },
+ {
+  "id": "docx-listes-imbriquees",
+  "path": "docx/listes-imbriquees.docx",
+  "category": "docx",
+  "difficulty": 3,
+  "challenge": "listes à 4 niveaux, numérotation continue, puces mêlées aux numéros",
+  "order": [
+   "Préparer le terrain",
+   "Relever les cotes",
+   "Mesures au laser",
+   "Contrôle par recoupement",
+   "Vérifier les réseaux",
+   "Couler la dalle",
+   "Armatures",
+   "Treillis soudé",
+   "Coffrage périphérique",
+   "Béton",
+   "Séchage de vingt-huit jours"
+  ],
+  "headings": [
+   "Plan de chantier",
+   "Étapes",
+   "Rappels"
+  ],
+  "items": [
+   "Préparer le terrain",
+   "Relever les cotes",
+   "Mesures au laser",
+   "Contrôle par recoupement",
+   "Vérifier les réseaux",
+   "Couler la dalle",
+   "Armatures",
+   "Treillis soudé",
+   "Coffrage périphérique",
+   "Béton",
+   "Séchage de vingt-huit jours",
+   "Port du casque obligatoire",
+   "Balisage des zones de levage",
+   "Contrôle des échafaudages chaque matin"
+  ],
+  "levels": [
+   [
+    "Préparer le terrain",
+    0
+   ],
+   [
+    "Relever les cotes",
+    1
+   ],
+   [
+    "Mesures au laser",
+    2
+   ],
+   [
+    "Contrôle par recoupement",
+    2
+   ],
+   [
+    "Vérifier les réseaux",
+    1
+   ],
+   [
+    "Couler la dalle",
+    0
+   ],
+   [
+    "Armatures",
+    1
+   ],
+   [
+    "Treillis soudé",
+    2
+   ],
+   [
+    "Coffrage périphérique",
+    3
+   ],
+   [
+    "Béton",
+    1
+   ],
+   [
+    "Séchage de vingt-huit jours",
+    0
+   ],
+   [
+    "Port du casque obligatoire",
+    0
+   ],
+   [
+    "Balisage des zones de levage",
+    1
+   ],
+   [
+    "Contrôle des échafaudages chaque matin",
+    1
+   ]
+  ],
+  "expect": "ok",
+  "notes": "L'indentation doit refléter les niveaux (sous-listes), pas seulement le texte."
+ },
+ {
+  "id": "docx-multilingue-rtl-cjk",
+  "path": "docx/multilingue-rtl-cjk.docx",
+  "category": "docx",
+  "difficulty": 3,
+  "challenge": "arabe et hébreu (droite à gauche), chinois, japonais, coréen, emoji, symboles",
+  "must": [
+   "مرحبا بالعالم هذا اختبار للغة العربية",
+   "שלום עולם זהו מבחן בעברית",
+   "这是一个包含中文的测试文档",
+   "これは日本語のテスト文書です",
+   "이것은 한국어 시험 문서입니다",
+   "Résultat ✅ validé 🚀 coût 12 € — « citation » œuvre",
+   "Formule : α + β ≤ γ ≈ ∑ x² → ∞"
+  ],
+  "headings": [
+   "Document multilingue"
+  ],
+  "expect": "ok"
+ },
+ {
+  "id": "docx-notes-commentaires-revisions",
+  "path": "docx/notes-commentaires-revisions.docx",
+  "category": "docx",
+  "difficulty": 3,
+  "challenge": "notes de bas de page et de fin, commentaire, texte supprimé/inséré en suivi des modifications",
+  "must": [
+   "Source : rapport interne qualité 2024-2025, page 17",
+   "Procédé breveté, licence valable jusqu'en 2031",
+   "Vérifier avec la base de données qualité avant diffusion",
+   "quarante-cinq jours",
+   "Ce chiffre reste à confirmer par le service qualité"
+  ],
+  "absent": [
+   "trente jours"
+  ],
+  "headings": [
+   "Étude de cas"
+  ],
+  "expect": "ok",
+  "notes": "Le texte supprimé (suivi des modifications) ne doit pas figurer dans le texte final ; les notes et le commentaire doivent être conservés."
+ },
+ {
+  "id": "docx-sommaire-equation-controle",
+  "path": "docx/sommaire-equation-controle.docx",
+  "category": "docx",
+  "difficulty": 4,
+  "challenge": "champ de sommaire, lien interne, contrôle de contenu (SDT), équation OMML",
+  "must": [
+   "Valeur saisie : 42 unités",
+   "Voir la section Méthode",
+   "La solution de l'équation quadratique",
+   "2a"
+  ],
+  "any_of": [
+   [
+    "4ac",
+    "4 a c"
+   ]
+  ],
+  "once": [
+   "Valeur saisie : 42 unités"
+  ],
+  "headings": [
+   "Rapport technique",
+   "Contexte",
+   "Méthode"
+  ],
+  "expect": "ok",
+  "notes": "L'équation doit rester lisible (LaTeX ou texte) ; les contrôles de contenu ne doivent pas être ignorés."
+ },
+ {
+  "id": "docx-tableaux-fusionnes",
+  "path": "docx/tableaux-fusionnes.docx",
+  "category": "docx",
+  "difficulty": 4,
+  "challenge": "en-têtes fusionnés horizontalement et verticalement, tableau dans une cellule",
+  "must": [
+   "Détail pays",
+   "Source : direction financière"
+  ],
+  "headings": [
+   "Chiffre d'affaires par zone"
+  ],
+  "cells": [
+   "Zone",
+   "Résultats 2025",
+   "Prévisions 2026",
+   "T1",
+   "T2",
+   "Année",
+   "Europe",
+   "1 204",
+   "1 310",
+   "5 100",
+   "Asie",
+   "980",
+   "1 022",
+   "4 200",
+   "Dont France",
+   "48 %"
+  ],
+  "rows": [
+   [
+    "Europe",
+    "1 204",
+    "1 310",
+    "5 100"
+   ],
+   [
+    "Asie",
+    "980",
+    "1 022",
+    "4 200"
+   ],
+   [
+    "Dont France",
+    "48 %"
+   ],
+   [
+    "Zone",
+    "T1"
+   ]
+  ],
+  "expect": "ok",
+  "notes": "Les valeurs doivent rester rattachées à la bonne colonne ; le tableau imbriqué ne doit pas disparaître."
+ },
+ {
+  "id": "docx-zone-texte-entete",
+  "path": "docx/zone-texte-entete.docx",
+  "category": "docx",
+  "difficulty": 4,
+  "challenge": "zone de texte stockée en double (Choice + Fallback), en-tête et pied de page",
+  "must": [
+   "Note de service",
+   "La date limite est le 30 juin",
+   "Merci de transmettre vos demandes à la direction des ressources humaines"
+  ],
+  "once": [
+   "Encadré : à retenir absolument"
+  ],
+  "headings": [
+   "Note de service"
+  ],
+  "expect": "ok",
+  "notes": "Le contenu de la zone de texte doit apparaître une seule fois ; l'en-tête/pied de page est du bruit par défaut."
+ },
+ {
+  "id": "legacy-budget-formules-masques",
+  "path": "legacy/budget-formules-masques.xls",
+  "category": "legacy",
+  "difficulty": 4,
+  "challenge": "Excel 97-2003 (.xls) : formats, formule, commentaire",
+  "must": [
+   "Budget prévisionnel 2026",
+   "Salaires",
+   "Loyers",
+   "Hélène Dubois"
+  ],
+  "expect": "ok"
+ },
+ {
+  "id": "legacy-groupes-graphique-notes",
+  "path": "legacy/groupes-graphique-notes.ppt",
+  "category": "legacy",
+  "difficulty": 4,
+  "challenge": "PowerPoint 97-2003 (.ppt) : groupes, tableau, notes",
+  "must": [
+   "Résultats trimestriels",
+   "Pôle Produit : Anaïs Moreau",
+   "Budget par pôle",
+   "420 k€",
+   "Note de l'orateur : insister sur la progression de l'export au T4"
+  ],
+  "expect": "ok"
+ },
+ {
+  "id": "legacy-tableaux-fusionnes",
+  "path": "legacy/tableaux-fusionnes.doc",
+  "category": "legacy",
+  "difficulty": 4,
+  "challenge": "Word 97-2003 (.doc) : tableau à cellules fusionnées",
+  "must": [
+   "Source : direction financière",
+   "Chiffre d'affaires par zone"
+  ],
+  "cells": [
+   "Zone",
+   "Europe",
+   "1 204",
+   "1 310",
+   "5 100",
+   "Asie",
+   "980",
+   "1 022",
+   "4 200"
+  ],
+  "expect": "ok"
+ },
+ {
+  "id": "pdf-article-deux-colonnes",
+  "path": "pdf/article-deux-colonnes.pdf",
+  "category": "pdf",
+  "difficulty": 4,
+  "challenge": "deux colonnes sur 3 pages, titre/résumé pleine largeur, en-tête et numéros de page répétés",
+  "must": [
+   "Résumé. Cet article présente une méthode"
+  ],
+  "order": [
+   "Mesure de la dérive thermique en milieu industriel",
+   "P01",
+   "P02",
+   "P03",
+   "P04",
+   "P05",
+   "P06",
+   "P07",
+   "P08",
+   "P09",
+   "P10",
+   "P11",
+   "P12"
+  ],
+  "absent": [
+   "Page 2 sur 3",
+   "Page 3 sur 3"
+  ],
+  "at_most": {
+   "Journal of Examples — Vol. 12, 2025": 1
+  },
+  "headings": [
+   "1. Introduction",
+   "2. Méthodes",
+   "3. Résultats",
+   "4. Discussion"
+  ],
+  "expect": "ok",
+  "notes": "Ordre de lecture : colonne de gauche entière puis colonne de droite ; l'en-tête courant et les numéros de page ne doivent pas être répétés dans le corps."
+ },
+ {
+  "id": "pdf-mixte-texte-scan-texte",
+  "path": "pdf/mixte-texte-scan-texte.pdf",
+  "category": "pdf",
+  "difficulty": 4,
+  "challenge": "texte natif, puis une page scannée au milieu, puis texte natif",
+  "must": [
+   "Dossier de candidature — première partie",
+   "Cette page contient du texte natif parfaitement extractible",
+   "Dossier de candidature — dernière partie",
+   "Conclusion : la candidature est recevable sous réserve des pièces",
+   "Compte rendu de la visite du 12 mars",
+   "Le chantier avance conformément au planning prévisionnel",
+   "La livraison des menuiseries est confirmée pour le 4 avril"
+  ],
+  "order": [
+   "première partie",
+   "dernière partie"
+  ],
+  "expect": "vision",
+  "notes": "La page scannée du milieu doit être OCRisée ou signalée ; les pages texte ne doivent pas être affectées."
+ },
+ {
+  "id": "pdf-notes-de-bas-de-page",
+  "path": "pdf/notes-de-bas-de-page.pdf",
+  "category": "pdf",
+  "difficulty": 3,
+  "challenge": "notes de bas de page en pied de page, appels en exposant dans le texte",
+  "must": [
+   "Source : observatoire national du réemploi, rapport annuel 2024, page 31",
+   "Décret relatif au diagnostic portant sur la gestion des produits"
+  ],
+  "order": [
+   "Le réemploi des matériaux de second œuvre",
+   "Pour autant, la filière reste fragmentée",
+   "La seconde partie examine les freins économiques"
+  ],
+  "headings": [
+   "L'économie circulaire dans le bâtiment"
+  ],
+  "expect": "ok",
+  "notes": "Le corps du texte doit rester continu ; les notes doivent être conservées (idéalement identifiées comme notes), sans s'intercaler au milieu d'une phrase."
+ },
+ {
+  "id": "pdf-page-pivotee",
+  "path": "pdf/page-pivotee.pdf",
+  "category": "pdf",
+  "difficulty": 3,
+  "challenge": "une page est marquée /Rotate 90 : le texte est dessiné dans le repère non pivoté",
+  "must": [
+   "Page normale : introduction du dossier d'étude",
+   "Page pivotée de 90 degrés : tableau des écarts",
+   "Écart de calibrage : 0,8 mm",
+   "Écart de planéité : 1,2 mm",
+   "Écart angulaire : 0,3 degré"
+  ],
+  "order": [
+   "Page normale",
+   "Écart de calibrage",
+   "Écart de planéité",
+   "Écart angulaire"
+  ],
+  "expect": "ok"
+ },
+ {
+  "id": "pdf-scan-incline-bruite",
+  "path": "pdf/scan-incline-bruite.pdf",
+  "category": "pdf",
+  "difficulty": 5,
+  "challenge": "scan en niveaux de gris, incliné de 1,6°, flou et bruit de numérisation : aucun texte natif",
+  "must": [
+   "Compte rendu de la visite du 12 mars",
+   "Le chantier avance conformément au planning prévisionnel",
+   "La livraison des menuiseries est confirmée pour le 4 avril",
+   "le calfeutrement de la baie du rez-de-chaussée",
+   "128 450 euros hors taxes",
+   "Prochaine réunion de chantier"
+  ],
+  "expect": "vision",
+  "notes": "Avec OCR : le texte doit ressortir ; sans OCR : la page doit être signalée « à lire visuellement » (jamais une sortie vide silencieuse)."
+ },
+ {
+  "id": "pdf-tableau-bordures-fusionnees",
+  "path": "pdf/tableau-bordures-fusionnees.pdf",
+  "category": "pdf",
+  "difficulty": 4,
+  "challenge": "tableau à traits avec cellules fusionnées horizontalement et verticalement",
+  "headings": [
+   "Ventes par région"
+  ],
+  "cells": [
+   "Région",
+   "Ventes 2025",
+   "S1",
+   "S2",
+   "Objectif 2026",
+   "Nord",
+   "410",
+   "455",
+   "900",
+   "Détail Lille : 120 / 135",
+   "270",
+   "Sud",
+   "380",
+   "402",
+   "820"
+  ],
+  "rows": [
+   [
+    "Nord",
+    "410",
+    "455",
+    "900"
+   ],
+   [
+    "Sud",
+    "380",
+    "402",
+    "820"
+   ]
+  ],
+  "expect": "ok",
+  "notes": "Chaque valeur doit rester sur la ligne de sa région ; les cellules fusionnées sont répétées ou clairement indiquées."
+ },
+ {
+  "id": "pdf-tableau-sans-bordures",
+  "path": "pdf/tableau-sans-bordures.pdf",
+  "category": "pdf",
+  "difficulty": 4,
+  "challenge": "tableau sans aucun trait : seules les positions des colonnes le structurent",
+  "must": [
+   "Prix TTC, valables jusqu'au 31 décembre"
+  ],
+  "headings": [
+   "Catalogue outillage — extrait"
+  ],
+  "cells": [
+   "Produit",
+   "Référence",
+   "Prix unitaire",
+   "Stock",
+   "Statut",
+   "Perceuse sans fil",
+   "PRC-2041",
+   "129,90 €",
+   "34",
+   "Disponible",
+   "Scie circulaire",
+   "SCI-1187",
+   "89,50 €",
+   "0",
+   "Rupture",
+   "Ponceuse orbitale",
+   "PON-0932",
+   "74,00 €",
+   "12",
+   "Disponible",
+   "Visseuse à choc",
+   "VIS-5520",
+   "159,00 €",
+   "5",
+   "Dernières unités",
+   "Niveau laser",
+   "NIV-7714",
+   "199,90 €",
+   "21",
+   "Disponible"
+  ],
+  "rows": [
+   [
+    "Produit",
+    "Référence",
+    "Prix unitaire",
+    "Stock",
+    "Statut"
+   ],
+   [
+    "Perceuse sans fil",
+    "PRC-2041",
+    "129,90 €",
+    "34",
+    "Disponible"
+   ],
+   [
+    "Scie circulaire",
+    "SCI-1187",
+    "89,50 €",
+    "0",
+    "Rupture"
+   ],
+   [
+    "Ponceuse orbitale",
+    "PON-0932",
+    "74,00 €",
+    "12",
+    "Disponible"
+   ],
+   [
+    "Visseuse à choc",
+    "VIS-5520",
+    "159,00 €",
+    "5",
+    "Dernières unités"
+   ],
+   [
+    "Niveau laser",
+    "NIV-7714",
+    "199,90 €",
+    "21",
+    "Disponible"
+   ]
+  ],
+  "expect": "ok",
+  "notes": "Doit devenir un vrai tableau Markdown (une ligne par ligne, une colonne par colonne), pas un texte aplati."
+ },
+ {
+  "id": "pptx-diapositive-image",
+  "path": "pptx/diapositive-image.pptx",
+  "category": "pptx",
+  "difficulty": 3,
+  "challenge": "toute l'information est dans une image (aucun texte, aucun texte alternatif)",
+  "must": [
+   "Chiffre d'affaires 2025",
+   "4,2 M€",
+   "Objectif 2026 : 5 M€"
+  ],
+  "expect": "vision",
+  "notes": "Sans OCR, le contenu ne peut pas être extrait : il doit au moins être signalé « à lire visuellement »."
+ },
+ {
+  "id": "pptx-groupes-graphique-notes",
+  "path": "pptx/groupes-graphique-notes.pptx",
+  "category": "pptx",
+  "difficulty": 4,
+  "challenge": "graphique (données dans le XML du graphique), formes groupées, tableau à cellules fusionnées, notes, diapositive masquée",
+  "must": [
+   "Ventes par trimestre",
+   "Ventes France",
+   "Ventes Export",
+   "170",
+   "130",
+   "Note de l'orateur : insister sur la progression de l'export au T4",
+   "Pôle Produit : Anaïs Moreau",
+   "Pôle Technique : Karim Benali",
+   "Pôle Ventes : Sofia Rossi",
+   "Budget par pôle",
+   "420 k€"
+  ],
+  "headings": [
+   "Résultats trimestriels",
+   "Équipes et responsabilités"
+  ],
+  "rows": [
+   [
+    "Pôle",
+    "Budget",
+    "Effectif"
+   ],
+   [
+    "Produit",
+    "420 k€",
+    "12"
+   ]
+  ],
+  "expect": "ok",
+  "notes": "Les valeurs du graphique doivent être restituées (tableau de données) ; la diapositive masquée doit être signalée ou exclue, pas confondue."
+ },
+ {
+  "id": "pptx-schema-formes-libres",
+  "path": "pptx/schema-formes-libres.pptx",
+  "category": "pptx",
+  "difficulty": 4,
+  "challenge": "diapositive entièrement dessinée (formes + connecteurs, titre en zone de texte libre), sans liste ni tableau",
+  "must": [
+   "Client mobile",
+   "Passerelle API",
+   "Service Paiement",
+   "Service Catalogue",
+   "Base de données",
+   "Flux chiffrés de bout en bout",
+   "Phase 1 : pilote",
+   "Phase 2 : extension",
+   "Phase 3 : généralisation",
+   "Plan de déploiement"
+  ],
+  "order": [
+   "Phase 1 : pilote",
+   "Phase 2 : extension",
+   "Phase 3 : généralisation"
+  ],
+  "headings": [
+   "Architecture de la plateforme"
+  ],
+  "expect": "ok",
+  "notes": "Idéal : un schéma Mermaid (nœuds = formes, flèches = connecteurs) ; au minimum tous les libellés dans l'ordre de lecture."
+ },
+ {
+  "id": "web-article-bruite",
+  "path": "web/article-web-bruite.html",
+  "category": "web",
+  "difficulty": 3,
+  "challenge": "article noyé dans le bruit : bandeau cookies, menu, publicité, articles liés, commentaires, pied de page, script",
+  "must": [
+   "Sur les toits de Lyon, trente-deux ruches",
+   "La diversité florale des parcs et des balcons",
+   "Une ruche installée sur le toit de l'hôtel de ville",
+   "vingt-huit kilos de miel par ruche",
+   "Pollution aux particules fines",
+   "Manque de ressources en fin d'été"
+  ],
+  "absent": [
+   "Accepter les cookies",
+   "Menu principal",
+   "Publicité : offrez-vous une ruche connectée",
+   "TRACKER-XYZ-123",
+   "Tous droits réservés",
+   "Jean : super article"
+  ],
+  "headings": [
+   "Les abeilles urbaines prospèrent",
+   "Pourquoi la ville leur réussit",
+   "Les limites"
+  ],
+  "items": [
+   "Pollution aux particules fines",
+   "Concurrence avec les abeilles sauvages"
+  ],
+  "expect": "ok",
+  "notes": "Seul l'article doit rester ; le script, le bandeau et la navigation sont du bruit. Les « articles liés » et les commentaires sont discutables mais ne doivent pas se mêler au corps."
+ },
+ {
+  "id": "web-drawio-sequence",
+  "path": "web/sequence-livraison.drawio",
+  "category": "web",
+  "difficulty": 3,
+  "challenge": "diagramme draw.io : sommets, arêtes étiquetées, retour à la ligne HTML dans un libellé",
+  "must": [
+   "Commande client",
+   "Préparation",
+   "entrepôt",
+   "Expédition",
+   "validée",
+   "colis prêt"
+  ],
+  "order": [
+   "Commande client",
+   "Préparation",
+   "Expédition"
+  ],
+  "expect": "ok"
+ },
+ {
+  "id": "web-email-multipartie",
+  "path": "web/email-multipartie.eml",
+  "category": "web",
+  "difficulty": 4,
+  "challenge": "sujet encodé, corps texte + HTML, tableau, pièce jointe texte, e-mail transféré en pièce jointe",
+  "must": [
+   "Réunion décalée : projet Éole",
+   "jeudi 15 mai à 14 h 30, salle Mistral",
+   "Bilan budgétaire",
+   "Nicolas",
+   "Planning de recette",
+   "notes-préparation.txt",
+   "Vérifier le budget restant : 18 400 euros",
+   "Validation du devis fournisseur",
+   "devis numéro 2025-0417",
+   "Amélie Rousseau"
+  ],
+  "once": [
+   "Merci de confirmer votre présence avant mardi"
+  ],
+  "rows": [
+   [
+    "Bilan budgétaire",
+    "Nicolas"
+   ],
+   [
+    "Planning de recette",
+    "Inès"
+   ]
+  ],
+  "expect": "ok",
+  "notes": "Un seul corps (texte OU HTML, pas les deux dupliqués) ; les pièces jointes texte et le message transféré doivent être lus."
+ },
+ {
+  "id": "web-epub-chapitres-notes",
+  "path": "web/livre-chapitres-notes.epub",
+  "category": "web",
+  "difficulty": 3,
+  "challenge": "EPUB 3 : ordre de lecture (spine), table des matières, note de fin liée, métadonnées",
+  "must": [
+   "Le voyage de Salomé",
+   "Marc Delorme",
+   "Salomé ferma la porte de la maison",
+   "Note : la maison fut vendue en 1952",
+   "La mer était calme le premier jour",
+   "Elle écrivait chaque soir dans son carnet",
+   "Gabriel"
+  ],
+  "order": [
+   "Le départ",
+   "Salomé ferma la porte",
+   "La traversée",
+   "La mer était calme",
+   "L'arrivée",
+   "Le port de Marseille"
+  ],
+  "headings": [
+   "Le départ",
+   "La traversée",
+   "L'arrivée"
+  ],
+  "expect": "ok"
+ },
+ {
+  "id": "web-html-structure-tordue",
+  "path": "web/html-structure-tordue.html",
+  "category": "web",
+  "difficulty": 4,
+  "challenge": "table de mise en page imbriquée, details, dl, code indenté, tableau à en-têtes fusionnés, entités, SVG, MathML, image en base64",
+  "must": [
+   "Spécification du module de calcul",
+   "Pré-requis",
+   "Python 3.11 ou supérieur et 2 Go de mémoire vive",
+   "Écart maximal admissible : 0,5 %",
+   "Prévision à douze mois",
+   "def fibonacci(n):",
+   "a, b = b, a + b",
+   "12 € HT",
+   "14,40 € TTC",
+   "café & thé",
+   "Citation principale",
+   "Citation imbriquée de second niveau",
+   "Schéma : trois étapes du procédé",
+   "Courbe de charge en fonction du temps",
+   "Ligne deux"
+  ],
+  "any_of": [
+   [
+    "a/b",
+    "a b = 0,75",
+    "\\frac{a}{b}",
+    "a / b",
+    "a b"
+   ]
+  ],
+  "headings": [
+   "Spécification du module de calcul"
+  ],
+  "rows": [
+   [
+    "Normal",
+    "1 200 req/s",
+    "12 ms"
+   ],
+   [
+    "Dégradé",
+    "300 req/s",
+    "85 ms"
+   ]
+  ],
+  "expect": "ok",
+  "notes": "Le code doit garder son indentation (bloc de code) ; la table de mise en page ne doit pas devenir un tableau de données ; l'équation et le texte du SVG ne doivent pas disparaître."
+ },
+ {
+  "id": "web-notebook-sorties",
+  "path": "web/notebook-sorties.ipynb",
+  "category": "web",
+  "difficulty": 3,
+  "challenge": "cellules Markdown/code, sorties texte, HTML, erreur, image ; formule LaTeX",
+  "must": [
+   "Analyse des ventes",
+   "df = pd.read_csv('ventes.csv')",
+   "Total : 182460.0",
+   "ZeroDivisionError: division by zero",
+   "Les ventes progressent de 12 % sur l'année",
+   "1520.5"
+  ],
+  "any_of": [
+   [
+    "\\frac{1}{n}",
+    "frac{1}{n}"
+   ]
+  ],
+  "headings": [
+   "Analyse des ventes",
+   "Conclusion"
+  ],
+  "expect": "ok",
+  "notes": "Le code et les sorties doivent être distingués (blocs de code) ; la sortie HTML ne doit pas être dupliquée avec son équivalent texte."
+ },
+ {
+  "id": "web-svg-processus",
+  "path": "web/diagramme-processus.svg",
+  "category": "web",
+  "difficulty": 4,
+  "challenge": "diagramme SVG : groupes transformés, losange, tspans multilignes, flèches, texte sur chemin",
+  "must": [
+   "Demande reçue",
+   "supérieur à 5 k€",
+   "Validation direction",
+   "Validation manager",
+   "Archivage",
+   "oui",
+   "non",
+   "Légende : les montants s'entendent hors taxes",
+   "Processus de validation"
+  ],
+  "expect": "ok",
+  "notes": "Idéal : un flowchart Mermaid reflétant les flèches (Demande → Montant ? → direction / manager → Archivage) ; au minimum tous les libellés."
+ },
+ {
+  "id": "xlsx-budget-formules-masques",
+  "path": "xlsx/budget-formules-masques.xlsx",
+  "category": "xlsx",
+  "difficulty": 4,
+  "challenge": "titre fusionné, formats (monnaie, %, date), formule à valeur en cache, commentaire, ligne et feuille masquées",
+  "must": [
+   "Budget prévisionnel 2026",
+   "Hypothèse : inflation de 3 % sur les salaires",
+   "Hélène Dubois",
+   "Renégociation des contrats cadres",
+   "Salaires",
+   "Loyers",
+   "Divers"
+  ],
+  "any_of": [
+   [
+    "1 414 000",
+    "1414000",
+    "1 414 000,00",
+    "1,414,000"
+   ],
+   [
+    "58,0 %",
+    "58 %",
+    "0,58",
+    "0.58",
+    "58.0%"
+   ],
+   [
+    "15/01/2026",
+    "2026-01-15"
+   ],
+   [
+    "820 000,50 €",
+    "820000.50 €",
+    "820000.5 €",
+    "820,000.50 €",
+    "€820000.5",
+    "€ 820000.5"
+   ]
+  ],
+  "headings": [
+   "Synthèse",
+   "Détail"
+  ],
+  "rows": [
+   [
+    "Salaires"
+   ],
+   [
+    "Total"
+   ]
+  ],
+  "expect": "ok",
+  "notes": "Le montant doit garder son unité (820 000,50 €) : sans symbole monétaire, « 820000.5 » est ambigu pour un lecteur IA. Contenu masqué (feuille « Brouillon », ligne Informatique) : acceptable s'il est étiqueté « masqué »."
+ },
+ {
+  "id": "xlsx-grande-feuille-large",
+  "path": "xlsx/grande-feuille-large.xlsx",
+  "category": "xlsx",
+  "difficulty": 3,
+  "challenge": "3 000 lignes × 30 colonnes : tient-on la charge sans perdre silencieusement des lignes ?",
+  "must": [
+   "r0001c01",
+   "r0500c15",
+   "r1000c30"
+  ],
+  "any_of": [
+   [
+    "r3000c30",
+    "lignes omises",
+    "tronqué",
+    "limite",
+    "troncature"
+   ]
+  ],
+  "expect": "ok",
+  "notes": "Une troncature est acceptable si elle est signalée dans le texte ; une perte silencieuse ne l'est pas."
+ }
+]
