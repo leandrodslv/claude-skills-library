@@ -36,7 +36,7 @@ jobs:
               names = set(zf.namelist())
               for p in Path(f".claude/skills/{name}").rglob("*"):
                   rel = p.relative_to(".claude/skills").as_posix()
-                  if p.is_file() and "__pycache__" not in rel and not rel.endswith((".pyc", ".mdconv-cache.json")):
+                  if p.is_file() and "__pycache__" not in rel and ".ruff_cache" not in rel and not rel.endswith((".pyc", ".mdconv-cache.json")):
                       if rel not in names:
                           bad.append(f"{rel} absent de archives/{name}.zip")
                       elif zf.read(rel) != p.read_bytes():
