@@ -891,6 +891,235 @@
   "notes": "Idéal : un schéma Mermaid (nœuds = formes, flèches = connecteurs) ; au minimum tous les libellés dans l'ordre de lecture."
  },
  {
+  "id": "svg-architecture-courbes",
+  "path": "svg/architecture-courbes.svg",
+  "category": "svg",
+  "difficulty": 4,
+  "challenge": "ellipse, cylindre (chemin fermé à courbes), liens en courbes de Bézier, flèche bidirectionnelle, libellé sur deux lignes",
+  "must": [
+   "Navigateur",
+   "API Gateway",
+   "Service Auth",
+   "Service Commandes",
+   "Base SQL",
+   "HTTPS"
+  ],
+  "edges": [
+   [
+    "Navigateur",
+    "API",
+    "HTTPS"
+   ],
+   [
+    "API",
+    "Service Auth",
+    "",
+    "<>"
+   ],
+   [
+    "API",
+    "Service Commandes"
+   ],
+   [
+    "Service Commandes",
+    "Base SQL"
+   ]
+  ],
+  "expect": "ok"
+ },
+ {
+  "id": "svg-couloirs-processus",
+  "path": "svg/couloirs-processus.svg",
+  "category": "svg",
+  "difficulty": 4,
+  "challenge": "trois couloirs (cadres nommés) dont un ne contient qu'un seul nœud ; liens qui traversent les couloirs, un chemin coudé",
+  "must": [
+   "Client",
+   "Support",
+   "Technique",
+   "Ouvre un ticket",
+   "Reçoit la solution",
+   "Qualifie la demande",
+   "Analyse et corrige"
+  ],
+  "edges": [
+   [
+    "Ouvre un ticket",
+    "Qualifie la demande"
+   ],
+   [
+    "Qualifie la demande",
+    "Analyse et corrige"
+   ],
+   [
+    "Analyse et corrige",
+    "Reçoit la solution"
+   ]
+  ],
+  "groups": [
+   [
+    "Client",
+    [
+     "Ouvre un ticket",
+     "Reçoit la solution"
+    ]
+   ],
+   [
+    "Support",
+    [
+     "Qualifie la demande"
+    ]
+   ],
+   [
+    "Technique",
+    [
+     "Analyse et corrige"
+    ]
+   ]
+  ],
+  "expect": "ok",
+  "notes": "Les couloirs doivent devenir des sous-graphes (subgraph), pas des nœuds."
+ },
+ {
+  "id": "svg-flux-classes-css",
+  "path": "svg/flux-classes-css.svg",
+  "category": "svg",
+  "difficulty": 3,
+  "challenge": "rectangles sans remplissage, flèches par classe CSS (marker-end dans <style>), texte aligné à gauche, étiquettes de liens",
+  "must": [
+   "Saisie commande",
+   "Contrôle stock",
+   "Préparation",
+   "Réapprovisionner",
+   "Expédition",
+   "en stock",
+   "rupture"
+  ],
+  "edges": [
+   [
+    "Saisie commande",
+    "Contrôle stock"
+   ],
+   [
+    "Contrôle stock",
+    "Préparation",
+    "en stock"
+   ],
+   [
+    "Contrôle stock",
+    "Réapprovisionner",
+    "rupture"
+   ],
+   [
+    "Préparation",
+    "Expédition"
+   ],
+   [
+    "Réapprovisionner",
+    "Expédition"
+   ]
+  ],
+  "expect": "ok",
+  "notes": "Attendu : un flowchart Mermaid avec les 5 liens, orientés, dont 2 étiquetés."
+ },
+ {
+  "id": "svg-graphique-courbe",
+  "path": "svg/graphique-courbe.svg",
+  "category": "svg",
+  "difficulty": 3,
+  "challenge": "graphique en courbe : axes, polyligne de données, libellés — ne doit PAS être pris pour un schéma de flux",
+  "must": [
+   "Ventes mensuelles 2025",
+   "Févr.",
+   "Avr.",
+   "Juin",
+   "142 k€"
+  ],
+  "absent": [
+   "flowchart",
+   "mermaid"
+  ],
+  "expect": "ok",
+  "notes": "Pas de diagramme inventé ; le texte est restitué ; les valeurs de la courbe elle-même se lisent sur le rendu."
+ },
+ {
+  "id": "svg-organigramme-coudes",
+  "path": "svg/organigramme-coudes.svg",
+  "category": "svg",
+  "difficulty": 3,
+  "challenge": "arbre à trois niveaux, connecteurs coudés (V/H) sans pointe de flèche",
+  "must": [
+   "Direction générale",
+   "Technique",
+   "Commercial",
+   "Finance",
+   "Infra",
+   "Dev"
+  ],
+  "edges": [
+   [
+    "Direction générale",
+    "Technique",
+    "",
+    "-"
+   ],
+   [
+    "Direction générale",
+    "Commercial",
+    "",
+    "-"
+   ],
+   [
+    "Direction générale",
+    "Finance",
+    "",
+    "-"
+   ],
+   [
+    "Technique",
+    "Infra",
+    "",
+    "-"
+   ],
+   [
+    "Technique",
+    "Dev",
+    "",
+    "-"
+   ]
+  ],
+  "expect": "ok",
+  "notes": "Sans pointe, le sens n'est pas connu : lien non orienté (---) du haut vers le bas."
+ },
+ {
+  "id": "svg-pointes-dessinees",
+  "path": "svg/pointes-dessinees.svg",
+  "category": "svg",
+  "difficulty": 3,
+  "challenge": "les flèches n'ont pas de marqueur : la pointe est un petit triangle dessiné à part",
+  "must": [
+   "Capteur",
+   "Passerelle",
+   "Cloud",
+   "Alarme locale"
+  ],
+  "edges": [
+   [
+    "Capteur",
+    "Passerelle"
+   ],
+   [
+    "Passerelle",
+    "Cloud"
+   ],
+   [
+    "Passerelle",
+    "Alarme locale"
+   ]
+  ],
+  "expect": "ok"
+ },
+ {
   "id": "web-article-bruite",
   "path": "web/article-web-bruite.html",
   "category": "web",
@@ -1103,8 +1332,29 @@
    "Légende : les montants s'entendent hors taxes",
    "Processus de validation"
   ],
+  "edges": [
+   [
+    "Demande reçue",
+    "Montant",
+    ""
+   ],
+   [
+    "Montant",
+    "Validation direction",
+    "oui"
+   ],
+   [
+    "Montant",
+    "Validation manager",
+    "non"
+   ],
+   [
+    "Validation manager",
+    "Archivage"
+   ]
+  ],
   "expect": "ok",
-  "notes": "Idéal : un flowchart Mermaid reflétant les flèches (Demande → Montant ? → direction / manager → Archivage) ; au minimum tous les libellés."
+  "notes": "Un flowchart Mermaid reflétant les flèches (Demande → Montant ? → direction / manager → Archivage)."
  },
  {
   "id": "xlsx-budget-formules-masques",

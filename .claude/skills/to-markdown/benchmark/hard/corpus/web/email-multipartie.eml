@@ -4,13 +4,13 @@ From: =?utf-8?q?Am=C3=A9lie?= Rousseau <amelie.rousseau@exemple.fr>
 To: equipe@exemple.fr
 Date: Wed, 30 Apr 2025 08:00:00 -0000
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============6989027300606289413=="
+Content-Type: multipart/mixed; boundary="===============8247386118800403500=="
 
---===============6989027300606289413==
+--===============8247386118800403500==
 Content-Type: multipart/alternative;
- boundary="===============5107277496270611352=="
+ boundary="===============2594175030922556502=="
 
---===============5107277496270611352==
+--===============2594175030922556502==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
 
@@ -22,7 +22,7 @@ Merci de confirmer votre pr=C3=A9sence avant mardi.
 
 Am=C3=A9lie
 
---===============5107277496270611352==
+--===============2594175030922556502==
 Content-Type: text/html; charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
 MIME-Version: 1.0
@@ -36,9 +36,9 @@ In=C3=A8s</td></tr></table>
 <p>Merci de confirmer votre pr=C3=A9sence avant mardi.</p><p>Am=C3=A9lie</p><=
 /body></html>
 
---===============5107277496270611352==--
+--===============2594175030922556502==--
 
---===============6989027300606289413==
+--===============8247386118800403500==
 Content-Type: text/plain
 Content-Transfer-Encoding: base64
 Content-Disposition: attachment; filename*=utf-8''notes-pr%C3%A9paration.txt
@@ -47,7 +47,7 @@ MIME-Version: 1.0
 Tm90ZXMgZGUgcHLDqXBhcmF0aW9uCi0gVsOpcmlmaWVyIGxlIGJ1ZGdldCByZXN0YW50IDogMTgg
 NDAwIGV1cm9zCi0gSW1wcmltZXIgbCdvcmRyZSBkdSBqb3VyCg==
 
---===============6989027300606289413==
+--===============8247386118800403500==
 Content-Type: message/rfc822
 Content-Transfer-Encoding: 8bit
 MIME-Version: 1.0
@@ -62,4 +62,4 @@ MIME-Version: 1.0
 Le devis num=C3=A9ro 2025-0417 d'un montant de 18 400 euros est valable jusqu=
 'au 30 juin.
 
---===============6989027300606289413==--
+--===============8247386118800403500==--

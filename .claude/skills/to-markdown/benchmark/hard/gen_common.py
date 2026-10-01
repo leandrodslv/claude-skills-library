@@ -34,6 +34,8 @@ class Case:
     rows: List[List[str]] = field(default_factory=list)     # lignes de tableau : toutes ces cellules sur la même ligne Markdown, dans l'ordre
     levels: List[List[object]] = field(default_factory=list)  # [[texte d'élément de liste, niveau d'imbrication]] : l'indentation doit suivre
     links: List[List[str]] = field(default_factory=list)    # [[texte, url], …]
+    edges: List[List[str]] = field(default_factory=list)    # schémas : [source, cible, étiquette, sens] ; sens « > » (défaut), « - » (non orienté), « <> »
+    groups: List[List[object]] = field(default_factory=list)  # schémas : [titre du cadre, [libellés des nœuds contenus]]
     expect: str = "ok"                                      # ok | vision (lecture visuelle ou OCR) | error (échec propre attendu)
     notes: str = ""
 

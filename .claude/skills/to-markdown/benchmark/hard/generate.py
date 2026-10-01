@@ -17,12 +17,12 @@ from pathlib import Path
 HERE = Path(__file__).resolve().parent
 sys.path.insert(0, str(HERE))
 
-MODULES = ["gen_docx", "gen_office", "gen_pdf", "gen_web", "gen_data"]
+MODULES = ["gen_docx", "gen_office", "gen_pdf", "gen_web", "gen_svg", "gen_data"]
 
 
 def main(argv=None) -> int:
     ap = argparse.ArgumentParser()
-    ap.add_argument("--only", help="catégories (séparées par des virgules) : docx, office, pdf, web, data")
+    ap.add_argument("--only", help="catégories (séparées par des virgules) : docx, office, pdf, web, svg, data")
     ap.add_argument("--with-big", action="store_true", help="ajoute les gros fichiers de charge (PDF de 300 pages, CSV de 200 000 lignes)")
     a = ap.parse_args(argv)
     only = set(a.only.split(",")) if a.only else None

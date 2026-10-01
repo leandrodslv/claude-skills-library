@@ -46,7 +46,7 @@ to-markdown/
 │       ├── pipeline.py          ← cascade de moteurs → note de qualité → escalade vision
 │       ├── fmt_docx / fmt_pptx / fmt_xlsx / fmt_odf / fmt_rtf   ← Office et OpenDocument
 │       ├── fmt_pdf + pdf_lite   ← PDF (moteurs externes + lecteur natif) et OCR
-│       ├── fmt_svg / fmt_diagram ← SVG, draw.io, Graphviz, Excalidraw → Mermaid
+│       ├── fmt_svg / fmt_diagram / svg_geometry ← SVG, draw.io, Graphviz, Excalidraw → Mermaid (liens déduits de la géométrie pour les SVG dessinés)
 │       ├── fmt_html / fmt_epub / fmt_data / fmt_mail / fmt_image / fmt_archive
 │       ├── fmt_legacy / fmt_binary ← .doc/.xls/.ppt (LibreOffice, sinon lecteurs natifs)
 │       ├── quality / textflow   ← notes de qualité, remise en paragraphes
@@ -73,7 +73,7 @@ Les fixtures (DOCX, PPTX, XLSX, ODF, EPUB, PDF, PNG…) sont fabriquées par `te
 - Sans outil PDF installé, le lecteur natif lit colonnes et tableaux alignés, reconnaît aussi les tableaux à bordures dessinées (cellules fusionnées verticalement comprises), mais reste moins fin que pymupdf4llm sur les mises en page très complexes.
 - Sans moteur externe : `.doc/.ppt` sans titres ni listes ; pas d'OCR.
 - Fichiers protégés par un vrai mot de passe d'ouverture (PDF, Office) : jamais contournés, à déverrouiller avant. (Les PDF « sécurisés » sans mot de passe d'ouverture — RC4, AES-128/256 — sont lus.)
-- Les diapositives dessinées en formes libres (sans connecteurs) ne deviennent pas un diagramme : `--render` pour les vérifier à l'œil.
+- Schémas SVG et diapositives en formes libres : les liens sont déduits de la position des formes et des flèches (toujours signalés « à vérifier ») ; courbes très tordues, liens sans extrémité sur une forme ou schémas dont les nœuds n'ont pas de texte restent à lire sur le rendu (`--render`).
 
 ## Provenance
 

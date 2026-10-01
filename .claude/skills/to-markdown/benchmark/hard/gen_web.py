@@ -161,7 +161,8 @@ def build() -> List[Case]:
     (d / "diagramme-processus.svg").write_text(svg, encoding="utf-8")
     cases.append(Case("web-svg-processus", d / "diagramme-processus.svg", "web", 4, "diagramme SVG : groupes transformés, losange, tspans multilignes, flèches, texte sur chemin",
                       must=["Demande reçue", "supérieur à 5 k€", "Validation direction", "Validation manager", "Archivage", "oui", "non", "Légende : les montants s'entendent hors taxes", "Processus de validation"],
-                      notes="Idéal : un flowchart Mermaid reflétant les flèches (Demande → Montant ? → direction / manager → Archivage) ; au minimum tous les libellés."))
+                      edges=[["Demande reçue", "Montant", ""], ["Montant", "Validation direction", "oui"], ["Montant", "Validation manager", "non"], ["Validation manager", "Archivage"]],
+                      notes="Un flowchart Mermaid reflétant les flèches (Demande → Montant ? → direction / manager → Archivage)."))
     drawio = """<mxfile><diagram name="Séquence de livraison"><mxGraphModel><root><mxCell id="0"/><mxCell id="1" parent="0"/>
 <mxCell id="a" value="Commande client" style="rounded=1;" vertex="1" parent="1"><mxGeometry x="40" y="40" width="120" height="50" as="geometry"/></mxCell>
 <mxCell id="b" value="Préparation&lt;br&gt;entrepôt" style="rounded=1;" vertex="1" parent="1"><mxGeometry x="240" y="40" width="120" height="50" as="geometry"/></mxCell>

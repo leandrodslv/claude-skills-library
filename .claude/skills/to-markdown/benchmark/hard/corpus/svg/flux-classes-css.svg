@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="640" height="300" viewBox="0 0 640 300"><style>.box{fill:none;stroke:#333;stroke-width:2}.edge{fill:none;stroke:#333;marker-end:url(#arr)}.t{font-size:14px;font-family:sans-serif}.l{font-size:11px;fill:#555}</style>
+<defs><marker id="arr" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto"><polygon points="0 0,10 3.5,0 7"/></marker></defs>
+<rect class="box" x="30" y="40" width="140" height="56"/><text class="t" x="46" y="73">Saisie commande</text>
+<rect class="box" x="250" y="40" width="140" height="56"/><text class="t" x="270" y="73">Contrôle stock</text>
+<rect class="box" x="470" y="40" width="140" height="56"/><text class="t" x="490" y="73">Préparation</text>
+<rect class="box" x="250" y="200" width="140" height="56"/><text class="t" x="262" y="233">Réapprovisionner</text>
+<rect class="box" x="470" y="200" width="140" height="56"/><text class="t" x="490" y="233">Expédition</text>
+<polyline class="edge" points="170,68 250,68"/><polyline class="edge" points="390,68 470,68"/><text class="l" x="402" y="60">en stock</text>
+<polyline class="edge" points="320,96 320,200"/><text class="l" x="328" y="150">rupture</text>
+<polyline class="edge" points="540,96 540,200"/><polyline class="edge" points="390,228 470,228"/></svg>

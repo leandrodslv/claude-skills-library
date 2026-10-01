@@ -106,10 +106,11 @@ def _hidden(el: ET.Element) -> bool:
 
 
 class TextItem:
-    __slots__ = ("text", "x", "y", "size", "order")
+    __slots__ = ("text", "x", "y", "size", "order", "anchor", "lines")
 
-    def __init__(self, text: str, x: float, y: float, size: float, order: int):
+    def __init__(self, text: str, x: float, y: float, size: float, order: int, anchor: str = "start", lines: int = 1):
         self.text, self.x, self.y, self.size, self.order = text, x, y, size, order
+        self.anchor, self.lines = anchor, lines
 
 
 class SvgConverter:
@@ -137,6 +138,10 @@ class SvgConverter:
         generator = self.generator(meta)
         graph, kind = self.recognize_graph()
         self.walk(root, (1, 0, 0, 1, 0, 0), 12.0, 0)
+        if graph is None or not graph.is_meaningful():
+            graph, kind = self.geometric_graph()
+            if graph is not None:
+                self.ctx.warn("schéma reconstitué d'après la position des formes, traits et flèches : à vérifier sur le rendu (--render)")
         ordered = self.reading_order()
         w, h, vb = root.get("width", ""), root.get("height", ""), root.get("viewBox", "")
         size_txt = self.size_text(w, h, vb)
@@ -159,7 +164,7 @@ class SvgConverter:
         title_of_text = "Texte (ordre de lecture)"
         if has_graph:
             parts.append(f"## Diagramme ({kind})\n\n{to_mermaid(graph)}")
-            shown = {re.sub(r"\s+", " ", t).strip() for t in graph.texts()}
+            shown = {re.sub(r"\s+", " ", t).strip() for t in list(graph.texts()) + list(getattr(graph, "shown", []))}
             rest = [t for t in ordered if re.sub(r"\s+", " ", t).strip() not in shown]
             ordered, title_of_text = rest, "Autres textes"      # les étiquettes du diagramme figurent déjà dans le graphe
         if ordered:
@@ -184,7 +189,10 @@ class SvgConverter:
         if include_source:
             parts.append("## Source SVG (simplifiée)\n\n" + fence(simplified, "svg"))
         # lecture visuelle
-        if not has_graph:
+        stats = getattr(self, "geo_stats", {})
+        if not has_graph and stats.get("connectors", 0) >= 2 and stats.get("shapes", 0) >= 2:
+            self.vision(parts, f"schéma dont les liens n'ont pas pu être déduits ({stats['attached']} trait(s) rattaché(s) sur {stats['connectors']}) — à relire sur le rendu")
+        elif not has_graph:
             if n_text == 0 and n_shapes > 0:
                 self.vision(parts, "SVG sans texte : icône, logo ou illustration — à décrire depuis le rendu")
             elif n_shapes > 40 and n_text < 25:
@@ -286,6 +294,23 @@ class SvgConverter:
             return g, "Mermaid"
         return None, ""
 
+    def geometric_graph(self) -> Tuple[Optional[Graph], str]:
+        """Schéma dessiné sans structure (Inkscape, Illustrator, Figma, script…) : liens déduits des formes, traits et flèches."""
+        self.geo_stats: Dict[str, int] = {}
+        if not self.texts:
+            return None, ""
+        from .svg_geometry import infer_graph
+
+        vb = [float(v) for v in re.findall(r"-?\d*\.?\d+", self.root.get("viewBox", ""))]
+        canvas = (vb[2], vb[3]) if len(vb) == 4 else (_f(self.root.get("width")), _f(self.root.get("height")))
+        try:
+            g, self.geo_stats = infer_graph(self.root, self.texts, (parse_transform, _mul, _apply, _style, _hidden), canvas)
+        except Exception:
+            return None, ""
+        if g is not None and g.is_meaningful():
+            return g, "déduit de la géométrie"
+        return None, ""
+
     # -- parcours ---------------------------------------------------------
     def walk(self, el: ET.Element, m, size: float, depth: int) -> None:
         if depth > 200:
@@ -363,11 +388,11 @@ class SvgConverter:
         return any((e.text or "").strip() for e in el.iter() if isinstance(e.tag, str) and local(e.tag) in ("text", "tspan", "div", "span", "p", "textPath"))
 
     # -- texte ------------------------------------------------------------
-    def add(self, text: str, x: float, y: float, size: float) -> None:
+    def add(self, text: str, x: float, y: float, size: float, anchor: str = "start", lines: int = 1) -> None:
         text = clean_text(re.sub(r"\s+", " ", text)).strip()
         if text:
             self.order += 1
-            self.texts.append(TextItem(text, x, y, size, self.order))
+            self.texts.append(TextItem(text, x, y, size, self.order, anchor, lines))
 
     def add_text(self, el: ET.Element, cm, size: float) -> None:
         lines: List[str] = []
@@ -414,7 +439,9 @@ class SvgConverter:
             x = _f((first_ts.get("x") or "0").split()[0])
             y = _f((first_ts.get("y") or el.get("y") or "0").split()[0])
         ax, ay = _apply(cm, x, y)
-        self.add(text, ax, ay, size * math.sqrt(abs(cm[0] * cm[3] - cm[1] * cm[2])) if size else size)
+        anchor = (_style(el).get("text-anchor") or el.get("text-anchor")
+                  or (first_ts is not None and (_style(first_ts).get("text-anchor") or first_ts.get("text-anchor"))) or "start")
+        self.add(text, ax, ay, size * math.sqrt(abs(cm[0] * cm[3] - cm[1] * cm[2])) if size else size, anchor, max(1, len([t for t in lines if t.strip()])))
 
     def matplotlib_text(self, comment: ET.Element, siblings: List[ET.Element], nxt: int, m, size: float) -> None:
         """matplotlib (svg.fonttype = path) note le texte dans un commentaire précédant les glyphes."""
@@ -546,6 +573,8 @@ def svg_outline(root: ET.Element, raw: bytes, ctx: Ctx) -> Dict[str, object]:
         desc = ""
     graph, kind = conv.recognize_graph()
     conv.walk(root, (1, 0, 0, 1, 0, 0), 12.0, 0)
+    if graph is None or not graph.is_meaningful():
+        graph, kind = conv.geometric_graph()
     return {"title": title, "desc": desc, "graph": graph if graph is not None and graph.is_meaningful() else None, "kind": kind,
             "texts": conv.reading_order(), "shapes": sum(conv.counts[k] for k in _SHAPES)}
 

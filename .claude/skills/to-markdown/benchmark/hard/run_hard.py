@@ -95,6 +95,14 @@ def evaluate(case: Dict[str, Any], out: str, status: str, flagged_vision: bool, 
         consistent = len(got) == len(case["levels"]) and all(
             (lb > la) == (ib > ia) and (lb == la) == (ib == ia) for (la, ia), (lb, ib) in zip(got, got[1:]))
         tally(consistent, "imbrication des listes perdue (l'indentation ne suit pas les niveaux)")
+    if case.get("edges") or case.get("groups"):
+        nodes, got_edges, got_groups = _mermaid_graph(text)
+        for e in case.get("edges", []):
+            a, b, lab, kind = (list(e) + ["", ">"])[:4] if len(e) < 4 else e[:4]
+            tally(_has_edge(nodes, got_edges, a, b, lab, kind or ">"), f"lien absent du schéma : {a} {kind or '>'} {b}" + (f" ({lab})" if lab else ""))
+        for title, members in case.get("groups", []):
+            ok_g = any(_n(title) in _n(t) and all(any(_n(m) in _n(x) for x in xs) for m in members) for t, xs in got_groups)
+            tally(ok_g, f"cadre absent du schéma : {title} ⊃ {', '.join(members)}")
     struct: Dict[str, Optional[float]] = {
         "titres": metrics.headings_score(case.get("headings", []), text),
         "tableaux": metrics.cells_score(case.get("cells", []), text),
@@ -129,6 +137,33 @@ def evaluate(case: Dict[str, Any], out: str, status: str, flagged_vision: bool, 
         verdict, score = "ko", 0.0
         problems = [f"erreur : {error[:100]}"]
     return {"score": round(score, 1), "verdict": verdict, "problems": problems, "structure": struct, "words": len(metrics.tokens(text))}
+
+
+def _mermaid_graph(text: str):
+    """Extrait d'un bloc Mermaid : {id: libellé}, [(src, cible, étiquette, flèche)], [(titre de sous-graphe, [libellés])]."""
+    nodes = {k: v for k, v in re.findall(r'(\w+)\["([^"]*)"\]', text)}
+    edges = [(a, b2, lab, arrow) for a, arrow, lab, b2 in re.findall(r"(\w+)\s+(<-->|-->|---|<--)\s*(?:\|([^|\n]*)\|)?\s*(\w+)", text)]
+    groups = []
+    for m in re.finditer(r'subgraph\s+\w+\["([^"]*)"\]\n(.*?)\n\s*end', text, flags=re.S):
+        groups.append((m.group(1), [nodes.get(i, "") for i in re.findall(r"(\w+)\[", m.group(2))]))
+    return nodes, edges, groups
+
+
+def _has_edge(nodes: Dict[str, str], edges, a: str, b: str, lab: str, kind: str) -> bool:
+    def label_ok(l2: str) -> bool:
+        return not lab or _n(lab) in _n(l2)
+
+    for s, t, l2, arrow in edges:
+        na, nb = _n(nodes.get(s, "")), _n(nodes.get(t, ""))
+        fwd = _n(a) in na and _n(b) in nb and na and nb
+        rev = _n(a) in nb and _n(b) in na and na and nb
+        if kind == ">" and fwd and arrow in ("-->", "<-->") and label_ok(l2):
+            return True
+        if kind == "<>" and (fwd or rev) and arrow == "<-->" and label_ok(l2):
+            return True
+        if kind == "-" and (fwd or rev) and label_ok(l2):
+            return True
+    return False
 
 
 def run_mdconv(path: Path, external: bool) -> Tuple[str, str, bool, Optional[str], float]:

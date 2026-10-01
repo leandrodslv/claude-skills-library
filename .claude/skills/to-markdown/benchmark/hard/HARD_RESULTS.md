@@ -1,6 +1,6 @@
 # Batterie de documents difficiles — résultats
 
-_42 documents · généré par `benchmark/hard/run_hard.py` · voir [README](README.md) pour la méthode_
+_48 documents · généré par `benchmark/hard/run_hard.py` · voir [README](README.md) pour la méthode_
 
 ✅ conforme (≥ 95 % des attentes) · ⚠️ partiel (70-95 %) · ❌ échec · 👁 contenu non extrait **mais signalé** à lire visuellement. Le score est la part des vérifications réussies (texte, ordre, doublons, bruit, structure).
 
@@ -8,8 +8,8 @@ _42 documents · généré par `benchmark/hard/run_hard.py` · voir [README](REA
 
 | Convertisseur | ✅ | ⚠️ | ❌ | 👁 | Score moyen |
 | --- | ---: | ---: | ---: | ---: | ---: |
-| **mdconv-natif** (42 docs) | 30 | 4 | 6 | 2 | 84 |
-| **mdconv-auto** (42 docs) | 31 | 3 | 8 | 0 | 85 |
+| **mdconv-natif** (48 docs) | 36 | 4 | 6 | 2 | 86 |
+| **mdconv-auto** (48 docs) | 37 | 3 | 8 | 0 | 87 |
 | **markitdown** (25 docs) | 7 | 7 | 11 | 0 | 65 |
 | **pandoc** (12 docs) | 3 | 5 | 4 | 0 | 74 |
 | **pymupdf4llm** (8 docs) | 3 | 1 | 4 | 0 | 64 |
@@ -51,6 +51,12 @@ _42 documents · généré par `benchmark/hard/run_hard.py` · voir [README](REA
 | `pptx-diapositive-image` | ●●● | ❌ 0 | ❌ 0 | ❌ 0 | — | — |
 | `pptx-groupes-graphique-notes` | ●●●● | ✅ 100 | ✅ 100 | ✅ 100 | — | — |
 | `pptx-schema-formes-libres` | ●●●● | ✅ 100 | ✅ 100 | ✅ 100 | — | — |
+| `svg-architecture-courbes` | ●●●● | ✅ 100 | ✅ 100 | — | — | — |
+| `svg-couloirs-processus` | ●●●● | ✅ 100 | ✅ 100 | — | — | — |
+| `svg-flux-classes-css` | ●●● | ✅ 100 | ✅ 100 | — | — | — |
+| `svg-graphique-courbe` | ●●● | ✅ 100 | ✅ 100 | — | — | — |
+| `svg-organigramme-coudes` | ●●● | ✅ 100 | ✅ 100 | — | — | — |
+| `svg-pointes-dessinees` | ●●● | ✅ 100 | ✅ 100 | — | — | — |
 | `web-article-bruite` | ●●● | ✅ 100 | ✅ 100 | ❌ 64 | ❌ 64 | — |
 | `web-drawio-sequence` | ●●● | ✅ 100 | ✅ 100 | — | — | — |
 | `web-email-multipartie` | ●●●● | ❌ 38 | ❌ 38 | — | — | — |
