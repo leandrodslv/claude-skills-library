@@ -17,6 +17,7 @@ md/                                  ← dossier de sortie (-o), défaut ./markd
 ├── long_chunks/                     ← seulement avec --chunk-tokens : part-01.md … part-NN.md + index.json
 ├── combined.md                      ← seulement avec --combined / --only-combined
 ├── INDEX.md                         ← tableau de tous les fichiers, statuts, éléments à lire visuellement, non convertis
+├── RAPPORT.md                       ← compte rendu lisible : fiable / à relire (pourquoi) / lecture visuelle / non converti
 ├── _report.json                     ← rapport machine (voir ci-dessous)
 └── .mdconv-cache.json               ← cache incrémental (peut être supprimé)
 ```
@@ -90,6 +91,10 @@ needs_vision: 3       # seulement s'il reste des éléments à lire visuellement
 ```
 
 `status` ∈ `ok · warn · needs_vision · unsupported · error · unchanged`. Les champs vides sont omis. Pour un fichier échoué : `error` explique pourquoi et quoi faire. `vision_needed[].path` est un chemin **absolu** directement ouvrable.
+
+## `RAPPORT.md`
+
+Écrit à chaque conversion (sauf `--in-place` et `-o -`). Sections : **Non convertis**, **À lire visuellement**, **Non lus volontairement** (`--no-vision`), **À relire** (avec la raison en clair : texte manquant, fidélité sous 90 %, avertissements), **Fiables, avec remarques**, **Fiables** (tableau). `--check` l'ignore. `_report.json` porte en plus la clé `unread` (éléments non lus sous `--no-vision`).
 
 ## `INDEX.md`
 

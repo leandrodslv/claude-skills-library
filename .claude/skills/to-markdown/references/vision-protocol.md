@@ -4,6 +4,8 @@ Un script extrait le texte ; il ne « voit » pas. Scans, photos, captures d'éc
 
 **Règle d'or : ne rien inventer.** Une valeur, un nom ou une date qu'on ne lit pas avec certitude s'écrit `[illisible]` ou `[?]`. Mieux vaut un trou signalé qu'un chiffre plausible et faux.
 
+> **Confidentialité.** Avec `--no-vision`, rien de tout ce qui suit ne s'applique : les passages non textuels sont marqués `> **[NON LU : lecture visuelle désactivée]**`, listés dans `_report.json → unread`, et ne doivent être ouverts ni par Read ni par un autre moyen. Dis à l'utilisateur qu'ils n'ont été vus par personne.
+
 ## 1. Où sont les éléments à lire
 
 - Dans le Markdown : un marqueur `> **[À COMPLÉTER : lecture visuelle]** …` (pages de PDF) ou `> **[À COMPLÉTER : description visuelle]** …` (image, diapositive, SVG). `convert.py --check` les recense.

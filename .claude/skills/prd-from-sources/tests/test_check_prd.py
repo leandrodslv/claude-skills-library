@@ -35,7 +35,9 @@ class CheckPrd(unittest.TestCase):
         self.assertEqual(res["stats"]["FR_NFR_avec_source"], res["stats"]["FR_NFR_total"])
 
     def test_cli_exit_codes(self):
-        run = lambda *a: subprocess.run([sys.executable, str(ROOT / "scripts" / "check_prd.py"), *a], capture_output=True, text=True)
+        def run(*a):
+            return subprocess.run([sys.executable, str(ROOT / "scripts" / "check_prd.py"), *a], capture_output=True, text=True)
+
         self.assertEqual(run(str(self.prd), "--sources", str(self.src), "--strict").returncode, 0)
         self.assertEqual(run(str(self.tmp / "absent.md")).returncode, 2)
         out = run(str(self.prd), "--sources", str(self.src), "--json")
@@ -83,8 +85,7 @@ class CheckPrd(unittest.TestCase):
         self.assertIn("fr-non-couvert", c)
 
     def test_unrealized_journey_and_unlinked_metric(self):
-        t = lambda s: s.replace("Réalise UJ-2.", "").replace("Valide FR-1, FR-2, FR-7.", "")
-        c = self.codes(t)
+        c = self.codes(lambda s: s.replace("Réalise UJ-2.", "").replace("Valide FR-1, FR-2, FR-7.", ""))
         self.assertIn("uj-non-realise", c)
         self.assertIn("sm-sans-fr", c)
 
@@ -97,8 +98,7 @@ class CheckPrd(unittest.TestCase):
         self.assertIn("placeholder", c)
 
     def test_missing_glossary_and_open_questions(self):
-        t = lambda s: s.replace("## 3. Glossaire", "## 3. Divers").replace("## 8. Questions ouvertes", "## 8. Suite")
-        c = self.codes(t)
+        c = self.codes(lambda s: s.replace("## 3. Glossaire", "## 3. Divers").replace("## 8. Questions ouvertes", "## 8. Suite"))
         self.assertIn("no-glossary", c)
         self.assertIn("no-open-questions", c)
 

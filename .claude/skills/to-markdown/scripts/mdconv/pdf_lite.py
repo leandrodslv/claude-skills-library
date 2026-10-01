@@ -1087,13 +1087,13 @@ def _split_columns(lines: List[List[Frag]], med: float) -> List[List[List[Frag]]
     left: List[List[Frag]] = []
     right: List[List[Frag]] = []
     for ln in lines:
-        l = [f for f in ln if f.x < mid]
+        lft = [f for f in ln if f.x < mid]
         r = [f for f in ln if f.x >= mid]
-        if l and not r and max(f.x + f.w for f in l) > mid + bin_w * 3:  # ligne pleine largeur : sépare les blocs
+        if lft and not r and max(f.x + f.w for f in lft) > mid + bin_w * 3:  # ligne pleine largeur : sépare les blocs
             left.append(ln)
             continue
-        if l:
-            left.append(l)
+        if lft:
+            left.append(lft)
         if r:
             right.append(r)
     return [left, right]

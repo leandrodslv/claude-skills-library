@@ -53,7 +53,7 @@ def run_check(root: Path, as_json: bool = False) -> int:
     if not root.is_dir():
         print(f"Dossier introuvable : {root}", file=sys.stderr)
         return 2
-    files = [p for p in sorted(root.rglob("*.md")) if p.name not in ("INDEX.md",) and "_chunks" not in p.parts]
+    files = [p for p in sorted(root.rglob("*.md")) if p.name not in ("INDEX.md", "RAPPORT.md") and "_chunks" not in p.parts]
     results = [check_file(p, root) for p in files]
     report_ok = True
     rp = root / "_report.json"

@@ -69,6 +69,7 @@ def build_parser() -> argparse.ArgumentParser:
     e.add_argument("--no-external", action="store_true", help="n'utilise que le noyau natif (aucun outil externe)")
     e.add_argument("--ocr", choices=["auto", "off", "force"], default="auto", help="OCR des pages/images sans texte (défaut : auto)")
     e.add_argument("--ocr-lang", default="", help="langues Tesseract, ex. fra+eng (défaut : détection)")
+    e.add_argument("--no-vision", action="store_true", help="confidentialité : aucune lecture visuelle (pas de rendu PNG des pages, pas de marqueur « à compléter » : les passages non textuels sont marqués « NON LU »)")
     e.add_argument("--render", action="store_true", help="écrit des aperçus PNG (pages PDF, diapositives, feuilles) dans le dossier d'assets pour vérifier la conversion à l'œil")
     e.add_argument("--compare", action="store_true", help="essaie tous les moteurs disponibles et affiche le comparatif")
     e.add_argument("--threshold", type=float, default=0.90, help="score minimal pour s'arrêter à un moteur (défaut : 0.90)")
@@ -99,7 +100,7 @@ def options_from_args(a: argparse.Namespace) -> Options:
         track_changes=a.track_changes, table_rows=a.table_rows, html_mode=a.html_mode,
         infer_headings=not a.no_infer_headings, frontmatter=a.frontmatter,
         engines=[x.strip() for x in a.engines.split(",") if x.strip()] if a.engines else None,
-        external=not a.no_external, ocr=a.ocr, ocr_lang=a.ocr_lang, render=a.render,
+        external=not a.no_external, ocr=a.ocr, ocr_lang=a.ocr_lang, render=a.render and not a.no_vision, no_vision=a.no_vision,
         max_size_mb=a.max_size_mb, timeout=a.timeout, quality_threshold=a.threshold, compare=a.compare,
     )
     return opts
@@ -483,6 +484,11 @@ def main(argv: Optional[List[str]] = None) -> int:
 
         chunk_outputs(real, out_root, args.chunk_tokens)
     report = write_report(real, out_root, opts, args.inputs, elapsed)
+    if not args.in_place:
+        from .readable import build_report_md
+        from .writer import atomic_write
+
+        atomic_write(out_root / "RAPPORT.md", build_report_md(report).encode("utf-8"))
     if (len(real) > 1 or args.combined) and not args.no_index and not args.in_place:
         (out_root / "INDEX.md").write_text(build_index(real, out_root), encoding="utf-8")
     if args.compare:
@@ -527,6 +533,11 @@ def _summary(report: Dict[str, Any], out_root: Path, args: argparse.Namespace) -
             print(f"  - {v['path']}{pg} — {v['reason']}", file=sys.stderr)
         if len(vis) > 30:
             print(f"  … et {len(vis) - 30} autre(s) (voir _report.json)", file=sys.stderr)
+    unread = report.get("unread") or []
+    if unread:
+        print(f"\nNON LU, lecture visuelle désactivée (--no-vision) : {len(unread)} élément(s)", file=sys.stderr)
+        for u in unread[:15]:
+            print(f"  - {u['source']} — {u['reason']}", file=sys.stderr)
     shots = [(e["source"], e["previews"]) for e in report["files"] if e.get("previews")]
     if shots:
         print(f"\nAperçus PNG ({sum(len(p) for _s, p in shots)} image(s)) :", file=sys.stderr)

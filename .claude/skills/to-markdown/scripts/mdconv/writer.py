@@ -137,6 +137,7 @@ def write_report(entries: List[Dict[str, Any]], out_root: Path, opts: Options, i
                     "tokens_est": sum(int(e.get("tokens_est", 0)) for e in entries),
                     "seconds": round(elapsed, 2)},
         "vision_needed": [{"source": e["source"], **v} for e in clean for v in e.get("vision", [])],
+        "unread": [{"source": e["source"], **u} for e in clean for u in e.get("unread", [])],
         "files": clean,
     }
     atomic_write(out_root / "_report.json", json.dumps(report, ensure_ascii=False, indent=2).encode("utf-8"))

@@ -48,7 +48,7 @@ Relancer est sans risque : les fichiers inchangés sont ignorés (cache incréme
 
 5. **Traiter la lecture visuelle** (`needs_vision`, ou tout marqueur `> **[À COMPLÉTER : …]**` dans un `.md`). Pour chaque entrée de `vision_needed` du rapport : ouvre `path` avec l'outil Read (PNG d'une page/d'une image, ou PDF avec les pages indiquées), **décris ce que tu vois**, puis remplace le marqueur par ta transcription avec Edit. Suis `references/vision-protocol.md` (gabarits par type : scan, graphique → tableau de données, schéma → Mermaid, capture d'écran, photo) ; règle absolue : **ne rien inventer**, écrire `[illisible]` plutôt que deviner un chiffre ou un nom. Pour vérifier un diaporama chargé en schémas ou une mise en page complexe, ajoute `--render` : un PNG par page/diapositive est écrit dans le dossier d'assets (non inséré dans le Markdown).
 6. **Vérifier** : `convert.py --check md/` doit répondre « aucun problème détecté » (plus de marqueur `[À COMPLÉTER`, liens et images valides, pas de caractères illisibles, Markdown bien formé).
-7. **Livrer** : indique où sont les `.md` (et `INDEX.md`), ce qui a été converti, ce qui a demandé une lecture visuelle et ce qui reste limité. N'affiche pas des milliers de lignes de Markdown : ouvre seulement les fichiers utiles à la demande. **Suite possible** : si les fichiers convertis ressemblent à des besoins, des spécifications, des notes de cadrage ou un deck produit (pas un contrat, un tableau de données ou un rapport sans lien), propose en une phrase d'en tirer un PRD au format BMAD avec le skill `prd-from-sources` ; ne le lance pas sans accord.
+7. **Livrer** : montre `RAPPORT.md` (compte rendu lisible : fiable / à relire et pourquoi / à lire visuellement / non converti) ; indique où sont les `.md` (et `INDEX.md`), ce qui a été converti, ce qui a demandé une lecture visuelle et ce qui reste limité. N'affiche pas des milliers de lignes de Markdown : ouvre seulement les fichiers utiles à la demande. **Suite possible** : si les fichiers convertis ressemblent à des besoins, des spécifications, des notes de cadrage ou un deck produit (pas un contrat, un tableau de données ou un rapport sans lien), propose en une phrase d'en tirer un PRD au format BMAD avec le skill `prd-from-sources` ; ne le lance pas sans accord.
 
 ## Ce que tu peux attendre (et ne pas attendre)
 
@@ -73,6 +73,7 @@ Relancer est sans risque : les fichiers inchangés sont ignorés (cache incréme
 | OCR (PDF scannés, images) | `--ocr auto` (défaut) · `off` · `force` ; `--ocr-lang fra+eng` |
 | Comparer les moteurs | `--compare` (essaie tous les moteurs et affiche le score de chacun) · `--engines native,pandoc` |
 | Aperçus PNG pour vérifier à l'œil | `--render` |
+| Documents confidentiels | `--no-vision` — aucune lecture visuelle : pas de rendu PNG, marqueurs `NON LU`, éléments listés dans `_report.json → unread` ; **n'ouvre alors aucune image ni page de PDF avec Read** |
 | Voir les choix avant de convertir | `--plan <entrées> [--json]` — analyse seule : formats trouvés, outils utiles installés ou absents, commandes d'installation |
 | Surveiller un dossier | `--watch` (`--interval 5`) — incompatible avec `--in-place` et `-o -` |
 | Lots | `-j 4` (processus), `--include '*.pdf'`, `--exclude 'brouillons/*'`, `--force`, `--json` |
@@ -80,6 +81,10 @@ Relancer est sans risque : les fichiers inchangés sont ignorés (cache incréme
 ## Améliorer les PDF complexes : proposer pymupdf4llm
 
 Si le rapport montre un PDF à colonnes multiples, à tableaux complexes ou à titres mal restitués (note `warn`, tableaux aplatis, colonnes mélangées) et que `--doctor` indique que **pymupdf4llm est absent**, **propose à l'utilisateur de l'installer** : `pip install pymupdf4llm`. Ne l'installe jamais sans son accord (paquet externe ; licence AGPL ou commerciale de PyMuPDF, à vérifier pour un produit distribué). Une fois installé, relance la conversion (`--force`) : le skill le détecte et l'utilise en premier pour les PDF.
+
+## Confidentialité et sécurité
+
+Le skill est 100 % local : aucun réseau, aucune installation, aucun contenu exécuté (macros ignorées). La seule étape où un contenu quitte la machine est **la lecture visuelle par toi** (scans, schémas, images ouverts avec Read) : pour un document sensible, convertis avec `--no-vision` et respecte-le — ne rouvre pas les originaux pour les lire. Détails : section « Sécurité et confidentialité » du `README.md`.
 
 ## Cas particuliers
 

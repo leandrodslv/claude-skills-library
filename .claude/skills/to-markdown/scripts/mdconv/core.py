@@ -50,6 +50,7 @@ class Options:
     ocr: str = "auto"                  # auto | off | force
     ocr_lang: str = ""                 # ex. « fra+eng » ; vide = détection
     render: bool = False               # produit des PNG de pages/diapos pour lecture visuelle
+    no_vision: bool = False            # confidentialité : aucune lecture visuelle (ni rendu PNG, ni marqueur à compléter)
     max_size_mb: int = 500
     archive_depth: int = 3
     timeout: int = 180                 # secondes, par appel d'outil externe
@@ -110,6 +111,7 @@ class Ctx:
         self.assets: Dict[str, Asset] = {}
         self.warnings: List[str] = []
         self.vision: List[VisionItem] = []
+        self.unread: List[Dict[str, str]] = []   # éléments visuels volontairement non lus (--no-vision)
         self.previews: List[str] = []       # aperçus PNG (--render), liens relatifs comme les assets
         self.skipped_images = 0
         self._by_hash: Dict[str, str] = {}

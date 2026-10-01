@@ -238,7 +238,9 @@ def convert_to_memory(src: Path, opts: Options, rel: str = "", assets_dir: str =
     title = str(res.meta.get("title") or res.title or "").strip()
     if title and not re.search(r"(?m)^#\s+\S", body):
         first = re.search(r"(?m)^#{1,6}\s+(.+?)\s*$", body)
-        norm = lambda t: re.sub(r"[\s*_`\\]+", " ", t).strip().casefold()
+        def norm(t: str) -> str:
+            return re.sub(r"[\s*_`\\]+", " ", t).strip().casefold()
+
         # inutile d'ajouter un H1 si le premier titre du corps porte déjà le titre du document (« Slide 1 — Titre »)
         if not (first and norm(title) in norm(first.group(1))):
             body = f"# {title}\n\n{body}"
@@ -255,12 +257,37 @@ def convert_to_memory(src: Path, opts: Options, rel: str = "", assets_dir: str =
         ctx.warn(f"l'extension .{det.ext} ne correspond pas au contenu réel ({det.label})")
     if det.note and det.note not in ("macros", "structure atypique") and not det.note.startswith("OLE"):
         ctx.warn(det.note)
+    if opts.no_vision:
+        body = _apply_no_vision(body, ctx)
     out.body = body
     if ctx.vision:
         out.status = "needs_vision"
-    elif score.value < opts.quality_threshold:
+    elif score.value < opts.quality_threshold or ctx.unread:
         out.status = "warn"
     return out
+
+
+_VISION_MARK = re.compile(r"> \*\*\[À COMPLÉTER : (?:lecture|description) visuelle\]\*\*")
+
+
+def _apply_no_vision(body: str, ctx: Ctx) -> str:
+    """--no-vision : rien n'est proposé à la lecture visuelle. Les rendus PNG créés pour elle sont retirés,
+    les marqueurs « à compléter » deviennent « NON LU » et les éléments sont comptés à part dans le rapport."""
+    prefix = ctx.assets_dir + "/"
+    for v in ctx.vision:
+        if v.kind in ("page", "svg") and v.path.startswith(prefix):       # rendus fabriqués pour être regardés
+            body = re.sub(r"(?m)^!\[[^\]]*\]\(" + re.escape(v.path) + r"\)[ \t]*\n*", "", body)
+            ctx.assets.pop(v.path[len(prefix):], None)
+        item = {"kind": v.kind, "reason": v.reason}
+        if v.pages:
+            item["pages"] = v.pages
+        ctx.unread.append(item)
+    body, n = _VISION_MARK.subn("> **[NON LU : lecture visuelle désactivée]**", body)
+    ctx.vision = []
+    total = max(n, len(ctx.unread))
+    if total:
+        ctx.warn(f"--no-vision : {total} élément(s) non textuel(s) volontairement non lu(s) (marqueur « NON LU »)")
+    return body
 
 
 def report_entry(out: Outcome, out_md: Optional[str] = None) -> Dict[str, Any]:
@@ -285,6 +312,8 @@ def report_entry(out: Outcome, out_md: Optional[str] = None) -> Dict[str, Any]:
         d["warnings"] = list(out.ctx.warnings)
     if out.ctx and out.ctx.vision:
         d["vision"] = [v.as_dict() for v in out.ctx.vision]
+    if out.ctx and out.ctx.unread:
+        d["unread"] = list(out.ctx.unread)
     if out.ctx and out.ctx.previews:
         d["previews"] = list(out.ctx.previews)
     if out.error:

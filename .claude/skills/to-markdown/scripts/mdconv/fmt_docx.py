@@ -214,12 +214,12 @@ class Numbering:
         for an in root.findall("w:abstractNum", NS):
             aid = int(an.get(W("abstractNumId"), "0"))
             lv: Dict[int, Lvl] = {}
-            for l in an.findall("w:lvl", NS):
-                il = int(l.get(W("ilvl"), "0"))
-                fmt = l.find("w:numFmt", NS)
-                txt = l.find("w:lvlText", NS)
-                st = l.find("w:start", NS)
-                lgl = l.find("w:isLgl", NS)
+            for lv_el in an.findall("w:lvl", NS):
+                il = int(lv_el.get(W("ilvl"), "0"))
+                fmt = lv_el.find("w:numFmt", NS)
+                txt = lv_el.find("w:lvlText", NS)
+                st = lv_el.find("w:start", NS)
+                lgl = lv_el.find("w:isLgl", NS)
                 lv[il] = Lvl(
                     fmt=fmt.get(VAL, "decimal") if fmt is not None else "decimal",
                     text=txt.get(VAL, "") if txt is not None else "%1.",
@@ -1083,7 +1083,7 @@ class DocxConverter:
                 lab = "•" if b.marker == "bullet" else (b.label + "." if b.marker == "ord" else b.label)
                 parts.append(f"{lab} {b.text}")
             elif b.kind == "code":
-                parts.append("`" + " ".join(l.strip() for l in b.lines) + "`")
+                parts.append("`" + " ".join(ln.strip() for ln in b.lines) + "`")
             elif b.kind == "raw":
                 t = b.text
                 if t.startswith("|"):  # tableau imbriqué : ses cellules, à la suite

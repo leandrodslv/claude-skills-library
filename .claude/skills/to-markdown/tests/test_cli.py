@@ -126,7 +126,7 @@ class Cli(Base):
         src = self.inputs()
         out = self.tmp / "o"
         self.run_cli(src, "-o", out, "--include", "*.docx", "--include", "*.csv", "--exclude", "~$*")
-        self.assertEqual(sorted(p.relative_to(out).as_posix() for p in out.rglob("*.md") if p.name != "INDEX.md"), ["rapport.md", "tableaux/notes.md"])
+        self.assertEqual(sorted(p.relative_to(out).as_posix() for p in out.rglob("*.md") if p.name not in ("INDEX.md", "RAPPORT.md")), ["rapport.md", "tableaux/notes.md"])
 
     def test_in_place_writes_next_to_sources(self):
         d = self.tmp / "in"
@@ -167,6 +167,43 @@ class Cli(Base):
         md.write_text(done, encoding="utf-8")
         text, _ = self.run_cli("--check", out)
         self.assertIn("aucun problème détecté", text)
+
+    def test_no_vision_marks_unread_and_proposes_nothing_to_look_at(self):
+        d = self.tmp / "in"
+        d.mkdir()
+        fx.make_pdf(d / "scan.pdf", [[], []], image_only=True)
+        (d / "note.txt").write_text("Texte simple confidentiel", encoding="utf-8")
+        out = self.tmp / "o"
+        _o, err = self.run_cli(d, "-o", out, "--ocr", "off", "--no-vision", "--render")
+        self.assertNotIn("À TRAITER PAR LECTURE VISUELLE", err)
+        self.assertIn("NON LU", err)
+        rep = json.loads((out / "_report.json").read_text(encoding="utf-8"))
+        self.assertEqual(rep["vision_needed"], [])
+        self.assertEqual(rep["unread"][0]["source"], "scan.pdf")
+        self.assertNotIn("needs_vision", rep["summary"]["by_status"])
+        md = (out / "scan.md").read_text(encoding="utf-8")
+        self.assertIn("NON LU", md)
+        self.assertNotIn("À COMPLÉTER", md)
+        self.assertFalse(list(out.rglob("*.png")), "aucun rendu PNG ne doit être produit")
+        self.assertIn("Non lus volontairement", (out / "RAPPORT.md").read_text(encoding="utf-8"))
+        text, _ = self.run_cli("--check", out)
+        self.assertIn("aucun problème détecté", text)
+
+    def test_readable_report_groups_files_by_reliability(self):
+        d = self.tmp / "in"
+        d.mkdir()
+        fx.make_pdf(d / "scan.pdf", [[], []], image_only=True)
+        (d / "bon.txt").write_text("Un document tout simple avec assez de mots pour être fiable.", encoding="utf-8")
+        (d / "vide.bin").write_bytes(b"\x00\x01\x02" * 40)
+        out = self.tmp / "o"
+        self.run_cli(d, "-o", out, "--ocr", "off")
+        rap = (out / "RAPPORT.md").read_text(encoding="utf-8")
+        self.assertIn("# Rapport de conversion", rap)
+        self.assertIn("## 👁 À lire visuellement", rap)
+        self.assertIn("scan.pdf", rap)
+        self.assertIn("## ✅ Fiables", rap)
+        self.assertIn("bon.txt", rap)
+        self.assertIn("Fidélité", rap)
 
     def test_check_detects_broken_links_and_bad_characters(self):
         out = self.tmp / "o"
@@ -240,7 +277,9 @@ class Cli(Base):
         self.assertIn("✓", doctor.stdout.decode("utf-8"))
 
     def test_watch_converts_files_that_arrive_later(self):
-        import subprocess, sys, time
+        import subprocess
+        import sys
+        import time
         d = self.tmp / "entrants"
         d.mkdir()
         (d / "a.txt").write_text("Premier", encoding="utf-8")

@@ -124,7 +124,7 @@ def finish(pages: List[str], ctx: Ctx, engine_name: str, path: Path, already_md:
     if vision_pages:
         reason = "aucun texte extractible (page scannée ou image)" if set(vision_pages) & set(empty) else "OCR peu fiable"
         pngs = {}
-        if ctx.opts.external and ext.can_render_pdf() and len(vision_pages) <= VISION_PNG_CAP:
+        if ctx.opts.external and not ctx.opts.no_vision and ext.can_render_pdf() and len(vision_pages) <= VISION_PNG_CAP:
             pngs = ext.render_pdf_pages(path, vision_pages, dpi=110, timeout=ctx.opts.timeout)
         for p in vision_pages:
             png = pngs.get(p)

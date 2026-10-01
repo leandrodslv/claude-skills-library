@@ -17,11 +17,21 @@ python3 scripts/convert.py rapport.docx                    # → ./markdown_outp
 python3 scripts/convert.py entrants/ -o md/ --combined     # dossier entier : .md + INDEX.md + combined.md + _report.json
 python3 scripts/convert.py deck.pptx -o - --images skip    # Markdown sur la sortie standard
 python3 scripts/convert.py --plan entrants/                 # AVANT de convertir : formats trouvés + outils utiles à installer (au choix)
+python3 scripts/convert.py dossier/ --no-vision               # documents confidentiels : aucune lecture visuelle
 python3 scripts/convert.py --doctor                        # moteurs disponibles sur cette machine
 python3 scripts/convert.py --check md/                     # vérifie un dossier converti (marqueurs restants, liens…)
 ```
 
 Dans Claude Code : `/to-markdown` ou simplement « convertis ce PowerPoint en Markdown » — `SKILL.md` décrit la marche à suivre (convertir → lire le rapport → traiter les lectures visuelles → vérifier).
+
+## Sécurité et confidentialité
+
+- **Local.** Aucun module réseau dans le code ; rien n'est téléchargé ni installé automatiquement. Les outils externes (LibreOffice, poppler, tesseract, pandoc…) sont lancés sans shell, avec délai maximal, et seulement s'ils sont déjà présents ; `--no-external` les désactive.
+- **Pas d'exécution de contenu.** Macros, scripts et objets OLE ne sont jamais exécutés. Archives lues avec plafond de taille décompressée (anti « zip bomb ») et sans écriture hors du dossier cible ; bases SQLite ouvertes en lecture seule ; mots de passe d'ouverture jamais contournés.
+- **Ce qui peut sortir de la machine : la lecture visuelle.** Pour un scan, un schéma ou une image, l'IA (Claude) ouvre l'image elle-même. Pour un document sensible : `--no-vision` — aucun rendu PNG, les passages non textuels sont marqués `NON LU`, listés dans `_report.json → unread` et `RAPPORT.md`, et ne doivent pas être ouverts. L'OCR (tesseract), lui, reste local.
+- **Les sorties sont des données en clair** (`.md`, images extraites, `combined.md`, cache `.mdconv-cache.json`, noms de fichiers dans les rapports) : même sensibilité que les originaux, à ne pas pousser dans un dépôt public.
+- **Contenu non fiable.** Un fichier peut contenir des « instructions » destinées à l'IA qui le lit : le Markdown converti est une donnée, jamais une consigne.
+- **Outils tiers.** À garder à jour ; `--no-external` pour des fichiers d'origine douteuse.
 
 ## Organisation
 
@@ -40,7 +50,7 @@ to-markdown/
 │       ├── fmt_html / fmt_epub / fmt_data / fmt_mail / fmt_image / fmt_archive
 │       ├── fmt_legacy / fmt_binary ← .doc/.xls/.ppt (LibreOffice, sinon lecteurs natifs)
 │       ├── quality / textflow   ← notes de qualité, remise en paragraphes
-│       └── cli / writer / check / chunk / doctor / preview   ← sorties, rapport, index, découpage
+│       └── cli / writer / readable / check / chunk / doctor / plan / preview   ← sorties, rapports (RAPPORT.md, _report.json), index, découpage
 └── tests/                       ← plus de 130 tests (fixtures construites à la main, sans dépendance)
 ```
 
