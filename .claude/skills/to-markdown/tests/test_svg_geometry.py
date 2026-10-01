@@ -88,3 +88,19 @@ class SvgGeometry(Base):
         mer = self.conv(p, diagrams="mermaid").body
         self.assertIn("```mermaid", mer)
         self.assertNotIn("Liens du schéma", mer)
+
+    def test_xml_comment_as_child_of_root_does_not_crash(self):
+        svg = HEAD.replace("<defs>", "<!-- commentaire en tête --><defs>") + box(20, 100, 120, 50, "Un") + box(240, 100, 120, 50, "Deux") \
+            + '<path d="M140 125 L240 125" stroke="#000" marker-end="url(#a)"/></svg>'
+        self.assertEqual(self.edges(self.md("commentaire.svg", svg)), {("Un", "Deux", "")})
+
+    def test_arrows_between_columns_link_the_frames_not_a_node_near_the_border(self):
+        svg = (HEAD + '<rect x="10" y="20" width="200" height="250" fill="none" stroke="#000"/><text x="20" y="40">Analyse</text>'
+               + box(30, 60, 160, 40, "Atelier") + box(30, 120, 160, 40, "Synthèse")
+               + '<rect x="290" y="20" width="200" height="250" fill="none" stroke="#000"/><text x="300" y="40">Conception</text>'
+               + box(310, 60, 160, 40, "Maquette") + box(310, 120, 160, 40, "Prototype")
+               + '<path d="M210 140 L290 140" stroke="#000" marker-end="url(#a)"/></svg>')
+        md = self.md("colonnes.svg", svg)
+        self.assertIn("g1 --> g2", md)
+        self.assertNotIn("n5", md.replace("flowchart", ""))      # aucun nœud anonyme créé pour une extrémité de cadre
+        self.assertIn("| Analyse | → | Conception |", md)

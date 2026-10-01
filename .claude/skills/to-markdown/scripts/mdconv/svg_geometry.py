@@ -376,12 +376,24 @@ def infer_graph(root: ET.Element, items: list, helpers: Tuple, canvas: Tuple[flo
         return None, stats
 
     # liens : chaque extrémité sur le nœud le plus proche (dans la tolérance)
+    def border_dist(s: Shape, p: Point) -> float:
+        if s.dist(p) > 0:
+            return s.dist(p)
+        return min(p[0] - s.x0, s.x1 - p[0], p[1] - s.y0, s.y1 - p[1])
+
     def attach(p: Point) -> Optional[object]:
         best, bd = None, 1e18
         for s in nodes:
             d = s.dist(p)
             if d <= tol and (d < bd - 0.5 or (abs(d - bd) <= 0.5 and best is not None and s.area < best.area)):  # type: ignore[attr-defined]
                 best, bd = s, d
+        bc, cd = None, 1e18                    # le bord d'un cadre l'emporte si le trait y finit nettement mieux que sur un nœud (lien de colonne à colonne)
+        for c in containers:
+            d = border_dist(c, p)
+            if d <= tol and d < cd:
+                bc, cd = c, d
+        if bc is not None and (best is None or cd + 3 < bd):
+            best = bc
         return best
 
     def attach_text(p: Point) -> Optional[TextBox]:
@@ -451,6 +463,8 @@ def infer_graph(root: ET.Element, items: list, helpers: Tuple, canvas: Tuple[flo
         return " ".join(t.text for t in ts)
 
     def node_id(x: object) -> str:
+        if isinstance(x, Shape) and x in containers:
+            return f"c{sorted(containers, key=lambda c: c.area).index(x)}"
         if id(x) not in ids:
             ids[id(x)] = f"s{len(ids) + 1}"
             g.nodes[ids[id(x)]] = label_of(x) if isinstance(x, Shape) else x.text  # type: ignore[union-attr]
@@ -486,6 +500,7 @@ def infer_graph(root: ET.Element, items: list, helpers: Tuple, canvas: Tuple[flo
     pos = {ids[id(s)]: (round(_center(s)[1] / 12), _center(s)[0]) for s in nodes if id(s) in ids}
     pos.update({ids[id(t)]: (round(t.center[1] / 12), t.center[0]) for t in free if id(t) in ids})
     incoming = {e[1] for e in g.edges}
+    incoming |= {e[1] for e in g.edges if e[1] not in g.nodes}
     queue = sorted((n for n in g.nodes if n not in incoming), key=lambda n: pos.get(n, (1e9, 0)))
     ordered: List[str] = []
     while queue:
@@ -493,7 +508,7 @@ def infer_graph(root: ET.Element, items: list, helpers: Tuple, canvas: Tuple[flo
         if n in ordered:
             continue
         ordered.append(n)
-        queue += sorted((e[1] for e in g.edges if e[0] == n and e[1] not in ordered), key=lambda m: pos.get(m, (1e9, 0)))
+        queue += sorted((e[1] for e in g.edges if e[0] == n and e[1] in g.nodes and e[1] not in ordered), key=lambda m: pos.get(m, (1e9, 0)))
     ordered += sorted((n for n in g.nodes if n not in ordered), key=lambda n: pos.get(n, (1e9, 0)))
     g.nodes = {n: g.nodes[n] for n in ordered}
     g.shown = [t.text for s in nodes for t in s.texts] + [t.text for c in containers for t in c.texts] + [t.text for tl in labels.values() for t in tl] \

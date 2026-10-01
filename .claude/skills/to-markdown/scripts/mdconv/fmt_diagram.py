@@ -52,7 +52,7 @@ def to_mermaid(g: Graph) -> str:
     # les extrémités de liens sans nœud déclaré deviennent des nœuds anonymes
     for s, t, _l, _a in g.edges:
         for x in (s, t):
-            if x not in ids:
+            if x not in ids and x not in g.groups:
                 ids[x] = f"n{len(ids) + 1}"
     lines = [f"flowchart {g.direction}"]
     in_group = {m for _l, members in g.groups.values() for m in members}
@@ -67,13 +67,15 @@ def to_mermaid(g: Graph) -> str:
         for m in members:
             lines.append(f'        {ids[m]}["{_q(g.nodes.get(m, m))}"]')
         lines.append("    end")
+    gids = {gid: f"g{gi}" for gi, gid in enumerate(g.groups, 1)}
     for s, t, label, arrow in g.edges:
-        if s not in ids or t not in ids:
+        s_id, t_id = ids.get(s) or gids.get(s), ids.get(t) or gids.get(t)
+        if s_id is None or t_id is None:
             continue
         a = {"->": "-->", "<-": "<--", "<->": "<-->", "--": "---"}.get(arrow, "-->")
         if label:
             a = {"-->": "-->|{}|", "<--": "<--|{}|", "<-->": "<-->|{}|", "---": "---|{}|"}[a].format(_q(label))
-        lines.append(f"    {ids[s]} {a} {ids[t]}")
+        lines.append(f"    {s_id} {a} {t_id}")
     return "```mermaid\n" + "\n".join(lines) + "\n```"
 
 
@@ -84,6 +86,7 @@ def _cell(s: str) -> str:
 def to_text(g: Graph) -> str:
     """Le même schéma en Markdown pur (tableau des liens, groupes, éléments isolés) : lisible sans moteur Mermaid."""
     names = dict(g.nodes)
+    names.update({gid: label for gid, (label, _m) in g.groups.items()})
     for s, t, _l, _a in g.edges:
         names.setdefault(s, s)
         names.setdefault(t, t)

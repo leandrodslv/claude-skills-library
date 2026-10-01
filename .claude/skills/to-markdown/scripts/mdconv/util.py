@@ -270,6 +270,8 @@ def parse_xml(data: bytes) -> ET.Element:
 
 def local(tag: str) -> str:
     """Nom local d'une balise ElementTree (« {ns}nom » → « nom »)."""
+    if not isinstance(tag, str):          # commentaire ou instruction de traitement : pas un élément
+        return ""
     return tag.rsplit("}", 1)[-1] if "}" in tag else tag
 
 
