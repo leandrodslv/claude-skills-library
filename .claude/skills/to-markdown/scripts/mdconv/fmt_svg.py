@@ -16,7 +16,7 @@ from typing import Dict, List, Optional, Tuple
 
 from .core import Ctx, Result, Unsupported, engine
 from .fmt_diagram import (Graph, excalidraw_from_svg_comments, graph_from_excalidraw, graph_from_graphviz_svg,
-                          graph_from_mermaid_svg, parse_mxfile, to_mermaid)
+                          graph_from_mermaid_svg, parse_mxfile, render_graph)
 from .util import clean_text, esc_inline, fence, html_to_text, local, parse_xml, parse_xml_keep_comments
 
 SVG = "http://www.w3.org/2000/svg"
@@ -163,7 +163,7 @@ class SvgConverter:
         has_graph = graph is not None and graph.is_meaningful()
         title_of_text = "Texte (ordre de lecture)"
         if has_graph:
-            parts.append(f"## Diagramme ({kind})\n\n{to_mermaid(graph)}")
+            parts.append(f"## Diagramme ({kind})\n\n{render_graph(graph, self.ctx.opts.diagrams)}")
             shown = {re.sub(r"\s+", " ", t).strip() for t in list(graph.texts()) + list(getattr(graph, "shown", []))}
             rest = [t for t in ordered if re.sub(r"\s+", " ", t).strip() not in shown]
             ordered, title_of_text = rest, "Autres textes"      # les étiquettes du diagramme figurent déjà dans le graphe

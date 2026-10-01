@@ -599,20 +599,14 @@ class PptxConverter:
         edges = [c for c in connectors if c.start in texts and c.end in texts and c.start != c.end]
         if len(edges) < 2:
             return ""
-        ids: Dict[str, str] = {}
+        from .fmt_diagram import Graph, render_graph
 
-        def node(sid: str) -> str:
-            if sid not in ids:
-                ids[sid] = f"N{len(ids) + 1}"
-            label = texts[sid].replace('"', "'")
-            label = label if len(label) <= 80 else label[:77] + "…"
-            return f'{ids[sid]}["{label}"]'
-
-        lines = ["flowchart LR"]
+        g = Graph(direction="LR")
         for c in edges:
-            arrow = "<-->" if (c.head and c.tail) else ("<--" if c.head else ("-->" if c.tail else "---"))
-            lines.append(f"    {node(c.start)} {arrow} {node(c.end)}")
-        return "**Diagramme (connecteurs de la diapositive) :**\n\n```mermaid\n" + "\n".join(lines) + "\n```"
+            g.nodes.setdefault(c.start, texts[c.start])
+            g.nodes.setdefault(c.end, texts[c.end])
+            g.edges.append((c.start, c.end, "", "<->" if (c.head and c.tail) else ("<-" if c.head else ("->" if c.tail else "--"))))
+        return "**Diagramme (connecteurs de la diapositive) :**\n\n" + render_graph(g, self.ctx.opts.diagrams)
 
     def infer_diagram(self, shapes_text: Dict[str, str]) -> str:
         """Schéma de formes libres : chaque flèche relie la boîte la plus proche de sa queue à celle la plus proche de sa pointe."""
@@ -649,7 +643,7 @@ class PptxConverter:
                 edges.append((src, dst))
         if len(edges) < 2:
             return ""
-        from .fmt_diagram import Graph, to_mermaid
+        from .fmt_diagram import Graph, render_graph
 
         g = Graph()
         for sid, _x, _y, _w, _h in boxes:
@@ -658,7 +652,7 @@ class PptxConverter:
         used = {x for e in edges for x in e}
         g.nodes = {k: v for k, v in g.nodes.items() if k in used}
         self.ctx.warn(f"diapositive : schéma reconstitué d'après la position des formes et des flèches ({len(edges)} liens) — à vérifier (--render)")
-        return "**Diagramme (déduit de la position des formes) :**\n\n" + to_mermaid(g)
+        return "**Diagramme (déduit de la position des formes) :**\n\n" + render_graph(g, self.ctx.opts.diagrams)
 
     # -- notes et commentaires ------------------------------------------
     def notes(self, rels: Rels) -> str:

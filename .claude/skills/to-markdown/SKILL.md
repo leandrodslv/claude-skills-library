@@ -74,6 +74,7 @@ Relancer est sans risque : les fichiers inchangés sont ignorés (cache incréme
 | Comparer les moteurs | `--compare` (essaie tous les moteurs et affiche le score de chacun) · `--engines native,pandoc` |
 | Aperçus PNG pour vérifier à l'œil | `--render` |
 | Documents confidentiels | `--no-vision` — aucune lecture visuelle : pas de rendu PNG, marqueurs `NON LU`, éléments listés dans `_report.json → unread` ; **n'ouvre alors aucune image ni page de PDF avec Read** |
+| Schémas en Markdown pur (sans Mermaid) | `--diagrams text` (tableau des liens + groupes) ; `mermaid` : bloc seul ; défaut `both` : les deux |
 | Voir les choix avant de convertir | `--plan <entrées> [--json]` — analyse seule : formats trouvés, outils utiles installés ou absents, commandes d'installation |
 | Surveiller un dossier | `--watch` (`--interval 5`) — incompatible avec `--in-place` et `-o -` |
 | Lots | `-j 4` (processus), `--include '*.pdf'`, `--exclude 'brouillons/*'`, `--force`, `--json` |

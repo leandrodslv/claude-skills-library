@@ -12,7 +12,7 @@ import xml.etree.ElementTree as ET
 from typing import Dict, List, Tuple
 
 from .core import Ctx, Result, Unsupported, engine
-from .fmt_diagram import Graph, to_mermaid
+from .fmt_diagram import Graph, render_graph
 from .ooxml import core_props
 from .util import Rels, SafeZip, clean_text, esc_inline, local
 
@@ -131,7 +131,7 @@ def vsdx_native(path, ctx: Ctx) -> Result:
             head = f"## Page {n_pages}" + (f" — {esc_inline(page.name)}" if page.name else "")
             body: List[str] = []
             if g.is_meaningful():
-                body.append(to_mermaid(g))
+                body.append(render_graph(g, ctx.opts.diagrams))
                 src.extend(g.texts())
             if rest:
                 body.append(("**Textes :**\n\n" if g.is_meaningful() else "") + "\n".join(f"- {esc_inline(t)}" for t in rest))

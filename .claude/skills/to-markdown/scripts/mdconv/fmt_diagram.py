@@ -77,6 +77,45 @@ def to_mermaid(g: Graph) -> str:
     return "```mermaid\n" + "\n".join(lines) + "\n```"
 
 
+def _cell(s: str) -> str:
+    return re.sub(r"\s+", " ", (s or "").replace("|", "\\|")).strip()
+
+
+def to_text(g: Graph) -> str:
+    """Le même schéma en Markdown pur (tableau des liens, groupes, éléments isolés) : lisible sans moteur Mermaid."""
+    names = dict(g.nodes)
+    for s, t, _l, _a in g.edges:
+        names.setdefault(s, s)
+        names.setdefault(t, t)
+    parts: List[str] = []
+    if g.edges:
+        sym = {"->": "→", "<-": "←", "<->": "↔", "--": "—"}
+        rows = ["| De | | Vers | Étiquette |", "| --- | :---: | --- | --- |"]
+        for s, t, lab, arrow in g.edges:
+            rows.append(f"| {_cell(names.get(s, s))} | {sym.get(arrow, '→')} | {_cell(names.get(t, t))} | {_cell(lab)} |")
+        parts.append("**Liens du schéma :**\n\n" + "\n".join(rows))
+    if g.groups:
+        lines = []
+        for _gid, (label, members) in g.groups.items():
+            lines.append(f"- **{_cell(label)}** : " + ", ".join(_cell(names.get(m, m)) for m in members))
+        parts.append("**Groupes (cadres, couloirs) :**\n\n" + "\n".join(lines))
+    linked = {x for e in g.edges for x in e[:2]} | {m for _l, ms in g.groups.values() for m in ms}
+    alone = [_cell(v) for k, v in g.nodes.items() if k not in linked and v]
+    if alone:
+        parts.append("**Éléments sans lien :** " + ", ".join(alone))
+    return "\n\n".join(parts)
+
+
+def render_graph(g: Graph, mode: str = "both") -> str:
+    """mode : « mermaid », « text » (Markdown pur) ou « both » (défaut : un bloc Mermaid puis la version texte)."""
+    if mode == "mermaid":
+        return to_mermaid(g)
+    if mode == "text":
+        return to_text(g)
+    text = to_text(g)
+    return to_mermaid(g) + ("\n\n" + text if text else "")
+
+
 # --------------------------------------------------------------------------
 # draw.io / diagrams.net
 # --------------------------------------------------------------------------
@@ -409,13 +448,13 @@ def _html_or_svg_text(el: ET.Element) -> str:
 # Moteurs pour fichiers .drawio et .excalidraw
 # --------------------------------------------------------------------------
 
-def _graph_md(pages: List[Tuple[str, Graph]]) -> str:
+def _graph_md(pages: List[Tuple[str, Graph]], mode: str = "both") -> str:
     out: List[str] = []
     for name, g in pages:
         if name and len(pages) > 1:
             out.append(f"## {esc_inline(name)}")
         if g.nodes or g.edges:
-            out.append(to_mermaid(g))
+            out.append(render_graph(g, mode))
         free = [t for t in g.free_text if t]
         if free:
             out.append("**Textes libres :**\n\n" + "\n".join(f"- {esc_inline(t)}" for t in free))
@@ -428,7 +467,7 @@ def drawio_native(path, ctx: Ctx) -> Result:
     pages = parse_mxfile(root)
     if not pages:
         raise Unsupported("aucun diagramme lisible (fichier draw.io vide ou chiffré)")
-    md = _graph_md(pages)
+    md = _graph_md(pages, ctx.opts.diagrams)
     stem = Path(path).stem
     src = "\n".join(t for _n, g in pages for t in g.texts())
     n_nodes = sum(len(g.nodes) for _n, g in pages)
@@ -447,7 +486,7 @@ def excalidraw_native(path, ctx: Ctx) -> Result:
         raise Unsupported(f"JSON Excalidraw invalide : {exc}")
     g = graph_from_excalidraw(scene)
     stem = Path(path).stem
-    md = f"# {esc_inline(stem)}\n\n_Diagramme Excalidraw : {len(g.nodes)} nœud(s), {len(g.edges)} lien(s)._\n\n{_graph_md([('', g)])}"
+    md = f"# {esc_inline(stem)}\n\n_Diagramme Excalidraw : {len(g.nodes)} nœud(s), {len(g.edges)} lien(s)._\n\n{_graph_md([('', g)], ctx.opts.diagrams)}"
     res = Result(markdown=md, fmt="excalidraw", engine="native", title=stem)
     res.source_text = "\n".join(g.texts())
     return res

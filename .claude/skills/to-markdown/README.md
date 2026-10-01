@@ -46,7 +46,7 @@ to-markdown/
 │       ├── pipeline.py          ← cascade de moteurs → note de qualité → escalade vision
 │       ├── fmt_docx / fmt_pptx / fmt_xlsx / fmt_odf / fmt_rtf   ← Office et OpenDocument
 │       ├── fmt_pdf + pdf_lite   ← PDF (moteurs externes + lecteur natif) et OCR
-│       ├── fmt_svg / fmt_diagram / svg_geometry ← SVG, draw.io, Graphviz, Excalidraw → Mermaid (liens déduits de la géométrie pour les SVG dessinés)
+│       ├── fmt_svg / fmt_diagram / svg_geometry ← SVG, draw.io, Graphviz, Excalidraw → Mermaid (liens déduits de la géométrie pour les SVG dessinés ; sorties Mermaid et/ou tableau Markdown)
 │       ├── fmt_html / fmt_epub / fmt_data / fmt_mail / fmt_image / fmt_archive
 │       ├── fmt_legacy / fmt_binary ← .doc/.xls/.ppt (LibreOffice, sinon lecteurs natifs)
 │       ├── quality / textflow   ← notes de qualité, remise en paragraphes

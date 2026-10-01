@@ -61,6 +61,7 @@ def build_parser() -> argparse.ArgumentParser:
     c.add_argument("--headers-footers", action="store_true", help="Word : inclut en-têtes et pieds de page")
     c.add_argument("--keep-toc", action="store_true", help="Word : conserve la table des matières")
     c.add_argument("--track-changes", choices=["accept", "mark"], default="accept", help="modifications suivies : accepter (défaut) ou marquer <ins>/<del>")
+    c.add_argument("--diagrams", choices=["both", "mermaid", "text"], default="both", help="schémas (SVG, draw.io, Visio, PowerPoint) : bloc Mermaid + tableau des liens (both), Mermaid seul, ou Markdown pur (text)")
     c.add_argument("--html-mode", choices=["auto", "full", "main"], default="auto", help="HTML : contenu principal (auto), page entière ou <main> seul")
     c.add_argument("--no-infer-headings", action="store_true", help="Word : ne déduit pas les titres de la mise en forme")
     c.add_argument("--no-hidden", action="store_true", help="ignore feuilles et diapositives masquées")
@@ -97,7 +98,7 @@ def options_from_args(a: argparse.Namespace) -> Options:
     opts = Options(
         images=a.images, comments=not a.no_comments, notes=not a.no_notes, hidden=not a.no_hidden,
         headers_footers=a.headers_footers, keep_toc=a.keep_toc, formulas=a.formulas,
-        track_changes=a.track_changes, table_rows=a.table_rows, html_mode=a.html_mode,
+        track_changes=a.track_changes, table_rows=a.table_rows, html_mode=a.html_mode, diagrams=a.diagrams,
         infer_headings=not a.no_infer_headings, frontmatter=a.frontmatter,
         engines=[x.strip() for x in a.engines.split(",") if x.strip()] if a.engines else None,
         external=not a.no_external, ocr=a.ocr, ocr_lang=a.ocr_lang, render=a.render and not a.no_vision, no_vision=a.no_vision,

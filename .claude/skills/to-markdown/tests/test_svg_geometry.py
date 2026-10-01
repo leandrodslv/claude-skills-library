@@ -75,3 +75,16 @@ class SvgGeometry(Base):
         p = self.tmp / name
         p.write_text(svg, encoding="utf-8")
         return p
+
+    def test_diagrams_option_text_gives_pure_markdown_and_mermaid_only_keeps_the_block(self):
+        svg = HEAD + box(20, 100, 120, 50, "Début") + box(240, 100, 120, 50, "Fin") + '<path d="M140 125 L240 125" stroke="#000" marker-end="url(#a)"/></svg>'
+        p = self._write("deux.svg", svg)
+        both = self.conv(p).body
+        self.assertIn("```mermaid", both)
+        self.assertIn("| Début | → | Fin |", both)
+        text = self.conv(p, diagrams="text").body
+        self.assertNotIn("```mermaid", text)
+        self.assertIn("| Début | → | Fin |", text)
+        mer = self.conv(p, diagrams="mermaid").body
+        self.assertIn("```mermaid", mer)
+        self.assertNotIn("Liens du schéma", mer)

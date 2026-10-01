@@ -345,7 +345,7 @@ class HtmlRenderer:
         vb = [float(x) for x in re.findall(r"[-\d.]+", a.get("viewbox", ""))]
         if (w or h) and max(w, h) <= 48 or (not (w or h) and len(vb) == 4 and max(vb[2], vb[3]) <= 48):
             return ""
-        from .fmt_diagram import to_mermaid
+        from .fmt_diagram import render_graph
         from .fmt_svg import svg_outline
         from .util import parse_xml
 
@@ -358,7 +358,7 @@ class HtmlRenderer:
         label = esc_inline(title) if title else ""
         if graph is not None:
             head = f"**Figure SVG — {label} (diagramme)**" if label else "**Figure SVG (diagramme)**"
-            return head + "\n\n" + to_mermaid(graph)  # type: ignore[arg-type]
+            return head + "\n\n" + render_graph(graph, self.ctx.opts.diagrams)  # type: ignore[arg-type]
         shown, size = [], 0
         for t in texts:
             t = re.sub(r"\s+", " ", t).strip()[:80]

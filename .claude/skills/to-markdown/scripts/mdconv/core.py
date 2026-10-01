@@ -43,6 +43,7 @@ class Options:
     track_changes: str = "accept"      # accept | mark
     table_rows: int = 1000             # plafond de lignes par tableau (0 = illimité)
     html_mode: str = "auto"            # auto | full | main
+    diagrams: str = "both"             # schémas : mermaid | text (Markdown pur) | both
     infer_headings: bool = True
     frontmatter: str = "min"           # min | full | none
     engines: Optional[List[str]] = None  # ordre imposé (noms de moteurs)

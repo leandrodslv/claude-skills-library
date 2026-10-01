@@ -210,7 +210,7 @@ class Pptx(Base):
         shapes = (fx.sp(2, "Titre", ["Architecture"], ph="title") + fx.sp(10, "A", ["Frontend"], off=(0, 1000000)) + fx.sp(11, "B", ["API"], off=(3000000, 1000000))
                   + fx.sp(12, "C", ["Base"], off=(6000000, 1000000)) + cx(20, 10, 11) + cx(21, 11, 12))
         md = self.md(fx.make_pptx(self.tmp / "g.pptx", [fx.slide_xml(shapes)]))
-        self.assertMd(md, "```mermaid", 'N1["Frontend"] --> N2["API"]', 'N2["API"] --> N3["Base"]')
+        self.assertMd(md, "```mermaid", 'n1["Frontend"]', "n1 --> n2", "n2 --> n3", "| Frontend | → | API |", "| API | → | Base |")
 
     def test_free_form_diagram_without_connectors_is_flagged(self):
         def box(i, label, x):
