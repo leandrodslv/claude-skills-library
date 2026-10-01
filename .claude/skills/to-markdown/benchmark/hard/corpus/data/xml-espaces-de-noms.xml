@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<cat:catalogue xmlns:cat="http://exemple.fr/catalogue" xmlns:meta="http://exemple.fr/meta">
+<meta:info meta:version="2.1"><meta:auteur>Bureau d'études</meta:auteur></meta:info>
+<cat:produit ref="X1"><cat:nom>Vanne papillon DN80</cat:nom><cat:description><![CDATA[Vanne <robuste> & étanche, pression max 16 bar.]]></cat:description>
+<cat:note>Voir la <cat:lien href="http://exemple.fr/fiche">fiche technique</cat:lien> avant <cat:em>toute</cat:em> commande.</cat:note></cat:produit>
+<cat:produit ref="X2"><cat:nom>Clapet anti-retour</cat:nom><cat:description>Montage horizontal ou vertical.</cat:description></cat:produit></cat:catalogue>

@@ -123,7 +123,7 @@ def build_index(entries: List[Dict[str, Any]], out_root: Path, title: str = "Ind
 
 
 def write_report(entries: List[Dict[str, Any]], out_root: Path, opts: Options, inputs: List[str],
-                 elapsed: float) -> Dict[str, Any]:
+                 elapsed: float, persist: bool = True) -> Dict[str, Any]:
     counts: Dict[str, int] = {}
     for e in entries:
         counts[e["status"]] = counts.get(e["status"], 0) + 1
@@ -140,7 +140,8 @@ def write_report(entries: List[Dict[str, Any]], out_root: Path, opts: Options, i
         "unread": [{"source": e["source"], **u} for e in clean for u in e.get("unread", [])],
         "files": clean,
     }
-    atomic_write(out_root / "_report.json", json.dumps(report, ensure_ascii=False, indent=2).encode("utf-8"))
+    if persist:
+        atomic_write(out_root / "_report.json", json.dumps(report, ensure_ascii=False, indent=2).encode("utf-8"))
     return report
 
 

@@ -483,7 +483,7 @@ def main(argv: Optional[List[str]] = None) -> int:
         from .chunk import chunk_outputs
 
         chunk_outputs(real, out_root, args.chunk_tokens)
-    report = write_report(real, out_root, opts, args.inputs, elapsed)
+    report = write_report(real, out_root, opts, args.inputs, elapsed, persist=not args.in_place)
     if not args.in_place:
         from .readable import build_report_md
         from .writer import atomic_write

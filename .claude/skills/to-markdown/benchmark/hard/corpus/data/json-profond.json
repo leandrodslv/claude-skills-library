@@ -1,0 +1,50 @@
+{
+  "commande": {
+    "id": "CMD-2025-0042",
+    "client": {
+      "nom": "Société Lumière",
+      "adresse": {
+        "rue": "12 rue des Écoles",
+        "ville": "Nantes",
+        "contact": {
+          "tel": "+33 2 40 00 11 22",
+          "horaires": {
+            "semaine": {
+              "matin": [
+                "8h30",
+                "12h"
+              ],
+              "après-midi": [
+                "14h",
+                "18h"
+              ]
+            }
+          }
+        }
+      }
+    },
+    "lignes": [
+      {
+        "ref": "A-100",
+        "libellé": "Câble réseau 5 m",
+        "qté": 40,
+        "options": {
+          "couleur": "bleu",
+          "blindé": true
+        }
+      },
+      {
+        "ref": "B-220",
+        "libellé": "Switch 24 ports",
+        "qté": 2,
+        "options": null
+      }
+    ],
+    "notes": "Livraison avant le 12 juin — fragile",
+    "total": {
+      "ht": 1840.5,
+      "tva": 368.1,
+      "ttc": 2208.6
+    }
+  }
+}

@@ -1,0 +1,65 @@
+Subject: =?utf-8?b?UsOpdW5pb24gZMOpY2Fsw6llIDogcHJvamV0IMOJb2xlIOKAlCBwacOo?=
+ =?utf-8?q?ces_jointes_=E2=9C=94?=
+From: =?utf-8?q?Am=C3=A9lie?= Rousseau <amelie.rousseau@exemple.fr>
+To: equipe@exemple.fr
+Date: Wed, 30 Apr 2025 08:00:00 -0000
+MIME-Version: 1.0
+Content-Type: multipart/mixed; boundary="===============6989027300606289413=="
+
+--===============6989027300606289413==
+Content-Type: multipart/alternative;
+ boundary="===============5107277496270611352=="
+
+--===============5107277496270611352==
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
+
+Bonjour =C3=A0 tous,
+
+La r=C3=A9union du projet =C3=89ole est d=C3=A9cal=C3=A9e au jeudi 15 mai =C3=
+=A0 14 h 30, salle Mistral.
+Merci de confirmer votre pr=C3=A9sence avant mardi.
+
+Am=C3=A9lie
+
+--===============5107277496270611352==
+Content-Type: text/html; charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
+MIME-Version: 1.0
+
+<html><body><p>Bonjour =C3=A0 tous,</p><p>La r=C3=A9union du projet <b>=C3=89=
+ole</b> est d=C3=A9cal=C3=A9e au <b>jeudi 15 mai =C3=A0 14 h 30</b>, salle Mi=
+stral.</p>
+<table border=3D"1"><tr><th>Point</th><th>Responsable</th></tr><tr><td>Bilan =
+budg=C3=A9taire</td><td>Nicolas</td></tr><tr><td>Planning de recette</td><td>=
+In=C3=A8s</td></tr></table>
+<p>Merci de confirmer votre pr=C3=A9sence avant mardi.</p><p>Am=C3=A9lie</p><=
+/body></html>
+
+--===============5107277496270611352==--
+
+--===============6989027300606289413==
+Content-Type: text/plain
+Content-Transfer-Encoding: base64
+Content-Disposition: attachment; filename*=utf-8''notes-pr%C3%A9paration.txt
+MIME-Version: 1.0
+
+Tm90ZXMgZGUgcHLDqXBhcmF0aW9uCi0gVsOpcmlmaWVyIGxlIGJ1ZGdldCByZXN0YW50IDogMTgg
+NDAwIGV1cm9zCi0gSW1wcmltZXIgbCdvcmRyZSBkdSBqb3VyCg==
+
+--===============6989027300606289413==
+Content-Type: message/rfc822
+Content-Transfer-Encoding: 8bit
+MIME-Version: 1.0
+Content-Disposition: attachment
+
+Subject: TR: Validation du devis fournisseur
+From: fournisseur@exemple.com
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
+MIME-Version: 1.0
+
+Le devis num=C3=A9ro 2025-0417 d'un montant de 18 400 euros est valable jusqu=
+'au 30 juin.
+
+--===============6989027300606289413==--
