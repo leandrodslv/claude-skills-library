@@ -535,6 +535,28 @@ def yaml_native(path, ctx: Ctx) -> Result:
     return res
 
 
+def _mixed_content(root: ET.Element, limit: int = 40) -> List[Tuple[str, str]]:
+    """Éléments qui mêlent du texte et des sous-éléments (« Voir la <a>fiche</a> avant <em>toute</em> commande ») : (chemin, texte continu)."""
+    out: List[Tuple[str, str]] = []
+
+    def rec(e: ET.Element, path: str) -> None:
+        if len(out) >= limit:
+            return
+        kids = [c for c in e if isinstance(c.tag, str)]
+        name = f"{path}/{local(e.tag)}" if path else local(e.tag)
+        direct = (e.text or "").strip() or any((c.tail or "").strip() for c in kids)
+        if kids and direct:
+            flat = " ".join("".join(e.itertext()).split())
+            if flat:
+                out.append((name, flat))
+            return
+        for c in kids:
+            rec(c, name)
+
+    rec(root, "")
+    return out
+
+
 @engine("xml", name="native", prio=10)
 def xml_native(path, ctx: Ctx) -> Result:
     raw = Path(path).read_bytes()
@@ -561,6 +583,9 @@ def xml_native(path, ctx: Ctx) -> Result:
     block, cut = _truncate_block(text.strip())
     top = ", ".join(f"`{k}` ×{v}" for k, v in sorted(tags.items(), key=lambda kv: -kv[1])[:10])
     md = f"_XML — racine `{local(root.tag)}`, {sum(tags.values())} éléments, profondeur {depth}. Balises : {top}_\n\n" + fence(block, "xml")
+    mixed = _mixed_content(root)
+    if mixed:
+        md += "\n\n**Texte en contenu mixte** (phrases coupées par des balises, remises à plat) :\n\n" + "\n".join(f"- `{p}` : {esc_inline(t)}" for p, t in mixed)
     res = Result(markdown=md, fmt="xml", engine="native", title=Path(path).stem)
     res.stats["partial_source"] = True
     return res

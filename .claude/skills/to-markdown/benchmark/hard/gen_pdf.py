@@ -151,21 +151,34 @@ def build() -> List[Case]:
                       rows=[["Nord", "410", "455", "900"], ["Sud", "380", "402", "820"]], headings=["Ventes par région"],
                       notes="Chaque valeur doit rester sur la ligne de sa région ; les cellules fusionnées sont répétées ou clairement indiquées."))
 
-    # 4. page pivotée (/Rotate 90)
+    # 4. pages pivotées : texte dessiné « couché » dans la page, /Rotate 270 la remet debout à l'affichage (page paysage fabriquée en portrait)
     path = d / "page-pivotee.pdf"
     c = canvas.Canvas(str(path), pagesize=A4)
     c.setFont("DV", 12)
     c.drawString(2 * cm, H - 3 * cm, "Page normale : introduction du dossier d'étude.")
     c.showPage()
-    c.setPageRotation(90)
+    c.saveState()
+    c.translate(W, 0)
+    c.rotate(90)                        # le contenu est tourné de 90° dans l'espace de la page
     c.setFont("DV-B", 14)
-    c.drawString(2 * cm, H - 3 * cm, "Page pivotée de 90 degrés : tableau des écarts")
+    c.drawString(2 * cm, W - 3 * cm, "Page pivotée de 90 degrés : tableau des écarts")
     c.setFont("DV", 11)
     for i, t in enumerate(["Écart de calibrage : 0,8 mm", "Écart de planéité : 1,2 mm", "Écart angulaire : 0,3 degré"]):
-        c.drawString(2 * cm, H - 4.5 * cm - i * 0.8 * cm, t)
+        c.drawString(2 * cm, W - 4.5 * cm - i * 0.8 * cm, t)
+    c.restoreState()
     c.showPage()
     c.save()
-    cases.append(Case("pdf-page-pivotee", path, "pdf", 3, "une page est marquée /Rotate 90 : le texte est dessiné dans le repère non pivoté",
+    try:
+        import fitz
+        doc = fitz.open(str(path))
+        doc[1].set_rotation(90)
+        doc.save(str(path) + ".tmp", garbage=0)
+        doc.close()
+        import os
+        os.replace(str(path) + ".tmp", str(path))
+    except ImportError:
+        pass
+    cases.append(Case("pdf-page-pivotee", path, "pdf", 3, "page dont le contenu est tourné de 90° et marquée /Rotate 90 : à l'écran elle est droite, dans le flux de contenu le texte est couché",
                       must=["Page normale : introduction du dossier d'étude", "Page pivotée de 90 degrés : tableau des écarts", "Écart de calibrage : 0,8 mm", "Écart de planéité : 1,2 mm", "Écart angulaire : 0,3 degré"],
                       order=["Page normale", "Écart de calibrage", "Écart de planéité", "Écart angulaire"]))
 

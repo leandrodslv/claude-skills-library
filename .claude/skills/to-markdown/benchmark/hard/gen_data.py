@@ -87,8 +87,12 @@ INSERT INTO commandes VALUES (1,1,120.5,'Livraison urgente',x'255044462d'),(2,2,
     if pdf.exists():
         raw = pdf.read_bytes()
         (d / "pdf-tronque.pdf").write_bytes(raw[: int(len(raw) * 0.5)])
-        cases.append(Case("data-pdf-tronque", d / "pdf-tronque.pdf", "data", 4, "PDF tronqué à 50 % (sans table de références ni fin de fichier)", expect="ok",
-                          must=["Mesure de la dérive thermique en milieu industriel"], notes="Récupération partielle bienvenue (le début du texte), sinon échec propre."))
+        cases.append(Case("data-pdf-tronque", d / "pdf-tronque.pdf", "data", 4, "PDF tronqué à 50 % : le contenu des pages est perdu (rien à récupérer)", expect="error",
+                          notes="Doit dire clairement « fichier abîmé ou tronqué », pas « page scannée »."))
+        (d / "pdf-tronque-partiel.pdf").write_bytes(raw[: int(len(raw) * 0.95)])
+        cases.append(Case("data-pdf-tronque-partiel", d / "pdf-tronque-partiel.pdf", "data", 4, "PDF tronqué à 95 % : la première page est complète, la seconde est perdue",
+                          must=["Mesure de la dérive thermique en milieu industriel", "P01"], any_of=[["ILLISIBLE", "abîmé", "tronqué"]],
+                          notes="Récupérer la page 1 et signaler que la page 2 est perdue (pas « scannée »)."))
     (d / "faux-docx.docx").write_bytes(b"Ceci est simplement un fichier texte renomme en .docx.\nIl contient deux lignes.")
     cases.append(Case("data-faux-docx", d / "faux-docx.docx", "data", 2, "fichier texte renommé en .docx", must=["Ceci est simplement un fichier texte renomme", "Il contient deux lignes"],
                       notes="Le format doit être détecté par le contenu, pas par l'extension."))

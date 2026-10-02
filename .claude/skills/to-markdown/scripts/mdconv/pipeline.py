@@ -124,6 +124,91 @@ def _flag_informative_images(body: str, ctx: Ctx) -> None:
 OPT_IN_ENGINES = {"whisper"}  # lourds ou à modèles téléchargeables : jamais lancés sans demande explicite
 
 
+def _agreement(a: str, b: str) -> float:
+    """Ressemblance (0-1) de deux textes en sacs de mots : mots communs / mots du plus long des deux."""
+    from collections import Counter
+
+    from .util import md_plain, words
+
+    ca, cb = Counter(words(md_plain(a))), Counter(words(md_plain(b)))
+    total = max(sum(ca.values()), sum(cb.values()))
+    return sum((ca & cb).values()) / total if total else 1.0
+
+
+def _table_cells(md: str) -> List[str]:
+    """Contenu normalisé des cellules des tableaux d'un Markdown (hors lignes de séparation)."""
+    from .util import words
+
+    cells: List[str] = []
+    for ln in md.splitlines():
+        if ln.lstrip().startswith("|") and not re.match(r"^\s*\|[\s:|\-]+\|\s*$", ln):
+            for c in ln.strip().strip("|").split("|"):
+                w = " ".join(words(re.sub(r"<br\s*/?>|[*_`]", " ", c)))
+                if w:
+                    cells.append(w)
+    return cells
+
+
+def _native_pdf_tables_win(best: tuple, specs: list, src: Path, base: Ctx, out: "Outcome") -> Optional[tuple]:
+    """Un moteur PDF externe peut défaire un tableau (cellules coupées en deux, colonnes décalées) sans que la note de qualité
+    le voie : le texte y est, au mauvais endroit. Le lecteur natif, très rapide, relit alors le même fichier ; si ses tableaux
+    ont des cellules que la sortie du moteur ne contient pas, et que sa propre note n'est pas inférieure, c'est lui qui gagne."""
+    from .util import md_plain, words
+
+    spec = next((x for x in specs if x.name == "pdflite" and x.is_available()), None)
+    if spec is None:
+        spec = next((x for x in engines_for("pdf") if x.name == "pdflite"), None)
+    if spec is None:
+        return None
+    ctx = base.fork()
+    try:
+        res = spec.fn(src, ctx)
+    except Exception:
+        ctx.cleanup()
+        return None
+    res.engine, res.fmt = "pdflite", res.fmt or "pdf"
+    native_cells = _table_cells(res.markdown)
+    if len(native_cells) < 4:
+        ctx.cleanup()
+        return None
+    other = " " + " ".join(words(md_plain(best[1].markdown))) + " "
+    missing = [c for c in native_cells if f" {c} " not in other]
+    score = assess(res)
+    if missing and score.value >= best[0].value - 0.05:
+        res.score = score.value
+        out.attempts.append({"engine": "pdflite", "status": "ok", "score": round(score.value, 3), "words": score.words,
+                             "notes": [f"tableaux : {len(missing)} cellule(s) absente(s) de la sortie de {best[1].engine}, lecteur natif retenu"]})
+        best[2].cleanup()
+        return (score, res, ctx)
+    ctx.cleanup()
+    return None
+
+
+def _pick_best(pool: List[tuple]) -> Optional[tuple]:
+    """Meilleure tentative : la note la plus haute ; à égalité (à 0,03 près) la plus proche du consensus des autres moteurs.
+
+    Quand aucun moteur n'atteint le seuil, plusieurs notes sont voisines (document peu dense, par exemple) ; l'ordre de priorité
+    seul donnerait la sortie d'un moteur qui a pu lire du bruit (OCR d'une page à l'envers, colonnes mélangées). Un texte que
+    les autres moteurs ne retrouvent pas est suspect ; un texte qu'ils retrouvent presque tous est fiable.
+    """
+    if not pool:
+        return None
+    top = max(p[1].value for p in pool)
+    close = [(i, p) for i, p in enumerate(pool) if p[1].value >= top - 0.03]
+    if len(pool) < 3 or len(close) == 1:
+        chosen = next(p for p in pool if p[1].value >= top - 1e-9)      # priorité d'ordre à égalité de note
+    else:
+        def consensus(p: tuple) -> float:
+            others = [q for q in pool if q is not p]
+            return sum(_agreement(p[2].markdown, q[2].markdown) for q in others) / len(others)
+
+        chosen = max(close, key=lambda ip: (round(consensus(ip[1]), 2), ip[1][1].value, -ip[0]))[1]
+    for p in pool:
+        if p is not chosen:
+            p[3].cleanup()
+    return (chosen[1], chosen[2], chosen[3])
+
+
 def _order_specs(fmt: str, opts: Options):
     specs = [s for s in engines_for(fmt) if s.name not in OPT_IN_ENGINES or (opts.engines and s.name in opts.engines)]
     if not opts.external:
@@ -165,6 +250,7 @@ def convert_to_memory(src: Path, opts: Options, rel: str = "", assets_dir: str =
         return out
 
     best: Optional[tuple] = None  # (score, result, ctx)
+    pool: List[tuple] = []         # (moteur, note, résultat, contexte) de chaque tentative réussie
     protected: Optional[str] = None
     for spec in specs:
         if not spec.is_available():
@@ -207,24 +293,25 @@ def convert_to_memory(src: Path, opts: Options, rel: str = "", assets_dir: str =
         out.attempts.append({"engine": spec.name, "status": "ok", "score": round(score.value, 3),
                              "words": score.words, "seconds": round(time.time() - ts, 3),
                              **({"notes": score.notes} if score.notes else {})})
-        if best is None or score.value > best[0].value + 1e-9:
-            if best is not None:
-                best[2].cleanup()
-            best = (score, res, ctx)
-        else:
-            ctx.cleanup()
+        pool.append((spec.name, score, res, ctx))
         if score.value >= opts.quality_threshold and not opts.compare:
             break
+    best = _pick_best(pool)
     out.seconds = time.time() - t0
     if best is None:
         if protected:
             out.status, out.error = "unsupported", "fichier protégé par mot de passe : " + protected
         else:
             details = "; ".join(f"{a['engine']}: {a.get('detail', a['status'])}" for a in out.attempts) or "aucun moteur disponible"
+            damaged = next((a["detail"] for a in out.attempts if "abîmé ou tronqué" in str(a.get("detail", ""))), "")
+            if damaged:                       # le diagnostic utile d'abord ; les erreurs techniques des moteurs ne servent à rien à l'utilisateur
+                details = damaged
             hint = UNSUPPORTED_HINTS.get(det.fmt, "")
             out.status = "error" if any(a["status"] == "erreur" for a in out.attempts) else "unsupported"
             out.error = details + (f" — {hint}" if hint else "")
         return out
+    if det.fmt == "pdf" and best[1].engine != "pdflite" and not opts.compare and (not opts.engines or "pdflite" in opts.engines):
+        best = _native_pdf_tables_win(best, specs, src, base, out) or best
     score, res, ctx = best
     out.score, out.result, out.ctx = score, res, ctx
     if opts.render:

@@ -91,7 +91,7 @@ Le skill est 100 % local : aucun réseau, aucune installation, aucun contenu ex�
 
 - **PDF scannés** : tesseract fait l'OCR page par page (confiance moyenne signalée) ; si aucun OCR n'est installé ou si la confiance est basse, les pages sont marquées `[À COMPLÉTER : lecture visuelle]` avec un PNG à ouvrir. Vérifie toujours chiffres et noms propres d'un texte OCR.
 - **Fichiers `.doc/.xls/.ppt/.xlsb/.wps`** : lecteurs natifs de secours, mais **LibreOffice** (un seul lancement pour tout le lot) donne un meilleur rendu s'il est installé — `--doctor` le dit.
-- **E-mails** : en-têtes, corps, et chaque pièce jointe convertie à son tour (lien depuis le mail). `.msg` Outlook lu nativement.
+- **E-mails** : en-têtes, corps, et chaque pièce jointe convertie (courte : lue dans le mail ; longue : fichier lié). `.msg` Outlook lu nativement.
 - **Archives** : `.zip/.tar/.gz…` ouvertes (protection contre les chemins piégés et les zip bombs) ; chaque membre est converti, les sorties gardent l'arborescence.
 - **Audio / vidéo** : transcription seulement sur demande explicite (`--engines whisper`, nécessite `faster-whisper`) ; sinon ignorés avec un message.
 - **Macros** (`.docm`, `.xlsm`) : jamais exécutées, signalées. **Fichiers protégés par un vrai mot de passe d'ouverture** : refusés avec le message qui explique quoi faire (jamais contournés) ; les PDF « sécurisés » sans mot de passe d'ouverture sont lus normalement.

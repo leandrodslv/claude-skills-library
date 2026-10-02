@@ -177,14 +177,27 @@ def build_xlsx() -> List[Case]:
 def build_legacy() -> List[Case]:
     cases: List[Case] = []
     from pathlib import Path
-    srcs = {"docx": OUT / "docx" / "tableaux-fusionnes.docx", "xlsx": OUT / "xlsx" / "budget-formules-masques.xlsx", "pptx": OUT / "pptx" / "groupes-graphique-notes.pptx"}
+    srcs = {"xlsx": OUT / "xlsx" / "budget-formules-masques.xlsx", "pptx": OUT / "pptx" / "groupes-graphique-notes.pptx"}
     d = OUT / "legacy"
-    plan = [("docx", "doc", "doc:MS Word 97", "docx-tableaux-fusionnes", "Word 97-2003 (.doc) : tableau à cellules fusionnées",
-             dict(cells=["Zone", "Europe", "1 204", "1 310", "5 100", "Asie", "980", "1 022", "4 200"], must=["Source : direction financière", "Chiffre d'affaires par zone"])),
-            ("xlsx", "xls", "xls:MS Excel 97", "xlsx-budget-formules-masques", "Excel 97-2003 (.xls) : formats, formule, commentaire",
+    d.mkdir(parents=True, exist_ok=True)
+    # Word 97-2003 : le format ne sait pas imbriquer de tableau ; on part donc d'un tableau à cellules fusionnées, sans imbrication
+    html = d / "_tableaux.html"
+    html.write_text("""<html><head><meta charset="utf-8"></head><body><h1>Chiffre d'affaires par zone</h1>
+<table border="1" cellpadding="4"><tr><th rowspan="2">Zone</th><th colspan="2">Résultats 2025</th><th rowspan="2">Prévisions 2026</th></tr>
+<tr><th>T1</th><th>T2</th></tr><tr><td>Europe</td><td>1 204</td><td>1 310</td><td>5 100</td></tr><tr><td>Asie</td><td>980</td><td>1 022</td><td>4 200</td></tr></table>
+<p>Source : direction financière.</p><ul><li>Premier point</li><li>Second point</li></ul></body></html>""", encoding="utf-8")
+    dest = d / "tableaux-fusionnes.doc"
+    if lo_convert(html, "doc:MS Word 97", dest, infilter="HTML (StarWriter)"):
+        cases.append(Case("legacy-tableaux-fusionnes", dest, "legacy", 4, "Word 97-2003 (.doc) : tableau à cellules fusionnées, liste",
+                          cells=["Zone", "Résultats 2025", "T1", "T2", "Prévisions 2026", "Europe", "1 204", "1 310", "5 100", "Asie", "980", "1 022", "4 200"],
+                          rows=[["Europe", "1 204", "1 310", "5 100"], ["Asie", "980", "1 022", "4 200"]],
+                          must=["Chiffre d'affaires par zone", "Source : direction financière", "Premier point", "Second point"]))
+    html.unlink(missing_ok=True)
+    plan = [("xlsx", "xls", "xls:MS Excel 97", "xlsx-budget-formules-masques", "Excel 97-2003 (.xls) : formats, formule, commentaire",
              dict(must=["Budget prévisionnel 2026", "Salaires", "Loyers", "Hélène Dubois"])),
             ("pptx", "ppt", "ppt:MS PowerPoint 97", "pptx-groupes-graphique-notes", "PowerPoint 97-2003 (.ppt) : groupes, tableau, notes",
-             dict(must=["Résultats trimestriels", "Pôle Produit : Anaïs Moreau", "Budget par pôle", "420 k€", "Note de l'orateur : insister sur la progression de l'export au T4"]))]
+             dict(must=["Résultats trimestriels", "Pôle Produit : Anaïs Moreau", "Budget par pôle", "420 k€", "Note de l'orateur : insister sur la progression de l'export au T4"],
+                  rows=[["Pôle", "Budget", "Effectif"], ["Produit", "420 k€", "12"]]))]
     for src_ext, ext, filt, base, challenge, exp in plan:
         src = srcs[src_ext]
         if not Path(src).exists():

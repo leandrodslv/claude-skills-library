@@ -222,16 +222,20 @@ def _prepare_legacy(files: List[InputFile], opts: Options, tmp_root: Path, quiet
         print(f"[avert] pré-conversion LibreOffice ignorée : {exc}", file=sys.stderr)
 
 
+INLINE_ATTACHMENT_WORDS = 3000      # une pièce jointe plus courte que cela, sans image, est lue directement dans le mail
+
+
 def _convert_attachments(out, opts: Options, task: Dict[str, Any]) -> List[Dict[str, Any]]:
     """Pièces jointes d'un e-mail : chacune est convertie à son tour (un niveau), et liée depuis le mail."""
     from urllib.parse import quote
 
-    from .util import slugify
+    from .util import esc_inline, slugify
 
     out_root = Path(task["out_root"])
     base_md = Path(task["out_md"])
     child_dir = base_md.with_suffix("").as_posix() + "_attachments"
     entries: List[Dict[str, Any]] = []
+    inline: List[str] = []
     used: set = set()
     for name in out.result.stats.get("attachments", []):
         asset = out.ctx.assets.get(name)
@@ -253,11 +257,22 @@ def _convert_attachments(out, opts: Options, task: Dict[str, Any]) -> List[Dict[
         o2 = convert_to_memory(tmp, opts, rel=f"{task['rel']}/attachments/{name}", assets_dir=f"{stem}_assets", det=det)
         if o2.result is None:
             continue
+        words = len(o2.body.split())
+        if not o2.ctx.assets and not o2.ctx.vision and words <= INLINE_ATTACHMENT_WORDS:
+            # courte et sans image : son contenu est lu avec le mail (un seul fichier à donner à l'IA), sans fichier annexe
+            body = re.sub(r"^---\n.*?\n---\n+", "", o2.body, flags=re.S)
+            body = re.sub(r"(?m)^(#{1,5})(\s)", r"\1#\2", body)                    # les titres de la pièce jointe passent d'un niveau
+            inline.append(f"### Pièce jointe : {esc_inline(name)}\n\n{body.strip()}")
+            for w in o2.ctx.warnings:
+                out.ctx.warn(f"pièce jointe {name} : {w}")
+            continue
         entries.append(write_outcome(o2, opts, out_root, child_md))
         rel_link = os.path.relpath(out_root / child_md, (out_root / base_md).parent).replace(os.sep, "/")
         suffix = f" — [converti en Markdown]({quote(rel_link)})"
         out.body = re.sub(r"(\(" + re.escape(out.ctx.assets_dir + "/" + name) + r"\)[^\n]*)", lambda m, tail=suffix: m.group(1) + tail,
                           out.body, count=1)
+    if inline:
+        out.body = out.body.rstrip() + "\n\n" + "\n\n".join(inline) + "\n"
     return entries
 
 

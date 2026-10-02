@@ -141,11 +141,11 @@ def evaluate(case: Dict[str, Any], out: str, status: str, flagged_vision: bool, 
 
 def _mermaid_graph(text: str):
     """Extrait d'un bloc Mermaid : {id: libellé}, [(src, cible, étiquette, flèche)], [(titre de sous-graphe, [libellés])]."""
-    nodes = {k: v for k, v in re.findall(r'(\w+)\["([^"]*)"\]', text)}
+    nodes = {k: v for k, v in re.findall(r'(\w+)(?:\[\(|\(\[|\(\(|\{|\(|\[)"([^"]*)"', text)}      # rectangle, cylindre, stade, cercle, losange, arrondi
     edges = [(a, b2, lab, arrow) for a, arrow, lab, b2 in re.findall(r"(\w+)\s+(<-->|-->|---|<--)\s*(?:\|([^|\n]*)\|)?\s*(\w+)", text)]
     groups = []
     for m in re.finditer(r'subgraph\s+\w+\["([^"]*)"\]\n(.*?)\n\s*end', text, flags=re.S):
-        groups.append((m.group(1), [nodes.get(i, "") for i in re.findall(r"(\w+)\[", m.group(2))]))
+        groups.append((m.group(1), [nodes.get(i, "") for i in re.findall(r"(\w+)(?:\[\(|\(\[|\(\(|\{|\(|\[)\"", m.group(2))]))
     return nodes, edges, groups
 
 
@@ -171,7 +171,7 @@ def run_mdconv(path: Path, external: bool) -> Tuple[str, str, bool, Optional[str
     from mdconv.pipeline import convert_to_memory
 
     t0 = time.perf_counter()
-    if path.suffix.lower() in (".zip", ".tar", ".gz", ".tgz"):          # les archives sont dépliées par la ligne de commande, pas par convert_to_memory
+    if path.suffix.lower() in (".zip", ".tar", ".gz", ".tgz", ".eml", ".mbox"):    # archives et pièces jointes : traitées par la ligne de commande, pas par convert_to_memory
         return _run_cli(path, external, t0)
     opts = Options(frontmatter="none", images="skip", external=external)
     out = convert_to_memory(path, opts, rel=path.name, assets_dir="a")

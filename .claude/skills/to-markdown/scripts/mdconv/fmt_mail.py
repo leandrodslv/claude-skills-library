@@ -52,16 +52,27 @@ def _render_message(msg: EmailMessage, ctx: Ctx, stem: str, heading: int, attach
             plain_text = clean_text(plain.get_content()).replace("\r\n", "\n").strip()
         except Exception:
             plain_text = ""
-    if plain_text and len(plain_text) > 20:
-        body_md, src = plain_text, plain_text
-    elif html is not None:
+    html_md, html_src = "", ""
+    if html is not None:
         try:
             raw = html.get_content()
         except Exception:
             raw = decode_html(html.get_payload(decode=True) or b"")
-        md, _t, _m, s = html_to_markdown(raw, ctx, stem=slugify(stem) or "img",
-                                         image_loader=lambda src: cids.get(src[4:]) if src.startswith("cid:") else None)
-        body_md, src = md, s
+        try:
+            html_md, _t, _m, html_src = html_to_markdown(raw, ctx, stem=slugify(stem) or "img",
+                                                         image_loader=lambda src: cids.get(src[4:]) if src.startswith("cid:") else None)
+        except Exception:
+            html_md, html_src = "", ""
+    if plain_text and len(plain_text) > 20 and html_md.strip():
+        # les deux versions existent : la version HTML est gardée quand elle apporte de la structure (tableau, liste, lien, titre)
+        # ou davantage de contenu ; sinon le texte brut, plus propre, suffit — jamais les deux (doublon).
+        structured = bool(re.search(r"(?m)^\|\s*-{3}|^\s*(?:[-*+]|\d+[.)])\s+\S|^#{1,6}\s|\]\(https?://", html_md))
+        richer = len(html_md.split()) > 1.25 * len(plain_text.split()) + 5
+        body_md, src = (html_md, html_src) if (structured or richer) else (plain_text, plain_text)
+    elif plain_text and len(plain_text) > 20:
+        body_md, src = plain_text, plain_text
+    elif html_md.strip():
+        body_md, src = html_md, html_src
     else:
         body_md = plain_text
         src = plain_text

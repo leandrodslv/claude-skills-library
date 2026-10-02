@@ -76,6 +76,12 @@ class Node:
                 yield from c.iter()
 
 
+def _is_note(n: "Node") -> bool:
+    """Note de bas de page ou de fin (EPUB `epub:type="footnote"`, ARIA `doc-footnote`) : du contenu, pas du décor, même dans un <aside>."""
+    kind = (n.attrs.get("epub:type") or n.attrs.get("type") or "") + " " + (n.attrs.get("role") or "")
+    return bool(re.search(r"(?i)\b(foot|end|rear)?notes?\b|doc-(foot|end)note", kind))
+
+
 class TreeBuilder(HTMLParser):
     def __init__(self) -> None:
         super().__init__(convert_charrefs=True)
@@ -237,7 +243,7 @@ class HtmlRenderer:
         return False
 
     def noise(self, n: Node) -> bool:
-        if n.tag in NOISE_TAGS:
+        if n.tag in NOISE_TAGS and not _is_note(n):
             return True
         if n.get("role") in NOISE_ROLES:
             return True

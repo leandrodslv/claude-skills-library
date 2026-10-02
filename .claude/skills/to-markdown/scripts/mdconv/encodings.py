@@ -123,6 +123,10 @@ def guess_legacy_codepage(sample: bytes) -> Optional[str]:
 _INSIDE = r"[^\W\d_]{{1}}{cls}[^\W\d_]"
 _CE_SYMBOLS = re.compile(_INSIDE.format(cls=r"[¹³¥£¯¿¼¾]"))
 _TR_LETTERS = re.compile(_INSIDE.format(cls=r"[ðþÐÞ]"))
+# ISO-8859-2 range les mêmes lettres ailleurs (ą ś ź en 0xB1 0xB6 0xBC) : lues en cp1252 → « ± ¶ ¼ » au milieu des mots,
+# alors que cp1250 les met en 0xB9 (¹) ou 0x9C/0x9F (octets que cp1252 ne définit pas ou autrement)
+_L2_ONLY = re.compile(_INSIDE.format(cls=r"[±¶¼¡¦¬]"))
+_CP1250_ONLY = re.compile(_INSIDE.format(cls=r"[¹]"))
 
 
 def _decodes(data: bytes, enc: str) -> bool:
@@ -143,6 +147,9 @@ def refine_western(data: bytes) -> str:
     except UnicodeDecodeError:
         return next((e for e in ("cp1250", "cp1254", "cp1257") if _decodes(data, e)), "latin-1")
     if len(_CE_SYMBOLS.findall(text)) >= 2 and _decodes(data, "cp1250"):
+        if (_L2_ONLY.search(text) and not _CP1250_ONLY.search(text) and not any(0x80 <= b <= 0x9F for b in data)
+                and _decodes(data, "iso8859_2")):
+            return "iso8859_2"
         return "cp1250"
     if len(_TR_LETTERS.findall(text)) >= 2 and _decodes(data, "cp1254"):
         return "cp1254"

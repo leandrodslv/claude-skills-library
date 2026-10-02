@@ -65,6 +65,21 @@ def pdf_info(path: Path) -> Dict[str, str]:
     return out
 
 
+def pdf_damage(path: Path) -> str:
+    """Raison pour laquelle le fichier est tronqué ou abîmé (« » s'il est complet) : un PDF valide finit par `startxref … %%EOF`."""
+    try:
+        with open(path, "rb") as f:
+            f.seek(0, 2)
+            size = f.tell()
+            f.seek(max(0, size - 4096))
+            tail = f.read()
+    except OSError:
+        return ""
+    if b"%%EOF" not in tail or b"startxref" not in tail:
+        return "fin du fichier absente — téléchargement interrompu ou fichier abîmé"
+    return ""
+
+
 _OCR_CACHE: Dict[tuple, Tuple[str, float]] = {}
 
 
@@ -96,8 +111,8 @@ def finish(pages: List[str], ctx: Ctx, engine_name: str, path: Path, already_md:
     n = len(pages)
     if n == 0:
         raise Unsupported("aucune page")
+    pages = strip_repeated(pages)            # en-têtes, pieds et numéros répétés : aussi pour les moteurs qui rendent déjà du Markdown
     if not already_md:
-        pages = strip_repeated(pages)
         pages = [reflow(p) for p in pages]
     counts = [words_count(p) for p in pages]
     empty = [i + 1 for i, c in enumerate(counts) if c < MIN_WORDS_PAGE]
@@ -126,6 +141,8 @@ def finish(pages: List[str], ctx: Ctx, engine_name: str, path: Path, already_md:
         pngs = {}
         if ctx.opts.external and not ctx.opts.no_vision and ext.can_render_pdf() and len(vision_pages) <= VISION_PNG_CAP:
             pngs = ext.render_pdf_pages(path, vision_pages, dpi=110, timeout=ctx.opts.timeout)
+        if pngs and set(vision_pages) & set(empty) and pdf_damage(path):
+            reason = "aucun texte extractible et fichier PDF abîmé ou tronqué (contenu peut-être perdu, voir le rendu)"
         for p in vision_pages:
             png = pngs.get(p)
             link = ctx.add_asset(png, "png", stem=f"page-{p:03d}", force=True, unique=True) if png else None
@@ -133,7 +150,19 @@ def finish(pages: List[str], ctx: Ctx, engine_name: str, path: Path, already_md:
                 f"> **[À COMPLÉTER : lecture visuelle]** page {p} — {reason}."
             if link:
                 ctx.need_vision("page", link, f"page {p} : {reason}")
-        if not pngs:
+        damage = pdf_damage(path)
+        if damage and pngs:
+            # un moteur a réparé le fichier et sait dessiner la page : on la propose, mais sans prétendre que c'est un scan
+            ctx.warn(f"PDF abîmé ou tronqué ({damage.split(' — ')[0]}) : {len(vision_pages)} page(s) sans texte")
+            damage = ""
+        if damage and not pngs:
+            # fichier tronqué : ces pages ne sont ni vides ni scannées, leur contenu est absent du fichier. Les regarder n'y changerait rien.
+            for p in vision_pages:
+                marker_note[p] = f"> **[PAGE ILLISIBLE : fichier PDF abîmé ou tronqué ({damage.split(' — ')[0]}) — le contenu de cette page n'a pas pu être récupéré]**"
+            if len(vision_pages) >= n and not any(c >= MIN_WORDS_PAGE for c in counts):
+                raise Unsupported(f"fichier PDF abîmé ou tronqué ({damage}) : aucun texte récupérable — le télécharger ou l'exporter à nouveau")
+            ctx.warn(f"PDF abîmé ou tronqué : {len(vision_pages)} page(s) sur {n} illisible(s) ({_ranges(vision_pages)}), les autres sont complètes ou partielles")
+        elif not pngs:
             ctx.need_vision("page", str(path), f"{reason}", pages=_ranges(vision_pages))
         elif len(pngs) < len(vision_pages):
             rest = [p for p in vision_pages if p not in pngs]

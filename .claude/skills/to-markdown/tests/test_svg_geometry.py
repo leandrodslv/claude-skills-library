@@ -104,3 +104,36 @@ class SvgGeometry(Base):
         self.assertIn("g1 --> g2", md)
         self.assertNotIn("n5", md.replace("flowchart", ""))      # aucun nœud anonyme créé pour une extrémité de cadre
         self.assertIn("| Analyse | → | Conception |", md)
+
+    @staticmethod
+    def plain_edges(md: str):
+        """Liens d'un bloc Mermaid dont les formes (rondes, losanges, cylindres…) sont ramenées à des libellés."""
+        nodes = {k: v for k, v in re.findall(r'(\w+)(?:\[\(|\(\[|\(\(|\{|\(|\[)"([^"]*)"', md)}
+        return {(nodes[a], nodes[b], (lab or "")) for a, _arrow, lab, b in re.findall(r"(\w+) (-->|---|<-->)(?:\|([^|]*)\|)? (\w+)", md)}
+
+    def test_decision_diamond_database_cylinder_and_round_shapes_keep_their_look(self):
+        svg = (HEAD + '<rect x="20" y="20" width="120" height="50" rx="8" fill="none" stroke="#000"/><text x="80" y="50" text-anchor="middle">Début</text>'
+               '<polygon points="300,20 380,60 300,100 220,60" fill="none" stroke="#000"/><text x="300" y="64" text-anchor="middle">Valide ?</text>'
+               '<path d="M450 20 C450 8 530 8 530 20 L530 90 C530 102 450 102 450 90 Z" fill="none" stroke="#000"/><text x="490" y="60" text-anchor="middle">Base</text>'
+               '<path d="M140 45 L220 55" stroke="#000" marker-end="url(#a)"/><path d="M380 60 L450 60" stroke="#000" marker-end="url(#a)"/></svg>')
+        md = self.md("formes.svg", svg)
+        self.assertIn('("Début")', md)
+        self.assertIn('{"Valide ?"}', md)
+        self.assertIn('[("Base")]', md)
+        self.assertIn("**Décisions (losanges) :** Valide ?", md)
+        self.assertEqual(self.plain_edges(md), {("Début", "Valide ?", ""), ("Valide ?", "Base", "")})
+
+    def test_shapes_without_text_become_nodes_with_their_caption_or_a_placeholder_name(self):
+        svg = (HEAD + '<circle cx="60" cy="100" r="25" fill="#9cf" stroke="#000"/><text x="60" y="150" text-anchor="middle">Capteur</text>'
+               '<circle cx="300" cy="100" r="25" fill="#fc9" stroke="#000"/><text x="300" y="150" text-anchor="middle">Passerelle</text>'
+               '<circle cx="540" cy="100" r="25" fill="#cf9" stroke="#000"/>'
+               '<path d="M85 100 L275 100" stroke="#000" marker-end="url(#a)"/><path d="M325 100 L515 100" stroke="#000" marker-end="url(#a)"/></svg>')
+        md = self.md("icones.svg", svg)
+        self.assertEqual(self.plain_edges(md), {("Capteur", "Passerelle", ""), ("Passerelle", "forme sans texte n°1 (cercle)", "")})
+
+    def test_bar_chart_with_axes_is_not_a_diagram_even_though_shapes_and_lines_touch(self):
+        svg = (HEAD + '<line x1="40" y1="260" x2="560" y2="260" stroke="#000"/><line x1="40" y1="260" x2="40" y2="30" stroke="#000"/>'
+               + "".join(f'<rect x="{70 + i * 90}" y="{260 - h}" width="50" height="{h}" fill="#69c"/>' for i, h in enumerate((80, 120, 160, 200)))
+               + '<text x="300" y="285">Trimestres</text></svg>')
+        md = self.md("barres.svg", svg)
+        self.assertNotIn("mermaid", md)

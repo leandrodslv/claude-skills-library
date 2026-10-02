@@ -55,8 +55,10 @@ def doc_lite(path, ctx: Ctx) -> Result:
     cps = struct.unpack_from("<%dI" % (n + 1), plc, 0)
     pcds = plc[(n + 1) * 4:]
     parts: List[str] = []
+    pieces: List[Tuple[int, int, int]] = []          # (cp début, cp fin, fc) de chaque morceau de texte
     for i in range(n):
         fc = struct.unpack_from("<I", pcds, i * 8 + 2)[0]
+        pieces.append((cps[i], cps[i + 1], fc))
         ncp = cps[i + 1] - cps[i]
         if fc & 0x40000000:
             off = (fc & 0x3FFFFFFF) // 2
@@ -66,12 +68,15 @@ def doc_lite(path, ctx: Ctx) -> Result:
             parts.append(wd[off:off + 2 * ncp].decode("utf-16-le", "replace"))
     full = "".join(parts)
     main, foot = full[:ccp_text], full[ccp_text:ccp_text + max(ccp_ftn, 0)]
-    md, src = _doc_text_to_md(main)
+    uneven: List[int] = []
+    md, src = _doc_text_to_md(main, _doc_row_ends(wd, table, pieces, ccp_text), uneven)
     notes = [t.strip().lstrip("\x02").strip() for t in foot.split("\r") if t.strip().lstrip("\x02").strip()]
     if notes:
         md += "\n\n" + "\n".join(f"[^{i}]: {esc_inline(clean_text(t))}" for i, t in enumerate(notes, 1))
     if not md.strip():
         raise Unsupported("aucun texte extrait")
+    if uneven:
+        ctx.warn("tableau à cellules fusionnées : les colonnes d'en-tête peuvent être décalées (lecteur .doc intégré) — installer LibreOffice pour une restitution exacte")
     ctx.warn(WARN_LITE.format("titres et listes non reconnus (texte et tableaux conservés) ; installer LibreOffice pour la mise en forme"))
     res = Result(markdown=md, fmt="doc", engine="native", title="")
     res.source_text = src
@@ -79,7 +84,81 @@ def doc_lite(path, ctx: Ctx) -> Result:
     return res
 
 
-def _doc_text_to_md(text: str) -> Tuple[str, str]:
+def _papx_row_end_ranges(wd: bytes, table: bytes) -> Optional[List[Tuple[int, int]]]:
+    """Intervalles de fichier (début, fin) des paragraphes marqués « fin de ligne de tableau » (sprmPFTtp) dans les pages FKP."""
+    fc_pl, lcb_pl = struct.unpack_from("<II", wd, 0x102)
+    plc = table[fc_pl:fc_pl + lcb_pl]
+    if lcb_pl < 12:
+        return None
+    n = (lcb_pl - 4) // 8
+    pns = struct.unpack_from("<%dI" % n, plc, (n + 1) * 4)
+    ranges: List[Tuple[int, int]] = []
+    for pn in pns:
+        base = (pn & 0x3FFFFF) * 512
+        if base + 512 > len(wd):
+            continue
+        page = wd[base:base + 512]
+        cpara = page[511]
+        if cpara == 0 or 4 * (cpara + 1) + 13 * cpara > 511:
+            continue
+        fcs = struct.unpack_from("<%dI" % (cpara + 1), page, 0)
+        for k in range(cpara):
+            off = page[4 * (cpara + 1) + 13 * k] * 2
+            if off == 0 or off >= 511:
+                continue
+            cb = page[off]
+            if cb == 0:
+                cb = page[off + 1] * 2
+                body = page[off + 2:off + 2 + cb]
+            else:
+                cb = cb * 2 - 1
+                body = page[off + 1:off + 1 + cb]
+            if _papx_has_ttp(body[2:]):                                          # 2 premiers octets : istd
+                ranges.append((fcs[k], fcs[k + 1]))
+    return ranges
+
+
+def _papx_has_ttp(sprms: bytes) -> bool:
+    """La liste de modifications contient-elle sprmPFTtp (0x2417) à 1 ?"""
+    i = 0
+    size = {0: 1, 1: 1, 2: 2, 3: 4, 4: 2, 5: 2, 7: 3}
+    while i + 3 <= len(sprms):
+        op = struct.unpack_from("<H", sprms, i)[0]
+        spra = op >> 13
+        if op == 0x2417:
+            return sprms[i + 2] == 1
+        if spra == 6:
+            ln = sprms[i + 2]
+            i += 3 + (ln if op != 0xC615 or ln != 255 else 1)
+        else:
+            i += 2 + size.get(spra, 1)
+    return False
+
+
+def _doc_row_ends(wd: bytes, table: bytes, pieces: List[Tuple[int, int, int]], ccp_text: int) -> Optional[set]:
+    """Positions (dans le texte principal) des marques de fin de ligne de tableau ; None si le fichier ne le permet pas."""
+    try:
+        ranges = _papx_row_end_ranges(wd, table)
+    except (struct.error, IndexError):
+        return None
+    if ranges is None:
+        return None
+    ends: set = set()
+    for fs, fe in ranges:
+        for cp0, cp1, fc in pieces:
+            compressed = bool(fc & 0x40000000)
+            base = (fc & 0x3FFFFFFF) // 2 if compressed else (fc & 0x3FFFFFFF)
+            width = 1 if compressed else 2
+            if base <= fs < base + (cp1 - cp0) * width:
+                last = fe - width                                              # la marque de fin de ligne est le dernier caractère
+                cp = cp0 + (last - base) // width
+                if 0 <= cp < ccp_text:
+                    ends.add(cp)
+                break
+    return ends
+
+
+def _doc_text_to_md(text: str, row_ends: Optional[set] = None, uneven: Optional[List[int]] = None) -> Tuple[str, str]:
     out: List[str] = []
     rows: List[List[str]] = []
     cells: List[str] = []
@@ -95,11 +174,13 @@ def _doc_text_to_md(text: str) -> Tuple[str, str]:
         nonlocal rows
         if rows:
             grid = [r for r in rows if any(c.strip() for c in r)]
+            if grid and uneven is not None and len({len(r) for r in grid}) > 1:
+                uneven.append(1)                      # lignes de longueurs différentes : cellules fusionnées, colonnes à vérifier
             if grid:
                 out.append(md_table(grid))
             rows = []
 
-    for ch in text:
+    for cp, ch in enumerate(text):
         if ch == "\x13":
             depth += 1
             in_result.append(False)
@@ -125,7 +206,18 @@ def _doc_text_to_md(text: str) -> Tuple[str, str]:
             instr_buf[-1] += ch  # instruction de champ : ignorée (sauf HYPERLINK)
             continue
         if ch == "\x07":
-            if not buf and cells:
+            if row_ends:                                  # marques de fin de ligne connues (propriétés de paragraphe) : fiable
+                if cp in row_ends:
+                    if cells or buf:
+                        if buf:
+                            cells.append("".join(buf).strip())
+                            buf = []
+                        rows.append(cells)
+                    cells = []
+                else:
+                    cells.append("".join(buf).strip())
+                    buf = []
+            elif not buf and cells:                       # sans propriétés : une cellule vide après des cellules = fin de ligne (approximatif)
                 rows.append(cells)
                 cells = []
             else:
@@ -398,6 +490,72 @@ def _ppt_texts(data: bytes, start: int, end: int, out: List[Tuple[int, str]], ki
             out.append((kind, data[body:body + ln].decode("cp1252", "replace")))
 
 
+def _ppt_anchor(data: bytes, typ: int, body: int, ln: int) -> Optional[Tuple[int, int, int, int]]:
+    """(gauche, haut, droite, bas) d'une forme : ClientAnchor (haut, gauche, droite, bas) ou ChildAnchor (gauche, haut, droite, bas)."""
+    try:
+        if typ == 0xF010 and ln == 8:
+            t, l_, r, b = struct.unpack_from("<hhhh", data, body)
+            return (l_, t, r, b)
+        if typ == 0xF010 and ln >= 16:
+            t, l_, r, b = struct.unpack_from("<iiii", data, body)
+            return (l_, t, r, b)
+        if typ == 0xF00F and ln >= 16:
+            return struct.unpack_from("<iiii", data, body)
+    except struct.error:
+        pass
+    return None
+
+
+def _ppt_shapes(data: bytes, start: int, end: int, out: List[Tuple[int, Optional[Tuple[int, int, int, int]], List[Tuple[int, str]]]],
+                group: List[int], gid: int = 0) -> None:
+    """Formes d'une diapositive dans l'ordre du fichier : (groupe, boîte, textes). Les formes d'un même groupe partagent un repère."""
+    for ver, inst, typ, ln, body, pos in _ppt_records(data, start, end):
+        if typ == 0xF004 and ver == 0xF:                          # SpContainer : une forme
+            anchor: Optional[Tuple[int, int, int, int]] = None
+            texts: List[Tuple[int, str]] = []
+            for v2, i2, t2, l2, b2, p2 in _ppt_records(data, body, min(body + ln, end)):
+                if t2 in (0xF010, 0xF00F):
+                    anchor = _ppt_anchor(data, t2, b2, l2) or anchor
+                elif v2 == 0xF:
+                    _ppt_texts(data, b2, min(b2 + l2, end), texts)
+            out.append((gid, anchor, texts))
+        elif typ == 0xF003 and ver == 0xF:                        # SpgrContainer : un groupe
+            group[0] += 1
+            _ppt_shapes(data, body, min(body + ln, end), out, group, group[0])
+        elif ver == 0xF:
+            _ppt_shapes(data, body, min(body + ln, end), out, group, gid)
+
+
+def _ppt_table(cells: List[Tuple[Tuple[int, int, int, int], str]]) -> Optional[List[List[str]]]:
+    """Grille de cellules (formes alignées en lignes et colonnes) → lignes de texte, ou None si ce n'est pas un tableau."""
+    if len(cells) < 4:
+        return None
+
+    def cluster(vals: List[int], tol: int) -> List[int]:
+        out: List[int] = []
+        for v in sorted(vals):
+            if not out or v - out[-1] > tol:
+                out.append(v)
+        return out
+
+    tol = max(20, int(0.12 * min(c[0][2] - c[0][0] for c in cells if c[0][2] > c[0][0]) if any(c[0][2] > c[0][0] for c in cells) else 20))
+    xs, ys = cluster([c[0][0] for c in cells], tol), cluster([c[0][1] for c in cells], tol)
+    if not (2 <= len(xs) <= 12 and 2 <= len(ys) <= 80):
+        return None
+    grid: List[List[str]] = [["" for _ in xs] for _ in ys]
+    used = 0
+    for (l_, t, _r, _b), text in cells:
+        ci = min(range(len(xs)), key=lambda k: abs(xs[k] - l_))
+        ri = min(range(len(ys)), key=lambda k: abs(ys[k] - t))
+        if grid[ri][ci]:
+            return None                                              # deux formes dans la même case : pas une grille
+        grid[ri][ci] = text
+        used += 1
+    if used < 0.7 * len(xs) * len(ys):
+        return None
+    return grid
+
+
 @engine("ppt", name="native", prio=20)
 def ppt_lite(path, ctx: Ctx) -> Result:
     cfb = _open(path)
@@ -437,39 +595,79 @@ def ppt_lite(path, ctx: Ctx) -> Result:
         raise Unsupported("annuaire des objets illisible")
     dtyp, dln = struct.unpack_from("<HI", doc, doc_off + 2)
     slide_refs: List[int] = []
+    notes_by_id: Dict[int, int] = {}
     for ver, inst, typ, ln, body, pos in _ppt_records(doc, doc_off + 8, doc_off + 8 + dln):
         if typ == 0x0FF0 and inst == 0:  # SlideListWithText : diapositives
             for v2, i2, t2, l2, b2, p2 in _ppt_records(doc, body, body + ln):
                 if t2 == 0x03F3 and l2 >= 4:
                     slide_refs.append(struct.unpack_from("<I", doc, b2)[0])
+        elif typ == 0x0FF0 and inst == 2:  # liste des pages de notes : identifiant de page de notes → identifiant d'objet
+            for v2, i2, t2, l2, b2, p2 in _ppt_records(doc, body, body + ln):
+                if t2 == 0x03F3 and l2 >= 16:
+                    notes_by_id[struct.unpack_from("<I", doc, b2 + 12)[0]] = struct.unpack_from("<I", doc, b2)[0]
     if not slide_refs:
         raise Unsupported("aucune diapositive trouvée")
     blocks: List[str] = []
     src: List[str] = []
     for n, ref in enumerate(slide_refs, 1):
         off = persist.get(ref)
-        texts: List[Tuple[int, str]] = []
+        shapes: List[tuple] = []
+        notes_text = ""
         if off is not None and off + 8 <= len(doc):
             ln = struct.unpack_from("<I", doc, off + 4)[0]
-            _ppt_texts(doc, off + 8, min(off + 8 + ln, len(doc)), texts)
+            sl_end = min(off + 8 + ln, len(doc))
+            _ppt_shapes(doc, off + 8, sl_end, shapes, [0])
+            for v3, i3, t3, l3, b3, p3 in _ppt_records(doc, off + 8, sl_end):        # SlideAtom : identifiant de la page de notes
+                if t3 == 0x03EF and l3 >= 20:
+                    nid = struct.unpack_from("<I", doc, b3 + 16)[0]
+                    noff = persist.get(notes_by_id.get(nid, -1)) if nid else None
+                    if noff is not None and noff + 8 <= len(doc):
+                        nln = struct.unpack_from("<I", doc, noff + 4)[0]
+                        ntexts: List[Tuple[int, str]] = []
+                        _ppt_texts(doc, noff + 8, min(noff + 8 + nln, len(doc)), ntexts)
+                        paras = [clean_text(p).replace("\x0b", " ").strip() for k, raw in ntexts if k == 2 for p in raw.replace("\r", "\n").split("\n")]
+                        notes_text = "\n".join(p for p in paras if p)
+                    break
+        # tableaux : groupes de formes dont les cases forment une grille
+        by_group: Dict[int, List[tuple]] = {}
+        for gid, anchor, stexts in shapes:
+            if gid and anchor and len(stexts) == 1 and stexts[0][0] == 4:
+                by_group.setdefault(gid, []).append((anchor, " ".join(clean_text(x).replace("\x0b", " ").strip() for x in stexts[0][1].replace("\r", "\n").split("\n") if x.strip())))
+        tables: Dict[int, List[List[str]]] = {}
+        for gid, cells in by_group.items():
+            grid = _ppt_table(cells)
+            if grid:
+                tables[gid] = grid
         title = ""
         pieces: List[str] = []
-        for kind, raw in texts:
-            paras = [clean_text(p).replace("\x0b", " ").strip() for p in raw.replace("\r", "\n").split("\n")]
-            paras = [p for p in paras if p]
-            if not paras:
+        done_tables: set = set()
+        for gid, anchor, stexts in shapes:
+            if gid in tables:
+                if gid not in done_tables:
+                    done_tables.add(gid)
+                    pieces.append(md_table([[esc_inline(c) for c in row] for row in tables[gid]]))
+                    for row in tables[gid]:
+                        src.extend(c for c in row if c)
                 continue
-            src.extend(paras)
-            if kind in (0, 6) and not title:
-                title = " ".join(paras)
-            elif kind in (1, 5, 7, 8):
-                pieces.append("\n".join("- " + esc_inline(p) for p in paras))
-            else:
-                pieces.append("\n\n".join(esc_inline(p) for p in paras))
+            for kind, raw in stexts:
+                paras = [clean_text(p).replace("\x0b", " ").strip() for p in raw.replace("\r", "\n").split("\n")]
+                paras = [p for p in paras if p]
+                if not paras:
+                    continue
+                src.extend(paras)
+                if kind in (0, 6) and not title:
+                    title = " ".join(paras)
+                elif kind in (1, 5, 7, 8):
+                    pieces.append("\n".join("- " + esc_inline(p) for p in paras))
+                else:
+                    pieces.append("\n\n".join(esc_inline(p) for p in paras))
+        if notes_text:
+            src.extend(notes_text.split("\n"))
+            pieces.append("**Notes du présentateur :**\n\n" + "\n".join("> " + ln_ for ln_ in notes_text.split("\n")))
         head = f"## Slide {n}" + (f" — {esc_inline(title)}" if title else "")
         blocks.append("\n\n".join([head] + pieces))
     md = "\n\n".join(blocks)
-    ctx.warn(WARN_LITE.format("texte des diapositives uniquement (pas d'images, de notes ni de tableaux) ; installer LibreOffice pour une conversion complète"))
+    ctx.warn(WARN_LITE.format("texte, tableaux (reconstitués d'après la position des cases) et notes des diapositives ; ni images ni graphiques — installer LibreOffice pour une conversion complète"))
     res = Result(markdown=md, fmt="ppt", engine="native", title="")
     res.units, res.unit_name, res.units_found = len(slide_refs), "slide", len(re.findall(r"(?m)^## Slide \d+", md))
     res.source_text = "\n".join(src)

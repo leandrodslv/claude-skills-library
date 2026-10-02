@@ -26,6 +26,7 @@ class Graph:
     nodes: Dict[str, str] = field(default_factory=dict)                 # id → libellé
     edges: List[Tuple[str, str, str, str]] = field(default_factory=list)  # (source, cible, libellé, flèche)
     groups: Dict[str, Tuple[str, List[str]]] = field(default_factory=dict)  # id → (libellé, membres)
+    shapes: Dict[str, str] = field(default_factory=dict)                 # id → aspect : round | stadium | circle | diamond | cyl (défaut : rectangle)
     free_text: List[str] = field(default_factory=list)                   # textes non reliés à un nœud
     direction: str = "TD"
 
@@ -46,6 +47,14 @@ def _q(label: str) -> str:
     return label if len(label) <= 120 else label[:117] + "…"
 
 
+_SHAPE_FMT = {"round": '("{}")', "stadium": '(["{}"])', "circle": '(("{}"))', "diamond": '{{"{}"}}', "cyl": '[("{}")]'}
+
+
+def _node(g: Graph, nid: str, nid_out: str, label: str) -> str:
+    fmt = _SHAPE_FMT.get(g.shapes.get(nid, ""), '["{}"]')
+    return f"{nid_out}{fmt.format(label)}"
+
+
 def to_mermaid(g: Graph) -> str:
     """Bloc ```mermaid``` d'un graphe (identifiants n1…nk, libellés entre guillemets)."""
     ids = {nid: f"n{i}" for i, nid in enumerate(g.nodes, 1)}
@@ -58,14 +67,14 @@ def to_mermaid(g: Graph) -> str:
     in_group = {m for _l, members in g.groups.values() for m in members}
     for nid, label in g.nodes.items():
         if nid not in in_group:
-            lines.append(f'    {ids[nid]}["{_q(label) or nid}"]')
+            lines.append("    " + _node(g, nid, ids[nid], _q(label) or nid))
     for gi, (gid, (label, members)) in enumerate(g.groups.items(), 1):
         members = [m for m in members if m in ids]
         if not members:
             continue
         lines.append(f'    subgraph g{gi}["{_q(label) or gid}"]')
         for m in members:
-            lines.append(f'        {ids[m]}["{_q(g.nodes.get(m, m))}"]')
+            lines.append("        " + _node(g, m, ids[m], _q(g.nodes.get(m, m))))
         lines.append("    end")
     gids = {gid: f"g{gi}" for gi, gid in enumerate(g.groups, 1)}
     for s, t, label, arrow in g.edges:
@@ -102,6 +111,9 @@ def to_text(g: Graph) -> str:
         for _gid, (label, members) in g.groups.items():
             lines.append(f"- **{_cell(label)}** : " + ", ".join(_cell(names.get(m, m)) for m in members))
         parts.append("**Groupes (cadres, couloirs) :**\n\n" + "\n".join(lines))
+    decisions = [_cell(v) for k, v in g.nodes.items() if g.shapes.get(k) == "diamond" and v]
+    if decisions:
+        parts.append("**Décisions (losanges) :** " + ", ".join(decisions))
     linked = {x for e in g.edges for x in e[:2]} | {m for _l, ms in g.groups.values() for m in ms}
     alone = [_cell(v) for k, v in g.nodes.items() if k not in linked and v]
     if alone:

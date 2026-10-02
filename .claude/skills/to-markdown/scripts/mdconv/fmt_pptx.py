@@ -187,9 +187,11 @@ class PptxConverter:
         pics = [i for i in body_items if i.kind == "picture"]
         if pics and text_words + (len(title.split()) if title else 0) < 8 and not any(i.alt for i in pics):
             self.ctx.warn(f"diapositive {num} : contenu surtout visuel (images sans texte alternatif)")
-            for p in pics[:3]:
-                if p.asset:
-                    self.ctx.need_vision("slide", p.asset, f"diapositive {num} : image sans texte ni description — à décrire")
+            shown = [p for p in pics[:3] if p.asset]
+            for p in shown:
+                self.ctx.need_vision("slide", p.asset, f"diapositive {num} : image sans texte ni description — à décrire")
+            if not shown:        # images non extraites (--images skip) : on renvoie à la diapositive du fichier d'origine
+                self.ctx.need_vision("slide", str(self.ctx.src), f"diapositive {num} : image sans texte ni description — à décrire", pages=str(num))
             parts.append(f"> **[À COMPLÉTER : description visuelle]** diapositive {num} — image(s) sans texte extractible.")
         return title, "\n\n".join(parts)
 
@@ -496,6 +498,8 @@ class PptxConverter:
         if link is None:
             if alt and self.opts.images == "skip":
                 items.append(Item("picture", x, y, f"*[image : {alt}]*", counter[0], len(alt.split()), alt=True))
+            elif not alt:        # image non extraite et non décrite : la diapositive doit quand même être signalée
+                items.append(Item("picture", x, y, "", counter[0], 0, alt=False))
             return
         if ext.lower() in ("emf", "wmf"):
             self.ctx.warn(f"image {ext.upper()} non affichable telle quelle ({link})")

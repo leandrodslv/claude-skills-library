@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import base64
 import html.entities
+import math
 import re
 import zlib
 from collections import Counter
@@ -648,10 +649,11 @@ def _mul(a, b):
 
 
 class Frag:
-    __slots__ = ("x", "y", "w", "size", "text", "bold")
+    __slots__ = ("x", "y", "w", "size", "text", "bold", "ang")
 
-    def __init__(self, x: float, y: float, w: float, size: float, text: str, bold: bool = False):
+    def __init__(self, x: float, y: float, w: float, size: float, text: str, bold: bool = False, ang: int = 0):
         self.x, self.y, self.w, self.size, self.text, self.bold = x, y, w, size, text, bold
+        self.ang = ang                  # sens du texte dans la page, arrondi au quart de tour (0, 90, 180, 270), antihoraire
 
 
 class Interp:
@@ -820,7 +822,8 @@ class Interp:
         adv = width / 1000.0 * self.size * self.tz + (self.tc + (self.tw if b" " in s else 0.0)) * len(text) * self.tz
         if text:
             x, y = m[4], m[5] + self.rise * m[3]
-            self.frags.append(Frag(x, y, adv * scale, self.size * (abs(m[3]) if m[3] else 1.0), text, self.font.bold))
+            ang = int(round(math.degrees(math.atan2(m[1], m[0])) / 90.0)) % 4 * 90 if (m[1] or m[0] < 0) else 0
+            self.frags.append(Frag(x, y, adv * scale, self.size * (math.hypot(m[2], m[3]) if (m[2] or m[3]) else 1.0), text, self.font.bold, ang))
         self.tm = _mul((1, 0, 0, 1, adv, 0), self.tm)
 
     # -- mise en lignes ------------------------------------------------------------
@@ -833,9 +836,37 @@ class Interp:
         frags = [f for f in self.frags if f.text]
         if not frags:
             return ""
+        if any(f.ang for f in frags):
+            return self._render_rotated(frags, body, levels)
+        return self._render(frags, self.segs, body, levels)
+
+    def _render_rotated(self, frags: List[Frag], body: float, levels: Optional[List[Tuple[float, int]]]) -> str:
+        """Texte couché ou à l'envers (page paysage fabriquée en portrait, /Rotate, étiquettes verticales) : chaque sens de
+        lecture est remis à l'horizontale dans son propre repère — l'orientation d'affichage (/Rotate) n'a pas à être connue,
+        c'est le sens du texte lui-même qui compte. Le sens dominant (le plus de caractères) vient d'abord."""
+        by: Dict[int, List[Frag]] = {}
+        for f in frags:
+            by.setdefault(f.ang, []).append(f)
+        order = sorted(by, key=lambda a: (-sum(len(f.text) for f in by[a]), a))
+        blocks: List[str] = []
+        for k, ang in enumerate(order):
+            c, sn = {0: (1, 0), 90: (0, 1), 180: (-1, 0), 270: (0, -1)}[ang]
+            rot = [Frag(f.x * c + f.y * sn, -f.x * sn + f.y * c, f.w, f.size, f.text, f.bold, 0) for f in by[ang]]
+            segs: List[Tuple[float, float, float, float]] = []
+            if k == 0:
+                for x0, y0, x1, y1 in self.segs:
+                    ax, ay, bx, by_ = x0 * c + y0 * sn, -x0 * sn + y0 * c, x1 * c + y1 * sn, -x1 * sn + y1 * c
+                    segs.append((min(ax, bx), min(ay, by_), max(ax, bx), max(ay, by_)))
+            text = self._render(rot, segs, body, levels)
+            if text.strip():
+                blocks.append(text)
+        return "\n\n".join(blocks)
+
+    def _render(self, frags: List[Frag], segs: List[Tuple[float, float, float, float]], body: float = 0.0,
+                levels: Optional[List[Tuple[float, int]]] = None) -> str:
         sizes = sorted(f.size for f in frags if f.size)
         med = sizes[len(sizes) // 2] if sizes else 10.0
-        grids = _grid_tables(self.segs, frags, med)
+        grids = _grid_tables(segs, frags, med)
         for gi, (bbox, _rows) in enumerate(grids):
             inside = {id(f) for f in frags if bbox[0] - 2 <= f.x <= bbox[2] + 2 and bbox[1] - 2 <= f.y <= bbox[3] + 2}
             frags = [f for f in frags if id(f) not in inside]
@@ -879,7 +910,8 @@ class Interp:
                 text = re.sub(r"[ \t]{2,}", " ", buf).strip()
                 para_gap = prev_y is None or (pitch and prev_y - y > pitch + max(med * 0.3, pitch * 0.2))
                 head = _heading_level(ln, text, body, levels or [], widest, med, bool(para_gap))
-                if prev_y is not None and para_gap and not (head and head == prev_head and prev_y - y <= pitch * 1.3):
+                head_size = max((f.size for f in ln if f.text.strip()), default=0.0)
+                if prev_y is not None and para_gap and not (head and head == prev_head and prev_y - y <= max(pitch * 1.3, head_size * 1.45)):
                     out_lines.append("")
                 if head and head == prev_head and out_lines and out_lines[-1].startswith("⟪H"):
                     out_lines[-1] += " " + text               # titre sur plusieurs lignes
@@ -939,30 +971,63 @@ def _grid_tables(segs: List[Tuple[float, float, float, float]], frags: List[Frag
         if len(ys) < 2 or len(xs) < 2 or (len(ys) - 1) * (len(xs) - 1) < 2:
             continue
         bbox = (xs[0], ys[-1], xs[-1], ys[0])
-        cells = [[[] for _ in range(len(xs) - 1)] for _ in range(len(ys) - 1)]
+        nr, nc = len(ys) - 1, len(xs) - 1
+
+        def covered(pos: float, lo: float, hi: float, lines_: List[List[float]], axis: int) -> bool:
+            """Un trait (ou une suite de traits bout à bout) couvre-t-il [lo, hi] à la position donnée ?"""
+            iv = sorted((ln[2], ln[3]) for ln in lines_ if abs(ln[1] - pos) <= 2 * tol)
+            reach = None
+            for a, b in iv:
+                if reach is None or a > reach + tol:
+                    if a <= lo + tol:
+                        reach = b
+                    else:
+                        continue
+                else:
+                    reach = max(reach, b)
+                if reach >= hi - tol:
+                    return True
+            return False
+
+        # cellules réelles : deux cases voisines sans trait entre elles ne font qu'une cellule (fusion horizontale ou verticale)
+        par = list(range(nr * nc))
+
+        def f2(a: int) -> int:
+            while par[a] != a:
+                par[a] = par[par[a]]
+                a = par[a]
+            return a
+
+        for r in range(nr):
+            for c in range(nc):
+                if r > 0 and not covered(ys[r], xs[c], xs[c + 1], ch, 0):
+                    par[f2(r * nc + c)] = f2((r - 1) * nc + c)
+                if c > 0 and not covered(xs[c], ys[r + 1], ys[r], cv, 1):
+                    par[f2(r * nc + c)] = f2(r * nc + c - 1)
+        comp: Dict[int, List[Frag]] = {}
         for f in frags:
             cx, cy = f.x + f.w / 2, f.y + f.size * 0.3
             if not (bbox[0] - 2 <= cx <= bbox[2] + 2 and bbox[1] - 2 <= cy <= bbox[3] + 2):
                 continue
-            c = next((k for k in range(len(xs) - 1) if cx < xs[k + 1] + 1), len(xs) - 2)
-            r = next((k for k in range(len(ys) - 1) if cy > ys[k + 1] - 1), len(ys) - 2)
-            cells[r][c].append(f)
-        rows: List[List[str]] = []
-        for r, row in enumerate(cells):
-            texts = []
-            for c, fr in enumerate(row):
-                fr.sort(key=lambda f: (-round(f.y / max(med * 0.5, 1)), f.x))
-                t, last_y = "", None
-                for f in fr:
-                    t += (" " if t and (last_y is None or abs(f.y - last_y) > med * 0.4 or not t.endswith(" ")) else "") + f.text.strip()
-                    last_y = f.y
-                texts.append(re.sub(r"\s+", " ", t).strip())
-            rows.append(texts)
-        for r in range(1, len(rows)):                      # fusion verticale : pas de trait entre deux lignes → texte du dessus répété
-            for c in range(len(xs) - 1):
-                if rows[r][c] == "" and rows[r - 1][c] and not any(
-                        abs(h[1] - ys[r]) <= 2 * tol and h[2] <= xs[c] + tol and h[3] >= xs[c + 1] - tol for h in ch):
-                    rows[r][c] = rows[r - 1][c]
+            c = next((k for k in range(nc) if cx < xs[k + 1] + 1), nc - 1)
+            r = next((k for k in range(nr) if cy > ys[k + 1] - 1), nr - 1)
+            comp.setdefault(f2(r * nc + c), []).append(f)
+        rows = [["" for _ in range(nc)] for _ in range(nr)]
+        members: Dict[int, List[int]] = {}
+        for a in range(nr * nc):
+            members.setdefault(f2(a), []).append(a)
+        for root_id, fr in comp.items():
+            fr.sort(key=lambda f: (-round(f.y / max(med * 0.5, 1)), f.x))
+            t, last_y = "", None
+            for f in fr:
+                t += (" " if t and (last_y is None or abs(f.y - last_y) > med * 0.4 or not t.endswith(" ")) else "") + f.text.strip()
+                last_y = f.y
+            t = re.sub(r"\s+", " ", t).strip()
+            cells_ = members[root_id]
+            r0 = min(a // nc for a in cells_)
+            c0 = min(a % nc for a in cells_ if a // nc == r0)
+            for r in sorted({a // nc for a in cells_}):          # fusion verticale : le texte est répété sur chaque ligne couverte
+                rows[r][c0] = t
         rows = [r for r in rows if any(r)]
         if len(rows) >= 2 and sum(1 for r in rows for c in r if c) >= 4:
             out.append((bbox, rows))
@@ -970,26 +1035,32 @@ def _grid_tables(segs: List[Tuple[float, float, float, float]], frags: List[Frag
     return out
 
 
-def _cells(ln: List[Frag], med: float) -> List[Tuple[float, str]]:
-    """Cellules d'une ligne : fragments séparés par un grand blanc horizontal (> 1,2 × corps)."""
-    out: List[Tuple[float, str]] = []
+def _cells(ln: List[Frag], med: float) -> List[Tuple[float, float, str]]:
+    """Cellules d'une ligne : fragments séparés par un grand blanc horizontal (> 1,2 × corps) → (x début, x fin, texte)."""
+    out: List[List[Any]] = []
     end_x: Optional[float] = None
     for f in sorted(ln, key=lambda f: f.x):
         if out and end_x is not None and f.x - end_x <= med * 1.2:
-            x0, t = out[-1]
-            out[-1] = (x0, (t + (" " if f.x - end_x > med * 0.18 and not t.endswith(" ") else "") + f.text))
+            cell = out[-1]
+            cell[2] += (" " if f.x - end_x > med * 0.18 and not cell[2].endswith(" ") else "") + f.text
+            cell[1] = max(cell[1], f.x + f.w)
         else:
-            out.append((f.x, f.text))
+            out.append([f.x, f.x + f.w, f.text])
         end_x = max(end_x or f.x, f.x + f.w)
-    return [(x, re.sub(r"\s+", " ", t).strip()) for x, t in out]
+    return [(a, b, re.sub(r"\s+", " ", t).strip()) for a, b, t in out]
 
 
 def _table_rows(group: List[List[Frag]], med: float) -> Dict[int, List[str]]:
-    """Index de ligne → cellules, pour les suites d'au moins 3 lignes à ≥ 2 cellules dont les colonnes s'alignent."""
+    """Index de ligne → cellules, pour les suites d'au moins 3 lignes à ≥ 2 cellules dont les colonnes se recouvrent.
+
+    Les colonnes sont les « couloirs » du profil de projection horizontal : une colonne est l'union des étendues des cellules
+    qui se chevauchent, de sorte que les colonnes alignées à droite (nombres), centrées ou à en-tête plus large que les
+    données sont reconnues comme les colonnes alignées à gauche. Un blanc d'au moins un demi-corps sépare deux colonnes.
+    """
     cells = [_cells(ln, med) for ln in group]
-    tol = max(6.0, med * 0.6)
     result: Dict[int, List[str]] = {}
     i, n = 0, len(group)
+    gap = max(med * 0.5, 3.0)
     while i < n:
         if len(cells[i]) < 2:
             i += 1
@@ -998,19 +1069,28 @@ def _table_rows(group: List[List[Frag]], med: float) -> Dict[int, List[str]]:
         while j < n and len(cells[j]) >= 2:
             j += 1
         if j - i >= 3:
-            anchors: List[float] = []
-            for row in cells[i:j]:
-                for x, _t in row:
-                    if not any(abs(x - a) <= tol for a in anchors):
-                        anchors.append(x)
-            anchors.sort()
-            support = [sum(1 for row in cells[i:j] if any(abs(x - a) <= tol for x, _t in row)) for a in anchors]
-            good = [a for a, c in zip(anchors, support) if c >= max(2, 0.6 * (j - i))]
-            if len(good) >= 2 and len(anchors) <= len(good) + 1:
+            spans = sorted((a, b) for row in cells[i:j] for a, b, _t in row)
+            cols: List[List[float]] = []
+            for a, b in spans:
+                if cols and a <= cols[-1][1] + gap:
+                    cols[-1][1] = max(cols[-1][1], b)
+                else:
+                    cols.append([a, b])
+
+            def col_of(a: float, b: float) -> int:
+                c = (a + b) / 2
+                return next((k for k, (x0, x1) in enumerate(cols) if x0 - 0.5 <= c <= x1 + 0.5), min(range(len(cols)), key=lambda k: abs((cols[k][0] + cols[k][1]) / 2 - c)))
+
+            support = [sum(1 for row in cells[i:j] if any(col_of(a, b) == k for a, b, _t in row)) for k in range(len(cols))]
+            good = [k for k, c in enumerate(support) if c >= max(2, 0.6 * (j - i))]
+            distinct = all(len({col_of(a, b) for a, b, _t in row}) == len(row) for row in cells[i:j])
+            if len(good) >= 2 and len(cols) <= len(good) + 1 and (distinct or len(good) >= 3):
+                keep = {k: q for q, k in enumerate(good)}
                 for k in range(i, j):
                     row = [""] * len(good)
-                    for x, t in cells[k]:
-                        idx = min(range(len(good)), key=lambda q: abs(good[q] - x))
+                    for a, b, t in cells[k]:
+                        c = col_of(a, b)
+                        idx = keep.get(c, min(range(len(good)), key=lambda q: abs((cols[good[q]][0] + cols[good[q]][1]) / 2 - (a + b) / 2)))
                         row[idx] = (row[idx] + " " + t).strip()
                     result[k] = row
         i = max(j, i + 1)
@@ -1099,6 +1179,61 @@ def _split_columns(lines: List[List[Frag]], med: float) -> List[List[List[Frag]]
     return [left, right]
 
 
+def _page_box(doc: PdfDoc, page: Dict[str, Any]) -> Optional[Tuple[float, float]]:
+    """(y bas, y haut) de la page, d'après /CropBox ou /MediaBox."""
+    for key in ("CropBox", "MediaBox"):
+        box = page.get(key)
+        box = doc.get(box) if isinstance(box, Ref) else box
+        if isinstance(box, list) and len(box) == 4:
+            try:
+                v = [float(doc.get(x) if isinstance(x, Ref) else x) for x in box]
+            except (TypeError, ValueError):
+                continue
+            lo, hi = min(v[1], v[3]), max(v[1], v[3])
+            if hi - lo > 50:
+                return lo, hi
+    return None
+
+
+def _drop_running_marks(doc: PdfDoc, pages: List[Dict[str, Any]], interps: List["Interp"]) -> None:
+    """Retire les en-têtes, pieds de page et numéros de page : lignes situées dans la marge haute ou basse (9 % de la hauteur)
+    dont le texte, chiffres mis à part, se retrouve sur au moins la moitié des pages. Décision géométrique : fonctionne aussi
+    quand l'ordre de lecture place le pied de page au milieu du texte (deux colonnes)."""
+    if len(interps) < 2:
+        return
+    per_page: List[List[Tuple[str, List[Frag]]]] = []
+    for pg, it in zip(pages, interps):
+        box = _page_box(doc, pg)
+        found: List[Tuple[str, List[Frag]]] = []
+        if box is not None:
+            lo, hi = box
+            band = (hi - lo) * 0.09
+            cand = [f for f in it.frags if f.text.strip() and f.ang == 0 and (f.y >= hi - band or f.y <= lo + band)]
+            lines: List[List[Frag]] = []
+            for f in sorted(cand, key=lambda f: (-round(f.y), f.x)):
+                if lines and abs(lines[-1][0].y - f.y) <= max(f.size * 0.5, 1.5):
+                    lines[-1].append(f)
+                else:
+                    lines.append([f])
+            for ln in lines:
+                key = re.sub(r"\d+", "#", " ".join(f.text.strip() for f in sorted(ln, key=lambda f: f.x))).lower()
+                key = re.sub(r"\s+", " ", key).strip()
+                if key and len(key) < 120:
+                    found.append((key, ln))
+        per_page.append(found)
+    counts: Counter = Counter(k for found in per_page for k in {k for k, _ln in found})
+    threshold = max(2, (len(interps) + 1) // 2)
+    drop = {k for k, v in counts.items() if v >= threshold}
+    if not drop:
+        return
+    for it, found in zip(interps, per_page):
+        gone = {id(f) for k, ln in found if k in drop for f in ln}
+        # on ne retire jamais plus de la moitié du texte d'une page (formulaire, gabarit répété)
+        total = sum(len(f.text) for f in it.frags)
+        if gone and sum(len(f.text) for f in it.frags if id(f) in gone) * 2 <= total:
+            it.frags = [f for f in it.frags if id(f) not in gone]
+
+
 def extract_pages(data: bytes) -> Tuple[List[str], List[str]]:
     if not data.lstrip(b"\x00 \r\n\t").startswith(b"%PDF") and b"%PDF-" not in data[:1024]:
         raise Unsupported("signature PDF absente")
@@ -1107,6 +1242,7 @@ def extract_pages(data: bytes) -> Tuple[List[str], List[str]]:
     if not pages:
         raise Unsupported("aucune page trouvée")
     interps = [doc.page_interp(p) for p in pages]
+    _drop_running_marks(doc, pages, interps)
     body, levels = doc_heading_levels(interps)
     texts = [it.render(body, levels) for it in interps]
     notes: List[str] = []

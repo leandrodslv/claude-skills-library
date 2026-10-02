@@ -103,12 +103,29 @@
   "path": "data/pdf-tronque.pdf",
   "category": "data",
   "difficulty": 4,
-  "challenge": "PDF tronqué à 50 % (sans table de références ni fin de fichier)",
+  "challenge": "PDF tronqué à 50 % : le contenu des pages est perdu (rien à récupérer)",
+  "expect": "error",
+  "notes": "Doit dire clairement « fichier abîmé ou tronqué », pas « page scannée »."
+ },
+ {
+  "id": "data-pdf-tronque-partiel",
+  "path": "data/pdf-tronque-partiel.pdf",
+  "category": "data",
+  "difficulty": 4,
+  "challenge": "PDF tronqué à 95 % : la première page est complète, la seconde est perdue",
   "must": [
-   "Mesure de la dérive thermique en milieu industriel"
+   "Mesure de la dérive thermique en milieu industriel",
+   "P01"
+  ],
+  "any_of": [
+   [
+    "ILLISIBLE",
+    "abîmé",
+    "tronqué"
+   ]
   ],
   "expect": "ok",
-  "notes": "Récupération partielle bienvenue (le début du texte), sinon échec propre."
+  "notes": "Récupérer la page 1 et signaler que la page 2 est perdue (pas « scannée »)."
  },
  {
   "id": "data-rtf-liste-tableau",
@@ -529,6 +546,18 @@
    "420 k€",
    "Note de l'orateur : insister sur la progression de l'export au T4"
   ],
+  "rows": [
+   [
+    "Pôle",
+    "Budget",
+    "Effectif"
+   ],
+   [
+    "Produit",
+    "420 k€",
+    "12"
+   ]
+  ],
   "expect": "ok"
  },
  {
@@ -536,13 +565,19 @@
   "path": "legacy/tableaux-fusionnes.doc",
   "category": "legacy",
   "difficulty": 4,
-  "challenge": "Word 97-2003 (.doc) : tableau à cellules fusionnées",
+  "challenge": "Word 97-2003 (.doc) : tableau à cellules fusionnées, liste",
   "must": [
+   "Chiffre d'affaires par zone",
    "Source : direction financière",
-   "Chiffre d'affaires par zone"
+   "Premier point",
+   "Second point"
   ],
   "cells": [
    "Zone",
+   "Résultats 2025",
+   "T1",
+   "T2",
+   "Prévisions 2026",
    "Europe",
    "1 204",
    "1 310",
@@ -551,6 +586,20 @@
    "980",
    "1 022",
    "4 200"
+  ],
+  "rows": [
+   [
+    "Europe",
+    "1 204",
+    "1 310",
+    "5 100"
+   ],
+   [
+    "Asie",
+    "980",
+    "1 022",
+    "4 200"
+   ]
   ],
   "expect": "ok"
  },
@@ -642,7 +691,7 @@
   "path": "pdf/page-pivotee.pdf",
   "category": "pdf",
   "difficulty": 3,
-  "challenge": "une page est marquée /Rotate 90 : le texte est dessiné dans le repère non pivoté",
+  "challenge": "page dont le contenu est tourné de 90° et marquée /Rotate 90 : à l'écran elle est droite, dans le flux de contenu le texte est couché",
   "must": [
    "Page normale : introduction du dossier d'étude",
    "Page pivotée de 90 degrés : tableau des écarts",

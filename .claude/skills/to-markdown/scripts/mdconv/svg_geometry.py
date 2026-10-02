@@ -31,10 +31,10 @@ _NUM = re.compile(r"[MmLlHhVvCcSsQqTtAaZz]|[-+]?(?:\d+\.?\d*|\.\d+)(?:[eE][-+]?\
 
 
 class Shape:
-    __slots__ = ("x0", "y0", "x1", "y1", "kind", "texts", "order")
+    __slots__ = ("x0", "y0", "x1", "y1", "kind", "texts", "order", "look")
 
-    def __init__(self, x0: float, y0: float, x1: float, y1: float, kind: str, order: int):
-        self.x0, self.y0, self.x1, self.y1, self.kind, self.order = x0, y0, x1, y1, kind, order
+    def __init__(self, x0: float, y0: float, x1: float, y1: float, kind: str, order: int, look: str = "rect"):
+        self.x0, self.y0, self.x1, self.y1, self.kind, self.order, self.look = x0, y0, x1, y1, kind, order, look
         self.texts: List["TextBox"] = []
 
     @property
@@ -52,6 +52,14 @@ class Shape:
 
     def contains(self, o: "Shape", tol: float = 2.0) -> bool:
         return self.x0 - tol <= o.x0 and self.y0 - tol <= o.y0 and self.x1 + tol >= o.x1 and self.y1 + tol >= o.y1 and self.area > o.area * 1.15
+
+
+class _Synthetic:
+    """Libellé fabriqué pour une forme sans texte (se comporte comme un TextBox pour label_of)."""
+    __slots__ = ("text", "y0", "x0")
+
+    def __init__(self, text: str) -> None:
+        self.text, self.y0, self.x0 = text, 0.0, 0.0
 
 
 class Conn:
@@ -249,11 +257,11 @@ class _Collector:
     def pts(self, m, raw: List[Point]) -> List[Point]:
         return [self.apply(m, x, y) for x, y in raw]
 
-    def add_shape(self, pts: List[Point], kind: str) -> None:
+    def add_shape(self, pts: List[Point], kind: str, look: str = "rect") -> None:
         if not pts:
             return
         xs, ys = [p[0] for p in pts], [p[1] for p in pts]
-        s = Shape(min(xs), min(ys), max(xs), max(ys), kind, self.order)
+        s = Shape(min(xs), min(ys), max(xs), max(ys), kind, self.order, look)
         self.order += 1
         self.shapes.append(s)
 
@@ -279,13 +287,15 @@ class _Collector:
         elif name == "rect":
             x, y, w, h = _num(el.get("x")), _num(el.get("y")), _num(el.get("width")), _num(el.get("height"))
             if w > 0 and h > 0 and (filled or stroke != "none"):
-                self.add_shape(self.pts(m, [(x, y), (x + w, y), (x + w, y + h), (x, y + h)]), "rect")
+                rounded = _num(el.get("rx")) > 0 or _num(el.get("ry")) > 0
+                self.add_shape(self.pts(m, [(x, y), (x + w, y), (x + w, y + h), (x, y + h)]), "rect", "round" if rounded else "rect")
         elif name in ("circle", "ellipse"):
             cx, cy = _num(el.get("cx")), _num(el.get("cy"))
             rx = _num(el.get("r")) if name == "circle" else _num(el.get("rx"))
             ry = rx if name == "circle" else _num(el.get("ry"))
             if rx > 0 and ry > 0 and (filled or stroke != "none"):
-                self.add_shape(self.pts(m, [(cx - rx, cy - ry), (cx + rx, cy + ry), (cx - rx, cy + ry), (cx + rx, cy - ry)]), "ellipse")
+                self.add_shape(self.pts(m, [(cx - rx, cy - ry), (cx + rx, cy + ry), (cx - rx, cy + ry), (cx + rx, cy - ry)]), "ellipse",
+                               "circle" if abs(rx - ry) <= 0.1 * max(rx, ry) else "stadium")
         elif name == "polygon":
             raw = [float(v) for v in re.findall(r"[-+]?(?:\d+\.?\d*|\.\d+)(?:[eE][-+]?\d+)?", el.get("points", ""))]
             pts = self.pts(m, list(zip(raw[0::2], raw[1::2])))
@@ -313,7 +323,31 @@ class _Collector:
             return
         if w < 4 or h < 4:
             return
-        self.add_shape(pts, "polygon")
+        self.add_shape(pts, "polygon", _look(pts, anchors, len(pts) != n_anchor))
+
+
+def _look(allpts: List[Point], anchors: Optional[List[Point]], curved: bool) -> str:
+    """Aspect d'une forme fermée : losange (décision), cylindre (base de données), rectangle arrondi ou rectangle."""
+    a = list(anchors) if anchors is not None else list(allpts)
+    if len(a) > 1 and a[0] == a[-1]:
+        a = a[:-1]
+    xs, ys = [p[0] for p in a], [p[1] for p in a]
+    w, h = max(xs) - min(xs), max(ys) - min(ys)
+    if w <= 0 or h <= 0:
+        return "rect"
+    cx, cy = min(xs) + w / 2, min(ys) + h / 2
+    if len(a) == 4 and not curved:
+        mids = sum(1 for x, y in a if (abs(x - cx) <= 0.12 * w and (abs(y - min(ys)) <= 0.12 * h or abs(y - max(ys)) <= 0.12 * h))
+                   or (abs(y - cy) <= 0.12 * h and (abs(x - min(xs)) <= 0.12 * w or abs(x - max(xs)) <= 0.12 * w)))
+        if mids == 4:
+            return "diamond"
+        return "rect"
+    if len(a) == 4 and curved:
+        corners = sum(1 for x, y in a if (abs(x - min(xs)) <= 0.1 * w or abs(x - max(xs)) <= 0.1 * w) and (abs(y - min(ys)) <= 0.35 * h or abs(y - max(ys)) <= 0.35 * h))
+        return "cyl" if corners == 4 else "round"
+    if curved and len(a) >= 5:
+        return "round"
+    return "rect"
 
 
 # --------------------------------------------------------------------------
@@ -372,7 +406,10 @@ def infer_graph(root: ET.Element, items: list, helpers: Tuple, canvas: Tuple[flo
     containers = [s for s in shapes if is_container(s)]
     nodes = [s for s in with_text if s not in containers]
     stats["shapes"] = len(nodes)
-    if len(nodes) < 2 or not col.conns:
+    # formes sans texte (icône, pastille, boîte dont la légende est à côté) : candidates à l'attache des traits ; elles ne deviennent
+    # des nœuds que si un lien les touche ET si au moins deux nœuds portent du texte (sinon un graphique à barres passerait pour un schéma)
+    textless = [s for s in shapes if not s.texts and s not in containers and min(s.x1 - s.x0, s.y1 - s.y0) >= 8 and 150 <= s.area <= 0.5 * W * H]
+    if len(nodes) + len(textless) < 2 or not col.conns:
         return None, stats
 
     # liens : chaque extrémité sur le nœud le plus proche (dans la tolérance)
@@ -383,7 +420,7 @@ def infer_graph(root: ET.Element, items: list, helpers: Tuple, canvas: Tuple[flo
 
     def attach(p: Point) -> Optional[object]:
         best, bd = None, 1e18
-        for s in nodes:
+        for s in nodes + textless:
             d = s.dist(p)
             if d <= tol and (d < bd - 0.5 or (abs(d - bd) <= 0.5 and best is not None and s.area < best.area)):  # type: ignore[attr-defined]
                 best, bd = s, d
@@ -437,10 +474,34 @@ def infer_graph(root: ET.Element, items: list, helpers: Tuple, canvas: Tuple[flo
     stats["attached"] = len(edges)
     if not edges or len(edges) < 0.5 * len(col.conns):
         return None, stats
+    ends = {id(x): x for e in edges for x in e[:2]}
+    # légendes des formes sans texte : le texte libre le plus proche (au plus 1,5 tolérance) devient leur libellé
+    reach = max(tol * 1.5, 20.0)
+    free_used: set = {id(x) for x in ends.values() if isinstance(x, TextBox)}
+    bare = sorted((x for x in ends.values() if isinstance(x, Shape) and not x.texts), key=lambda s: (round(s.y0 / 10), s.x0))
+    for s in bare:
+        best_t, bd = None, reach
+        for tb in free:
+            if id(tb) in free_used or len(tb.text) > 60:
+                continue
+            c = tb.center
+            d = s.dist(c)
+            if d < bd:
+                best_t, bd = tb, d
+        if best_t is not None:
+            s.texts.append(best_t)
+            free_used.add(id(best_t))
+    if sum(1 for x in ends.values() if (isinstance(x, Shape) and x.texts) or isinstance(x, TextBox)) < 2:
+        return None, stats                                    # pas assez de nœuds lisibles : graphique, pictogramme… à regarder
+    names = {"rect": "rectangle", "round": "rectangle arrondi", "circle": "cercle", "stadium": "ellipse", "diamond": "losange", "cyl": "cylindre"}
+    for k, s in enumerate([x for x in bare if not x.texts], 1):
+        s.texts.append(_Synthetic(f"forme sans texte n°{k} ({names.get(s.look, 'forme')})"))
+    nodes = nodes + [x for x in bare]
+    stats["shapes"] = len(nodes)
 
     # étiquettes de liens : textes libres courts, près d'un trait
     labels: Dict[int, List[TextBox]] = {}
-    used_free = {id(x) for e in edges for x in e[:2] if isinstance(x, TextBox)}
+    used_free = {id(x) for e in edges for x in e[:2] if isinstance(x, TextBox)} | free_used
     for tb in free:
         if id(tb) in used_free or len(tb.text) > 40:
             continue
@@ -468,6 +529,8 @@ def infer_graph(root: ET.Element, items: list, helpers: Tuple, canvas: Tuple[flo
         if id(x) not in ids:
             ids[id(x)] = f"s{len(ids) + 1}"
             g.nodes[ids[id(x)]] = label_of(x) if isinstance(x, Shape) else x.text  # type: ignore[union-attr]
+            if isinstance(x, Shape) and x.look not in ("rect", "polygon"):
+                g.shapes[ids[id(x)]] = x.look
         return ids[id(x)]
 
     seen = set()

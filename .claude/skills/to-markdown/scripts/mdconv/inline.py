@@ -22,10 +22,26 @@ def md_url(url: str) -> str:
     return url.replace(" ", "%20").replace("(", "%28").replace(")", "%29").replace("<", "%3C").replace(">", "%3E")
 
 
+_PLACEHOLDER_ALT = re.compile(
+    r"(?i)^(?:[\w\-. ()%]+\.(?:png|jpe?g|gif|bmp|tiff?|webp|svg|emf|wmf|heic|avif)"            # nom de fichier
+    r"|(?:picture|image|img|photo|graphic|figure|pic|capture|screenshot|diagram|chart|content ?placeholder|espace réservé du contenu)"
+    r"[ _\-]*(?:placeholder)?[ _\-]*\d*"                                                         # « Picture 1 », « Image12 »
+    r"|(?:img|dsc|dscn|image|photo|scan|screenshot|capture)[ _\-]?\d{2,}[\w\-]*)$")           # IMG_2041, DSC00012
+
+
+def is_placeholder_alt(s: str) -> bool:
+    """Texte alternatif sans information : nom de fichier, « Picture 1 », « IMG_2041 » (ajoutés automatiquement par les logiciels)."""
+    s = re.sub(r"\s+", " ", (s or "")).strip()
+    return bool(s) and bool(_PLACEHOLDER_ALT.match(s))
+
+
 def alt_clean(s: str) -> str:
-    """Texte alternatif d'image sur une ligne, sans crochets."""
+    """Texte alternatif d'image sur une ligne, sans crochets. Un texte automatique (nom de fichier, « Picture 1 ») est ignoré :
+    il ferait croire que l'image a été décrite alors que rien ne l'est."""
     s = clean_text(s or "").strip()
     s = re.sub(r"\s+", " ", s)
+    if is_placeholder_alt(s):
+        return ""
     return s.replace("[", "(").replace("]", ")")
 
 

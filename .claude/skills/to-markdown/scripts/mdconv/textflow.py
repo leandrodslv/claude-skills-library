@@ -38,7 +38,7 @@ def _has_page_cue(t: str) -> bool:
 def _norm_for_repeat(line: str) -> str:
     """Forme comparable d'une ligne d'en-tête/pied : les chiffres ne sont neutralisés que pour une numérotation de page,
     jamais pour « Chapitre 3 » ou « Article 12 » qui sont de vrais titres."""
-    t = re.sub(r"\s+", " ", line.strip().lower())
+    t = re.sub(r"\s+", " ", re.sub(r"[*_`]|^#{1,6}\s+", "", line.strip()).lower())     # sans balisage Markdown (**gras**, # titre)
     return re.sub(r"\d+", "#", t) if _has_page_cue(t) else t
 
 
