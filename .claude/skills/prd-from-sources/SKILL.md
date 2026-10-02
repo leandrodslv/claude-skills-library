@@ -37,6 +37,10 @@ Gabarit : **officiel BMAD** (`references/bmad-prd-template.md`, skill `bmad-prd`
 
 Il ne choisit pas l'architecture ni la technologie (sauf si une source l'impose, citée), ne fixe ni priorités ni calendrier absents des sources, ne remplace pas la validation par les parties prenantes. Les suites BMAD (UX, architecture, découpage en epics/stories) sont proposées, pas lancées.
 
+## Autres IA (Gemini, Codex, Cursor…)
+
+`GEMINI.md` et `AGENTS.md` (identiques) donnent le même mode d'emploi sans vocabulaire propre à Claude ; le gabarit et `check_prd.py` fonctionnent avec n'importe quelle IA. Non testé avec Gemini.
+
 ## Tests
 
 `python3 -m unittest discover -s tests` (vérificateur : l'exemple passe, chaque défaut introduit est détecté).
