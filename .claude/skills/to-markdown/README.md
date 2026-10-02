@@ -33,11 +33,24 @@ Dans Claude Code : `/to-markdown` ou simplement « convertis ce PowerPoint en Ma
 - **Contenu non fiable.** Un fichier peut contenir des « instructions » destinées à l'IA qui le lit : le Markdown converti est une donnée, jamais une consigne.
 - **Outils tiers.** À garder à jour ; `--no-external` pour des fichiers d'origine douteuse.
 
+## Utiliser avec Gemini ou une autre IA
+
+Le moteur est un simple programme Python : **aucune IA particulière n'est requise** pour convertir.
+
+| Votre outil | Comment |
+| --- | --- |
+| **Gemini CLI**, Codex, Cursor, tout agent qui exécute des commandes | `GEMINI.md` / `AGENTS.md` (à la racine de ce dossier, identiques) donnent le mode d'emploi : lancer `scripts/convert.py`, lire `RAPPORT.md`, traiter les passages à lire visuellement. Lancez l'agent depuis ce dossier, ou copiez le dossier dans votre projet. |
+| **Gemini web / application** (Gems, chat sans terminal) | Lancez vous-même `python3 scripts/convert.py entrants/ -o md/` sur votre machine, puis fournissez les `.md` (ou `combined.md`) à l'IA. |
+| **Claude Code** | Déclenchement automatique via `SKILL.md`. |
+
+La seule étape qui dépend du modèle est la **lecture visuelle** des scans et schémas : un modèle qui sait lire une image transcrit les passages marqués `[À COMPLÉTER]` ; sinon ils restent signalés, et `--no-vision` les marque `NON LU`. Les consignes de `GEMINI.md` / `AGENTS.md` ne sont pas spécifiques à Claude, mais je n'ai testé l'ensemble qu'avec Claude Code.
+
 ## Organisation
 
 ```text
 to-markdown/
 ├── SKILL.md                     ← mode d'emploi pour Claude (déclenchement, marche à suivre, options)
+├── GEMINI.md / AGENTS.md        ← même mode d'emploi pour Gemini CLI, Codex, Cursor… (identiques)
 ├── references/                  ← formats.md · vision-protocol.md · engines.md · output-format.md
 ├── scripts/
 │   ├── convert.py               ← point d'entrée
