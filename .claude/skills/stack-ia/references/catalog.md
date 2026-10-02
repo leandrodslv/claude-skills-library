@@ -5,7 +5,7 @@ principal — une ligne par skill installé dans `.claude/skills/`, groupée
 par catégorie. Si un skill récemment ajouté n'apparaît pas ici, se rabattre
 sur un scan direct de `.claude/skills/*/SKILL.md`.
 
-**Total : 82 skills.**
+**Total : 84 skills.**
 
 ## 🧠 Agents & Tests
 
@@ -106,6 +106,11 @@ sur un scan direct de `.claude/skills/*/SKILL.md`.
 - **`check`** — Revue de livraison avant merge ou release. _(source : [tw93/Waza](https://github.com/tw93/Waza))_
 - **`hunt`** — Recherche systématique de causes racines. _(source : [tw93/Waza](https://github.com/tw93/Waza))_
 - **`health`** — Audit de santé d'agents IA. _(source : [tw93/Waza](https://github.com/tw93/Waza))_
+
+## 📥 Conversion de fichiers (entrants → Markdown)
+
+- **`to-markdown`** — Convertit n'importe quel fichier (Word, PowerPoint, Excel, OpenDocument, RTF, PDF texte/scanné avec OCR, SVG et diagrammes → Mermaid, HTML, EPUB, e-mails, notebooks, JSON/XML/YAML, images, archives, dossiers) en Markdown fiable pour l'IA : contrôle qualité automatique, moteurs externes optionnels testés avant usage, lecture visuelle guidée pour les scans et schémas, 100 % local. _(source : Original (skill personnel))_
+- **`prd-from-sources`** — Rédige un PRD au format BMAD à partir de documents sources convertis en Markdown (exigences citées, questions ouvertes, rien d'inventé). _(skill original, suite de `to-markdown`)_
 
 ## 🎬 Animation (GSAP)
 

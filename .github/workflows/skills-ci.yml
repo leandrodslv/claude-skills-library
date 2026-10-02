@@ -1,0 +1,82 @@
+name: skills-ci
+
+on:
+  push:
+    paths:
+      - ".claude/skills/to-markdown/**"
+      - ".claude/skills/prd-from-sources/**"
+      - ".github/workflows/skills-ci.yml"
+  pull_request:
+    paths:
+      - ".claude/skills/to-markdown/**"
+      - ".claude/skills/prd-from-sources/**"
+      - ".github/workflows/skills-ci.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install ruff
+      - run: ruff check .claude/skills/to-markdown .claude/skills/prd-from-sources
+      - name: Les archives suivent les sources
+        run: |
+          python3 - <<'PY'
+          import sys, zipfile
+          from pathlib import Path
+          bad = []
+          for name in ("to-markdown", "prd-from-sources"):
+              zf = zipfile.ZipFile(f"archives/{name}.zip")
+              names = set(zf.namelist())
+              for p in Path(f".claude/skills/{name}").rglob("*"):
+                  rel = p.relative_to(".claude/skills").as_posix()
+                  if p.is_file() and "__pycache__" not in rel and ".ruff_cache" not in rel and not rel.endswith((".pyc", ".mdconv-cache.json")):
+                      if rel not in names:
+                          bad.append(f"{rel} absent de archives/{name}.zip")
+                      elif zf.read(rel) != p.read_bytes():
+                          bad.append(f"{rel} différent de archives/{name}.zip")
+          print("\n".join(bad) or "archives à jour")
+          sys.exit(1 if bad else 0)
+          PY
+
+  to-markdown:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.9", "3.10", "3.11", "3.12", "3.13"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Tests (bibliothèque standard seule ; les tests qui exigent un outil externe sont ignorés)
+        working-directory: .claude/skills/to-markdown
+        run: python -m unittest discover -s tests
+      - name: Fumée de la ligne de commande
+        working-directory: .claude/skills/to-markdown
+        run: |
+          python scripts/convert.py --doctor > /dev/null
+          python scripts/convert.py --plan tests > /dev/null
+
+  prd-from-sources:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.9", "3.13"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+      - working-directory: .claude/skills/prd-from-sources
+        run: |
+          python -m unittest discover -s tests
+          python scripts/check_prd.py examples/cantine/prd.md --sources examples/cantine/sources --strict

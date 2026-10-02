@@ -298,6 +298,15 @@ La bibliothèque regroupe actuellement plusieurs familles de skills.
 
 ---
 
+## 📥 Conversion de fichiers (entrants → Markdown)
+
+| Skill | Description | Source |
+|---------|-------------|--------|
+| `to-markdown` | Convertit n'importe quel fichier — Word, PowerPoint, Excel, OpenDocument, RTF, PDF (texte et scans, OCR), SVG et diagrammes (draw.io, Graphviz → Mermaid), HTML, EPUB, e-mails, notebooks, JSON/XML/YAML, images, archives, dossiers entiers — en Markdown fiable pour l'IA. Contrôle qualité automatique, moteurs externes optionnels (LibreOffice, poppler, tesseract, pandoc…) testés avant usage, lecture visuelle guidée pour ce qu'un script ne sait pas lire. 100 % local. | Original (skill personnel) |
+| `prd-from-sources` | Rédige un PRD au format BMAD officiel à partir de documents déjà convertis en Markdown : chaque exigence cite sa source, un vérificateur (`check_prd.py`) contrôle sources, orphelins et références, rien n'est inventé. | Skill original (suite de `to-markdown`) |
+
+---
+
 ## 🎬 Animation (GSAP)
 
 > Skills officiels [GSAP](https://github.com/greensock/gsap-skills) (GreenSock), sous licence MIT.
