@@ -6,16 +6,14 @@ par origine (mes skills / skills importés) puis par métier et catégorie.
 Si un skill récemment ajouté n'apparaît pas ici, se rabattre sur un scan
 direct de `.claude/skills/*/SKILL.md`.
 
-**Total : 97 skills.**
+**Total : 96 skills.**
 
-> ℹ️ Les skills d'automatisation n8n (15) et d'animation Motion/GSAP (8)
-> vivent dans le dépôt privé séparé `claude-skills-n8n-motion` — absents
-> de ce catalogue, qui ne couvre que `claude-skills-library`.
+> ℹ️ Les skills d'automatisation n8n (15), d'animation Motion/GSAP (8) et
+> `notion-template-designer` vivent dans le dépôt privé séparé
+> `claude-skills-n8n-motion` — absents de ce catalogue, qui ne couvre que
+> `claude-skills-library`.
 
 ## 🧑 Mes skills
-
-### 🎨 Design — UI / Product Design
-- **`notion-template-designer`** — Crée des templates Notion visuellement soignés (dashboards, trackers, portfolios...) via recherche d'inspiration et le MCP Notion. _(source : Original (skill personnel))_
 
 ### 🎨 Design — Accessibilité
 - **`color-contrast-checker`** — Analyse le contraste de couleurs d'une image (maquette, capture d'écran) et produit un rapport d'accessibilité WCAG/RGAA. _(source : Original (skill personnel))_

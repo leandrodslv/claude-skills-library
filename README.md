@@ -6,7 +6,7 @@
 >
 > **Objectif :** ne rien perdre entre les projets, partager facilement des composants réutilisables et disposer d'une bibliothèque prête à l'emploi partout.
 >
-> ℹ️ Les skills d'**automatisation n8n** (15) et d'**animation Motion/GSAP** (8) ont été déplacés vers un dépôt privé dédié (`claude-skills-n8n-motion`), car ils ne concernent que mon usage personnel.
+> ℹ️ Les skills d'**automatisation n8n** (15), d'**animation Motion/GSAP** (8) et `notion-template-designer` ont été déplacés vers un dépôt privé dédié (`claude-skills-n8n-motion`), car ils ne concernent que mon usage personnel.
 
 ---
 
@@ -99,12 +99,6 @@ Skills que j'ai écrits moi-même, sans dépôt externe derrière. Classés par
 **métier** puis par **catégorie**.
 
 ## 🎨 Design
-
-### UI / Product Design
-
-| Skill | Description | Source |
-|---------|-------------|--------|
-| `notion-template-designer` | Crée des templates Notion visuellement soignés (dashboards, trackers, portfolios...) via recherche d'inspiration et le MCP Notion. | Original (skill personnel) |
 
 ### Accessibilité
 
