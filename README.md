@@ -201,6 +201,18 @@ La bibliothèque regroupe actuellement plusieurs familles de skills.
 | `output-skill` | Force des livrables complets sans placeholders. | [Leonxlnx/taste-skill](https://github.com/Leonxlnx/taste-skill) |
 | `figma-to-code` | Convertit une maquette Figma en code HTML/CSS, React ou Vue pixel-perfect. | Original (skill personnel) |
 | `html-to-figma` | Convertit des fichiers HTML/CSS en maquette Figma pixel-perfect via le MCP Figma. | Original (skill personnel) |
+| `git-github` | Automatisation Git & GitHub de bout en bout : commits conventionnels, push/pull, branches, PR (création et revue), issues, GitHub Actions, Dependabot, releases via release-please. | Original (skill personnel) |
+
+---
+
+## 🔬 UXR (recherche utilisateur)
+
+| Skill | Description | Source |
+|---------|-------------|--------|
+| `ux-research` | Génère des guides d'entretien utilisateur et questionnaires UX complets en français, adaptés à un contexte entreprise (clients et conseillers internes). | Compte Claude (pas de dépôt public identifié) |
+| `uxr-preparation` | Prépare des entretiens UXR semi-directifs de A à Z (cadrage, profil participant, guide en 5 phases, checklist, grille de notes, biais à surveiller) et écrit dans Notion. | Compte Claude (pas de dépôt public identifié) |
+| `uxr-synthese` | Analyse et synthétise des notes d'entretiens (grille Dit/Fait/Ressent/Besoin, affinity mapping, insights priorisés, persona, patterns cross-entretiens) et écrit dans Notion. | Compte Claude (pas de dépôt public identifié) |
+| `uxr-recherche-secondaire` | Mène une recherche secondaire UX (desk research) rigoureuse : sources notées par fiabilité, triangulation, insights avec niveau de confiance, restitution exportable en Word. | Compte Claude (pas de dépôt public identifié) |
 
 ---
 
