@@ -16,7 +16,20 @@ Cette bibliothèque contient trois catégories distinctes.
 
 ## ⚡ Skills
 
-**Emplacement :**
+**Emplacement dans cette bibliothèque** (origine → métier → catégorie) :
+
+```text
+<origine>/<métier>/<catégorie>/.claude/skills/<nom>/SKILL.md
+```
+
+```text
+mes-skills/   ou   importes/
+└── design/ · handoff-design-dev/ · dev/ · autres-transverse/
+    └── <catégorie>/
+        └── .claude/skills/<nom>/SKILL.md
+```
+
+**Emplacement dans un projet où tu l'utilises** (inchangé) :
 
 ```text
 .claude/skills/<nom>/SKILL.md
@@ -28,7 +41,13 @@ Les skills sont des commandes directement utilisables dans Claude Code :
 /<nom-du-skill>
 ```
 
-Dès qu'un projet contient ce dossier, Claude Code détecte automatiquement le skill et le rend disponible.
+Pour utiliser **un seul skill**, copie uniquement son dossier `<nom>/` (voir « Installer un skill dans un autre projet »).
+
+> 💡 **Comment ça se charge ici.** Claude Code ne lit qu'un niveau sous un dossier `.claude/skills/`,
+> mais il en accepte un dans chaque sous-dossier du dépôt (testé jusqu'à 5 niveaux de profondeur).
+> Dans cette bibliothèque, les skills d'une catégorie se chargent la première fois que Claude lit ou
+> modifie un fichier de ce dossier, ou tout de suite avec `/add-dir <dossier-de-la-catégorie>`.
+> Si deux skills portent le même nom, la commande qualifiée est `/<chemin>:<nom>`.
 
 ---
 
@@ -102,6 +121,8 @@ Skills que j'ai écrits moi-même, sans dépôt externe derrière. Classés par
 
 ### Accessibilité
 
+📁 `mes-skills/design/accessibilite/.claude/skills/<nom>/`
+
 | Skill | Description | Source |
 |---------|-------------|--------|
 | `color-contrast-checker` | Analyse le contraste de couleurs d'une image (maquette, capture d'écran) et produit un rapport d'accessibilité WCAG/RGAA. | Original (skill personnel) |
@@ -109,6 +130,8 @@ Skills que j'ai écrits moi-même, sans dépôt externe derrière. Classés par
 ---
 
 ## 🤝 Handoff Design↔Dev
+
+📁 `mes-skills/handoff-design-dev/.claude/skills/<nom>/`
 
 | Skill | Description | Source |
 |---------|-------------|--------|
@@ -120,6 +143,8 @@ Skills que j'ai écrits moi-même, sans dépôt externe derrière. Classés par
 ## 💻 Dev
 
 ### QA / Agents
+
+📁 `mes-skills/dev/qa-agents/.claude/skills/<nom>/`
 
 | Skill | Description | Source |
 |---------|-------------|--------|
@@ -133,6 +158,8 @@ Utile à tous les métiers utilisant Claude Code, pas seulement aux devs.
 
 ### Git & GitHub accessible aux non-devs
 
+📁 `mes-skills/autres-transverse/git-github-accessible-aux-non-devs/.claude/skills/<nom>/`
+
 > 💡 `git-github` n'est pas un skill "pour les devs qui savent déjà faire
 > ça" — il existe pour que quelqu'un sans compétence Git (designer, PM...)
 > puisse quand même commit/push/gérer une PR via Claude.
@@ -143,12 +170,16 @@ Utile à tous les métiers utilisant Claude Code, pas seulement aux devs.
 
 ### Productivité perso
 
+📁 `mes-skills/autres-transverse/productivite-perso/.claude/skills/<nom>/`
+
 | Skill | Description | Source |
 |---------|-------------|--------|
 | `context-keeper` | Crée, met à jour et restaure un fichier de contexte maître capturant l'état de tous les projets en cours pour reprendre instantanément dans n'importe quelle conversation. | Original (skill personnel) |
 | `stack-ia` | Compose une "stack" de skills à partir de **cette bibliothèque** (pas de l'écosystème externe, voir `find-skills` pour ça) pour un projet donné — appli, site, logiciel, workflow n8n, branding... Analyse le projet, consulte le catalogue interne (`references/catalog.md`), et recommande un sous-ensemble pertinent organisé par phase. | Original (skill personnel) |
 
 ### Idéation / créativité
+
+📁 `mes-skills/autres-transverse/ideation-creativite/.claude/skills/<nom>/`
 
 | Skill | Description | Source |
 |---------|-------------|--------|
@@ -167,6 +198,8 @@ chacun. Classés par **métier** puis par **catégorie**.
 
 ### UX Research
 
+📁 `importes/design/ux-research/.claude/skills/<nom>/`
+
 | Skill | Description | Source |
 |---------|-------------|--------|
 | `ux-research` | Génère des guides d'entretien utilisateur et questionnaires UX complets en français, adaptés à un contexte entreprise (clients et conseillers internes). | Compte Claude (pas de dépôt public identifié) |
@@ -175,6 +208,8 @@ chacun. Classés par **métier** puis par **catégorie**.
 | `uxr-recherche-secondaire` | Mène une recherche secondaire UX (desk research) rigoureuse : sources notées par fiabilité, triangulation, insights avec niveau de confiance, restitution exportable en Word. | Compte Claude (pas de dépôt public identifié) |
 
 ### UI / Product Design
+
+📁 `importes/design/ui-product-design/.claude/skills/<nom>/`
 
 > ⚠️ `taste-skill`, `taste-skill-v1`, `gpt-tasteskill`, `soft-skill`,
 > `minimalist-skill` et `brutalist-skill` sont 6 variantes du même bundle
@@ -198,6 +233,8 @@ chacun. Classés par **métier** puis par **catégorie**.
 
 ### Génération visuelle
 
+📁 `importes/design/generation-visuelle/.claude/skills/<nom>/`
+
 | Skill | Description | Source |
 |---------|-------------|--------|
 | `imagegen-frontend-web` | Génération de maquettes web de référence. | [Leonxlnx/taste-skill](https://github.com/Leonxlnx/taste-skill) |
@@ -205,6 +242,8 @@ chacun. Classés par **métier** puis par **catégorie**.
 | `image-to-code-skill` | Pipeline image → analyse → implémentation frontend. | [Leonxlnx/taste-skill](https://github.com/Leonxlnx/taste-skill) |
 
 ### Branding & Identité
+
+📁 `importes/design/branding-identite/.claude/skills/<nom>/`
 
 | Skill | Description | Source |
 |---------|-------------|--------|
@@ -222,6 +261,8 @@ chacun. Classés par **métier** puis par **catégorie**.
 
 ### Design → Code
 
+📁 `importes/handoff-design-dev/design-code/.claude/skills/<nom>/`
+
 | Skill | Description | Source |
 |---------|-------------|--------|
 | `figma-design-to-code` | Transformation rigoureuse de designs Figma en composants réels. | [figma/mcp-server-guide](https://github.com/figma/mcp-server-guide) (officiel Figma) |
@@ -229,6 +270,8 @@ chacun. Classés par **métier** puis par **catégorie**.
 | `slides` | Présentations HTML stratégiques avec design system intégré. | ClaudeKit Marketing Kit (produit payant, [docs](https://docs.claudekit.cc/docs/marketing/skills/) — pas de dépôt public) |
 
 ### Revue / direction artistique code
+
+📁 `importes/handoff-design-dev/revue-direction-artistique-code/.claude/skills/<nom>/`
 
 | Skill | Description | Source |
 |---------|-------------|--------|
@@ -240,6 +283,8 @@ chacun. Classés par **métier** puis par **catégorie**.
 ## 💻 Dev
 
 ### Méthodologie & discipline dev (Superpowers)
+
+📁 `importes/dev/methodologie-discipline-dev-superpowers/.claude/skills/<nom>/`
 
 > Skills [obra/superpowers-skills](https://github.com/obra/superpowers-skills) (Jesse Vincent, 200K+ ⭐, accepté au marketplace officiel Anthropic), sous licence MIT — plus `karpathy-guidelines` (auteur distinct, voir en bas de tableau).
 > ⚠️ `superpowers-brainstorming` est le skill `brainstorming` d'origine du dépôt, renommé pour éviter la collision avec le skill personnel `brainstorming` déjà présent dans cette bibliothèque.
@@ -281,6 +326,8 @@ chacun. Classés par **métier** puis par **catégorie**.
 
 ### Graphe de code / Review
 
+📁 `importes/dev/graphe-de-code-review/.claude/skills/<nom>/`
+
 > ⚠️ Ces skills nécessitent l'installation préalable du moteur **code-review-graph**.
 > Skills [tirth8205/code-review-graph](https://github.com/tirth8205/code-review-graph) (Tirth Kanani), sous licence MIT.
 
@@ -294,7 +341,18 @@ chacun. Classés par **métier** puis par **catégorie**.
 | `review-delta` | Revue des changements depuis le dernier commit. | [tirth8205/code-review-graph](https://github.com/tirth8205/code-review-graph) |
 | `review-pr` | Revue complète de Pull Request. | [tirth8205/code-review-graph](https://github.com/tirth8205/code-review-graph) |
 
+**Installation du moteur :**
+
+```bash
+pip install code-review-graph
+code-review-graph install
+```
+
+Sans cette étape, ces skills ne pourront pas fonctionner.
+
 ### Discipline de livraison
+
+📁 `importes/dev/discipline-de-livraison/.claude/skills/<nom>/`
 
 | Skill | Description | Source |
 |---------|-------------|--------|
@@ -307,6 +365,8 @@ chacun. Classés par **métier** puis par **catégorie**.
 Utile à tous les métiers utilisant Claude Code, pas seulement aux devs.
 
 ### Productivité tokens (caveman)
+
+📁 `importes/autres-transverse/productivite-tokens-caveman/.claude/skills/<nom>/`
 
 > Skills [JuliusBrussee/caveman](https://github.com/JuliusBrussee/caveman), sous licence MIT.
 > ⚠️ `cavecrew` référence 3 sous-agents (`agents/`) et `caveman-stats` référence
@@ -325,6 +385,8 @@ Utile à tous les métiers utilisant Claude Code, pas seulement aux devs.
 
 ### Recherche & productivité générale
 
+📁 `importes/autres-transverse/recherche-productivite-generale/.claude/skills/<nom>/`
+
 > Skills [Waza](https://github.com/tw93/Waza) (Tw93), sous licence MIT.
 
 | Skill | Description | Source |
@@ -336,6 +398,8 @@ Utile à tous les métiers utilisant Claude Code, pas seulement aux devs.
 
 ### Recherche & productivité (orientée dev)
 
+📁 `importes/autres-transverse/recherche-productivite-orientee-dev/.claude/skills/<nom>/`
+
 | Skill | Description | Source |
 |---------|-------------|--------|
 | `check` | Revue de livraison avant merge ou release. | [tw93/Waza](https://github.com/tw93/Waza) |
@@ -344,6 +408,8 @@ Utile à tous les métiers utilisant Claude Code, pas seulement aux devs.
 
 ### Présentation & communication
 
+📁 `importes/autres-transverse/presentation-communication/.claude/skills/<nom>/`
+
 | Skill | Description | Source |
 |---------|-------------|--------|
 | `academic-pptx-skill` | Structure des présentations académiques et de recherche. | [Gabberflast/academic-pptx-skill](https://github.com/Gabberflast/academic-pptx-skill) |
@@ -351,18 +417,11 @@ Utile à tous les métiers utilisant Claude Code, pas seulement aux devs.
 
 ### Découverte de skills (méta)
 
+📁 `importes/autres-transverse/decouverte-de-skills-meta/.claude/skills/<nom>/`
+
 | Skill | Description | Source |
 |---------|-------------|--------|
 | `find-skills` | Aide à découvrir et installer des skills de l'écosystème open (via `npx skills find`), avec vérification de la réputation/popularité avant recommandation. | [vercel-labs/skills](https://github.com/vercel-labs/skills) (officiel Vercel Labs) |
-
-### Installation
-
-```bash
-pip install code-review-graph
-code-review-graph install
-```
-
-Sans cette étape, ces skills ne pourront pas fonctionner.
 
 ---
 
@@ -424,14 +483,20 @@ MonProjet/
 
 # 📥 Installer un skill dans un autre projet
 
-Copie simplement son dossier :
+Copie uniquement le dossier du skill voulu (c'est le dossier `<nom-du-skill>/`, pas toute la catégorie) :
 
 ```text
+# depuis cette bibliothèque
+importes/design/ux-research/.claude/skills/uxr-synthese/
+
+# vers ton projet
 MonProjet/
 └── .claude/
     └── skills/
-        └── <nom-du-skill>/
+        └── uxr-synthese/
 ```
+
+Le chemin exact de chaque skill est indiqué (📁) sous le titre de sa catégorie, plus haut dans ce README.
 
 Au prochain lancement de Claude Code, la commande :
 
@@ -457,10 +522,12 @@ Une seule installation suffit ensuite pour l'ensemble de ton environnement.
 
 # ➕ Ajouter un skill à la bibliothèque
 
-### 1. Créer le dossier
+### 1. Choisir la place du skill, puis créer le dossier
+
+Origine (`mes-skills/` ou `importes/`), métier (`design/`, `handoff-design-dev/`, `dev/`, `autres-transverse/`) et catégorie (un dossier existant, ou un nouveau) :
 
 ```text
-.claude/skills/<nom>/
+<origine>/<métier>/<catégorie>/.claude/skills/<nom>/
 ```
 
 ### 2. Ajouter un fichier
@@ -487,11 +554,17 @@ Ajoute les éventuels :
 
 dans le même dossier.
 
-### 4. Commit et push
+### 4. Référencer le skill
+
+Ajoute sa ligne dans le tableau de sa catégorie du README, dans le catalogue de `stack-ia` (`mes-skills/autres-transverse/productivite-perso/.claude/skills/stack-ia/references/catalog.md`), et crée son archive `archives/<nom>.zip` (le contenu du dossier, sans dossier parent).
+
+### 5. Commit et push
 
 Le skill est désormais intégré à la bibliothèque.
 
-> ⚠️ Le nom du dossier doit être strictement identique à la valeur du champ `name:`. C'est ce nom qui détermine la commande `/mon-skill`.
+> ⚠️ Pour un skill que tu crées, garde le même nom pour le dossier et pour le champ `name:` : c'est le plus simple.
+>
+> **Vérifié** (documentation de Claude Code et test avec le CLI) : quand les deux diffèrent, le champ `name:` donne la commande affichée dans le menu `/`, et **le nom du dossier fonctionne toujours en repli**. 42 skills importés sont dans ce cas, conservés tels quels pour rester fidèles à leur source : par exemple le dossier `taste-skill` a pour nom `design-taste-frontend`, et les deux `/taste-skill` et `/design-taste-frontend` marchent. Les noms du type `Root Cause Tracing` (31 skills Superpowers) sont plus pénibles à saisir : utilise alors le nom du dossier, `/root-cause-tracing`. Aucune collision entre ces noms dans la bibliothèque.
 
 ---
 
