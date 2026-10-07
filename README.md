@@ -46,7 +46,8 @@ Pour utiliser **un seul skill**, copie uniquement son dossier `<nom>/` (voir « 
 > 💡 **Comment ça se charge ici.** Claude Code ne lit qu'un niveau sous un dossier `.claude/skills/`,
 > mais il en accepte un dans chaque sous-dossier du dépôt (testé jusqu'à 5 niveaux de profondeur).
 > Dans cette bibliothèque, les skills d'une catégorie se chargent la première fois que Claude lit ou
-> modifie un fichier de ce dossier, ou tout de suite avec `/add-dir <dossier-de-la-catégorie>`.
+> modifie un fichier de ce dossier **avec ses outils de fichiers** (une commande shell comme `head` ne
+> déclenche pas le chargement), ou tout de suite avec `/add-dir <dossier-de-la-catégorie>`.
 > Si deux skills portent le même nom, la commande qualifiée est `/<chemin>:<nom>`.
 
 ---
