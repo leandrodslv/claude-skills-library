@@ -1,10 +1,12 @@
 # 📚 Bibliothèque de Skills
 
-> Bibliothèque personnelle de skills Claude Code — design/UX, branding, animation GSAP, automatisation n8n, revue de code, économie de tokens, et frameworks de référence (BMAD), prêts à installer.
+> Bibliothèque personnelle de skills Claude Code — design/UX, branding, revue de code, économie de tokens, et frameworks de référence (BMAD), prêts à installer.
 
 > Mon espace personnel pour **Claude Code** : un dépôt unique où je centralise les skills et profils `CLAUDE.md` que j'utilise ou développe.
 >
 > **Objectif :** ne rien perdre entre les projets, partager facilement des composants réutilisables et disposer d'une bibliothèque prête à l'emploi partout.
+>
+> ℹ️ Les skills d'**automatisation n8n** (15) et d'**animation Motion/GSAP** (8) ont été déplacés vers un dépôt privé dédié (`claude-skills-n8n-motion`), car ils ne concernent que mon usage personnel.
 
 ---
 
@@ -288,34 +290,6 @@ Skills importés depuis des dépôts publics, des marketplaces officielles ou de
 
 ---
 
-## 🔄 Automatisation (n8n)
-
-> Skills [czlonkowski/n8n-skills](https://github.com/czlonkowski/n8n-skills) (Romuald Członkowski, auteur de [n8n-mcp](https://github.com/czlonkowski/n8n-mcp)), sous licence MIT.
-> ⚠️ Pensés pour accompagner le serveur MCP **n8n-mcp** — le contenu reste
-> utile seul, mais l'usage complet (validation live, recherche de nœuds)
-> nécessite ce MCP configuré dans le projet cible. Voir le `NOTES.md` de
-> `using-n8n-mcp-skills`.
-
-| Skill | Description | Source |
-|---------|-------------|--------|
-| `using-n8n-mcp-skills` | Skill routeur : oriente vers le bon skill spécialiste pour toute tâche n8n via le MCP n8n-mcp. | [czlonkowski/n8n-skills](https://github.com/czlonkowski/n8n-skills) |
-| `n8n-mcp-tools-expert` | Guide d'utilisation des outils MCP n8n-mcp (recherche de nœuds, validation, credentials, audit de sécurité). | [czlonkowski/n8n-skills](https://github.com/czlonkowski/n8n-skills) |
-| `n8n-workflow-patterns` | Patterns d'architecture de workflows éprouvés (webhook, API, DB, agents IA, batch, tâches planifiées). | [czlonkowski/n8n-skills](https://github.com/czlonkowski/n8n-skills) |
-| `n8n-expression-syntax` | Syntaxe des expressions n8n `{{ }}` et pièges classiques (structure des données webhook). | [czlonkowski/n8n-skills](https://github.com/czlonkowski/n8n-skills) |
-| `n8n-node-configuration` | Configuration des nœuds selon l'opération (champs requis, displayOptions, édition chirurgicale). | [czlonkowski/n8n-skills](https://github.com/czlonkowski/n8n-skills) |
-| `n8n-code-javascript` | Écrire du JavaScript dans les nœuds Code n8n (syntaxe $input/$json, dates, patterns de production). | [czlonkowski/n8n-skills](https://github.com/czlonkowski/n8n-skills) |
-| `n8n-code-python` | Écrire du Python dans les nœuds Code n8n (limitations, bibliothèque standard disponible). | [czlonkowski/n8n-skills](https://github.com/czlonkowski/n8n-skills) |
-| `n8n-code-tool` | Écrire le Code Tool appelable par un agent IA (contrat d'entrée/sortie différent du nœud Code classique). | [czlonkowski/n8n-skills](https://github.com/czlonkowski/n8n-skills) |
-| `n8n-agents` | Concevoir des agents IA n8n (AI Agent, LLM chain, mémoire, RAG, sorties structurées, human-in-the-loop). | [czlonkowski/n8n-skills](https://github.com/czlonkowski/n8n-skills) |
-| `n8n-error-handling` | Gestion d'erreurs robuste (branches d'erreur, retries, Error Trigger, codes de réponse webhook). | [czlonkowski/n8n-skills](https://github.com/czlonkowski/n8n-skills) |
-| `n8n-validation-expert` | Interprétation des erreurs/avertissements de validation, faux positifs, auto-fix. | [czlonkowski/n8n-skills](https://github.com/czlonkowski/n8n-skills) |
-| `n8n-binary-and-data` | Gestion des fichiers/données binaires (images, PDF, base64, vision multimodale). | [czlonkowski/n8n-skills](https://github.com/czlonkowski/n8n-skills) |
-| `n8n-subworkflows` | Construction de sous-workflows réutilisables et composables. | [czlonkowski/n8n-skills](https://github.com/czlonkowski/n8n-skills) |
-| `n8n-multi-instance` | Gestion de plusieurs instances n8n (prod/staging, plusieurs clients) via le MCP. | [czlonkowski/n8n-skills](https://github.com/czlonkowski/n8n-skills) |
-| `n8n-self-hosting` | Déploiement d'un n8n auto-hébergé en production (Docker Compose, Caddy, HTTPS, mode queue). | [czlonkowski/n8n-skills](https://github.com/czlonkowski/n8n-skills) |
-
----
-
 ## 🔍 Analyse, Recherche & Productivité
 
 > Skills [Waza](https://github.com/tw93/Waza) (Tw93), sous licence MIT.
@@ -329,23 +303,6 @@ Skills importés depuis des dépôts publics, des marketplaces officielles ou de
 | `check` | Revue de livraison avant merge ou release. | [tw93/Waza](https://github.com/tw93/Waza) |
 | `hunt` | Recherche systématique de causes racines. | [tw93/Waza](https://github.com/tw93/Waza) |
 | `health` | Audit de santé d'agents IA. | [tw93/Waza](https://github.com/tw93/Waza) |
-
----
-
-## 🎬 Animation (GSAP)
-
-> Skills officiels [GSAP](https://github.com/greensock/gsap-skills) (GreenSock), sous licence MIT.
-
-| Skill | Description | Source |
-|---------|-------------|--------|
-| `gsap-core` | API de base — `gsap.to()`, `from()`, `fromTo()`, easing, stagger, `matchMedia()`. | [greensock/gsap-skills](https://github.com/greensock/gsap-skills) |
-| `gsap-timeline` | Séquencement d'animations avec `gsap.timeline()`, paramètre de position, imbrication. | [greensock/gsap-skills](https://github.com/greensock/gsap-skills) |
-| `gsap-react` | Intégration React/Next.js — hook `useGSAP`, refs, `gsap.context()`, cleanup. | [greensock/gsap-skills](https://github.com/greensock/gsap-skills) |
-| `gsap-frameworks` | Intégration Vue, Nuxt, Svelte, SvelteKit — cycle de vie, cleanup au démontage. | [greensock/gsap-skills](https://github.com/greensock/gsap-skills) |
-| `gsap-scrolltrigger` | Animations liées au scroll — pinning, scrub, triggers, parallax. | [greensock/gsap-skills](https://github.com/greensock/gsap-skills) |
-| `gsap-plugins` | Plugins GSAP — ScrollToPlugin, Flip, Draggable, SplitText, CustomEase, etc. | [greensock/gsap-skills](https://github.com/greensock/gsap-skills) |
-| `gsap-utils` | Utilitaires `gsap.utils` — clamp, mapRange, random, snap, toArray, wrap. | [greensock/gsap-skills](https://github.com/greensock/gsap-skills) |
-| `gsap-performance` | Optimisation des animations — transforms, will-change, 60fps. | [greensock/gsap-skills](https://github.com/greensock/gsap-skills) |
 
 ---
 
