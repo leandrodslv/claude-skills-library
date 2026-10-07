@@ -156,25 +156,6 @@ Skills importés depuis des dépôts publics, des marketplaces officielles ou de
 
 ---
 
-## 🪨 Caveman (économie de tokens)
-
-> Skills [JuliusBrussee/caveman](https://github.com/JuliusBrussee/caveman), sous licence MIT.
-> ⚠️ `cavecrew` référence 3 sous-agents (`agents/`) et `caveman-stats` référence
-> un hook Claude Code (`hooks/`) — voir le `NOTES.md` de chacun pour les
-> activer pleinement, une simple copie du dossier skill ne suffit pas.
-
-| Skill | Description | Source |
-|---------|-------------|--------|
-| `caveman` | Mode de communication ultra-compressé (-65% de tokens en sortie), plusieurs niveaux d'intensité (lite/full/ultra). | [JuliusBrussee/caveman](https://github.com/JuliusBrussee/caveman) |
-| `caveman-commit` | Génère des messages de commit ultra-compressés au format Conventional Commits. | [JuliusBrussee/caveman](https://github.com/JuliusBrussee/caveman) |
-| `caveman-review` | Commentaires de revue de code ultra-compressés, un par ligne : emplacement, problème, correctif. | [JuliusBrussee/caveman](https://github.com/JuliusBrussee/caveman) |
-| `caveman-compress` | Compresse des fichiers mémoire (CLAUDE.md, todos, préférences) en format caveman pour économiser des tokens d'entrée. | [JuliusBrussee/caveman](https://github.com/JuliusBrussee/caveman) |
-| `caveman-help` | Carte de référence rapide de tous les modes/skills/commandes caveman. | [JuliusBrussee/caveman](https://github.com/JuliusBrussee/caveman) |
-| `caveman-stats` | Affiche l'usage réel de tokens et les économies estimées de la session (via un hook, pas de calcul par le modèle). | [JuliusBrussee/caveman](https://github.com/JuliusBrussee/caveman) |
-| `cavecrew` | Guide de délégation à 3 sous-agents caveman-compressés (investigator/builder/reviewer) pour économiser le contexte principal. | [JuliusBrussee/caveman](https://github.com/JuliusBrussee/caveman) |
-
----
-
 ## 🎤 Présentation & Communication
 
 | Skill | Description | Source |
@@ -200,6 +181,12 @@ Skills importés depuis des dépôts publics, des marketplaces officielles ou de
 ---
 
 ## 💎 UI / UX
+
+> ⚠️ `taste-skill`, `taste-skill-v1`, `gpt-tasteskill`, `soft-skill`,
+> `minimalist-skill` et `brutalist-skill` sont 6 variantes du même bundle
+> ([Leonxlnx/taste-skill](https://github.com/Leonxlnx/taste-skill)) pour
+> des directions esthétiques différentes — choisir celle qui correspond
+> au projet plutôt que toutes les installer.
 
 | Skill | Description | Source |
 |---------|-------------|--------|
@@ -303,6 +290,28 @@ Skills importés depuis des dépôts publics, des marketplaces officielles ou de
 | `check` | Revue de livraison avant merge ou release. | [tw93/Waza](https://github.com/tw93/Waza) |
 | `hunt` | Recherche systématique de causes racines. | [tw93/Waza](https://github.com/tw93/Waza) |
 | `health` | Audit de santé d'agents IA. | [tw93/Waza](https://github.com/tw93/Waza) |
+
+---
+
+## 🪨 Caveman (économie de tokens)
+
+> Skills [JuliusBrussee/caveman](https://github.com/JuliusBrussee/caveman), sous licence MIT.
+> ⚠️ `cavecrew` référence 3 sous-agents (`agents/`) et `caveman-stats` référence
+> un hook Claude Code (`hooks/`) — voir le `NOTES.md` de chacun pour les
+> activer pleinement, une simple copie du dossier skill ne suffit pas.
+> 💡 Utile à tous les métiers utilisant Claude Code, pas seulement aux
+> devs (`caveman-commit`/`caveman-review` sont dev-spécifiques, le reste
+> du pack ne l'est pas).
+
+| Skill | Description | Source |
+|---------|-------------|--------|
+| `caveman` | Mode de communication ultra-compressé (-65% de tokens en sortie), plusieurs niveaux d'intensité (lite/full/ultra). | [JuliusBrussee/caveman](https://github.com/JuliusBrussee/caveman) |
+| `caveman-commit` | Génère des messages de commit ultra-compressés au format Conventional Commits. | [JuliusBrussee/caveman](https://github.com/JuliusBrussee/caveman) |
+| `caveman-review` | Commentaires de revue de code ultra-compressés, un par ligne : emplacement, problème, correctif. | [JuliusBrussee/caveman](https://github.com/JuliusBrussee/caveman) |
+| `caveman-compress` | Compresse des fichiers mémoire (CLAUDE.md, todos, préférences) en format caveman pour économiser des tokens d'entrée. | [JuliusBrussee/caveman](https://github.com/JuliusBrussee/caveman) |
+| `caveman-help` | Carte de référence rapide de tous les modes/skills/commandes caveman. | [JuliusBrussee/caveman](https://github.com/JuliusBrussee/caveman) |
+| `caveman-stats` | Affiche l'usage réel de tokens et les économies estimées de la session (via un hook, pas de calcul par le modèle). | [JuliusBrussee/caveman](https://github.com/JuliusBrussee/caveman) |
+| `cavecrew` | Guide de délégation à 3 sous-agents caveman-compressés (investigator/builder/reviewer) pour économiser le contexte principal. | [JuliusBrussee/caveman](https://github.com/JuliusBrussee/caveman) |
 
 ---
 
