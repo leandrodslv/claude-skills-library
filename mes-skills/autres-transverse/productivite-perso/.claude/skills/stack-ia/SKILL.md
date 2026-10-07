@@ -2,7 +2,7 @@
 name: stack-ia
 description: >
   Compose une "stack" de skills à partir de la bibliothèque personnelle de
-  l'utilisateur (ce dépôt, `.claude/skills/`) pour un projet donné — une
+  l'utilisateur (ce dépôt, rangé par origine, métier et catégorie) pour un projet donné — une
   application, un site, un logiciel, un workflow n8n, une identité de
   marque, etc. Analyse l'intention du projet, consulte le catalogue interne
   des ~80 skills disponibles, puis recommande un sous-ensemble pertinent
@@ -22,7 +22,7 @@ description: >
 ## Rôle
 
 Composer, à partir d'une description de projet, la liste des skills de
-**cette bibliothèque** (`.claude/skills/`) les plus pertinents pour mener ce
+**cette bibliothèque** (`<origine>/<métier>/<catégorie>/.claude/skills/<nom>/`) les plus pertinents pour mener ce
 projet à bien — et non les découvrir sur l'écosystème externe (c'est le
 rôle de `find-skills`).
 
@@ -49,13 +49,13 @@ ne pas deviner à l'aveugle sur un projet flou.
 ### 2. Consulter le catalogue
 
 Lire `references/catalog.md` : la liste à jour des skills de la
-bibliothèque, groupés par catégorie, avec description et source. C'est la
+bibliothèque, groupés par catégorie, avec description, source et chemin. Quand tu recommandes un skill, indique son chemin pour que l'utilisateur puisse copier ce seul dossier dans son projet. C'est la
 base de matching — ne pas se fier uniquement à la mémoire du modèle sur le
 contenu de la bibliothèque, le catalogue peut avoir évolué.
 
 Si un skill que tu sais avoir vu récemment ajouté n'apparaît pas dans le
 catalogue (désynchronisation possible), scanner directement
-`.claude/skills/*/SKILL.md` pour compléter.
+`**/.claude/skills/*/SKILL.md` (à la racine du dépôt) pour compléter.
 
 ### 3. Composer la stack, organisée par phase
 
