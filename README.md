@@ -562,7 +562,9 @@ Ajoute sa ligne dans le tableau de sa catégorie du README, dans le catalogue de
 
 Le skill est désormais intégré à la bibliothèque.
 
-> ⚠️ Le nom du dossier doit être strictement identique à la valeur du champ `name:`. C'est ce nom qui détermine la commande `/mon-skill`.
+> ⚠️ Pour un skill que tu crées, garde le même nom pour le dossier et pour le champ `name:` : c'est le plus simple.
+>
+> **Vérifié** (documentation de Claude Code et test avec le CLI) : quand les deux diffèrent, le champ `name:` donne la commande affichée dans le menu `/`, et **le nom du dossier fonctionne toujours en repli**. 42 skills importés sont dans ce cas, conservés tels quels pour rester fidèles à leur source : par exemple le dossier `taste-skill` a pour nom `design-taste-frontend`, et les deux `/taste-skill` et `/design-taste-frontend` marchent. Les noms du type `Root Cause Tracing` (31 skills Superpowers) sont plus pénibles à saisir : utilise alors le nom du dossier, `/root-cause-tracing`. Aucune collision entre ces noms dans la bibliothèque.
 
 ---
 
