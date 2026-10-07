@@ -1,10 +1,12 @@
 # 📚 Bibliothèque de Skills
 
-> Bibliothèque personnelle de skills Claude Code — design/UX, branding, animation GSAP, automatisation n8n, revue de code, économie de tokens, et frameworks de référence (BMAD), prêts à installer.
+> Bibliothèque personnelle de skills Claude Code — design/UX, branding, revue de code, économie de tokens, et frameworks de référence (BMAD), prêts à installer.
 
 > Mon espace personnel pour **Claude Code** : un dépôt unique où je centralise les skills et profils `CLAUDE.md` que j'utilise ou développe.
 >
 > **Objectif :** ne rien perdre entre les projets, partager facilement des composants réutilisables et disposer d'une bibliothèque prête à l'emploi partout.
+>
+> ℹ️ Les skills d'**automatisation n8n** (15) et d'**animation Motion/GSAP** (8) ont été déplacés vers un dépôt privé dédié (`claude-skills-n8n-motion`), car ils ne concernent que mon usage personnel.
 
 ---
 
@@ -91,16 +93,58 @@ La bibliothèque regroupe actuellement plusieurs familles de skills.
 > explique la provenance à la place. La colonne **Source** ci-dessous pointe
 > vers le dépôt d'origine de chaque skill.
 
-## 🧠 Agents & Tests
+# 🧑 Mes skills (créés par moi)
+
+Skills que j'ai écrits moi-même, sans dépôt externe derrière.
+
+## 🛠️ Productivité / workflow perso
 
 | Skill | Description | Source |
 |---------|-------------|--------|
-| `test-agent` | Framework de test pour agents IA avec génération automatique de scénarios, exécution sandboxée et rapport détaillé. | Original (aucun dépôt public identifié) |
 | `context-keeper` | Crée, met à jour et restaure un fichier de contexte maître capturant l'état de tous les projets en cours pour reprendre instantanément dans n'importe quelle conversation. | Original (skill personnel) |
+| `stack-ia` | Compose une "stack" de skills à partir de **cette bibliothèque** (pas de l'écosystème externe, voir `find-skills` pour ça) pour un projet donné — appli, site, logiciel, workflow n8n, branding... Analyse le projet, consulte le catalogue interne (`references/catalog.md`), et recommande un sous-ensemble pertinent organisé par phase. | Original (skill personnel) |
+| `git-github` | Automatisation Git & GitHub de bout en bout : commits conventionnels, push/pull, branches, PR (création et revue), issues, GitHub Actions, Dependabot, releases via release-please. | Original (skill personnel) |
+
+---
+
+## 💡 Idéation / créativité
+
+| Skill | Description | Source |
+|---------|-------------|--------|
 | `brainstorming` | Facilitation de sessions de brainstorming/idéation (HMW, SCAMPER, Crazy 8s, brainwriting...), sélection automatique de la méthode adaptée. | Original (skill personnel) |
 | `naming` | Naming créatif pour projets, artistes IA/musicaux, agents IA et workflows — shortlist commentée avec taglines. | Original (skill personnel) |
 
 ---
+
+## 🎨 Design / UX / Dev visuel
+
+| Skill | Description | Source |
+|---------|-------------|--------|
+| `figma-to-code` | Convertit une maquette Figma en code HTML/CSS, React ou Vue pixel-perfect. | Original (skill personnel) |
+| `html-to-figma` | Convertit des fichiers HTML/CSS en maquette Figma pixel-perfect via le MCP Figma. | Original (skill personnel) |
+| `notion-template-designer` | Crée des templates Notion visuellement soignés (dashboards, trackers, portfolios...) via recherche d'inspiration et le MCP Notion. | Original (skill personnel) |
+
+---
+
+## ♿ Accessibilité
+
+| Skill | Description | Source |
+|---------|-------------|--------|
+| `color-contrast-checker` | Analyse le contraste de couleurs d'une image (maquette, capture d'écran) et produit un rapport d'accessibilité WCAG/RGAA. | Original (skill personnel) |
+
+---
+
+## 🧠 QA / Agents
+
+| Skill | Description | Source |
+|---------|-------------|--------|
+| `test-agent` | Framework de test pour agents IA avec génération automatique de scénarios, exécution sandboxée et rapport détaillé. | Original (aucun dépôt public identifié) |
+
+---
+
+# 🌐 Skills importés d'internet
+
+Skills importés depuis des dépôts publics, des marketplaces officielles ou des produits tiers — voir la colonne **Source** pour l'origine exacte de chacun.
 
 ## 🔎 Découverte de skills
 
@@ -109,33 +153,6 @@ La bibliothèque regroupe actuellement plusieurs familles de skills.
 | `find-skills` | Aide à découvrir et installer des skills de l'écosystème open (via `npx skills find`), avec vérification de la réputation/popularité avant recommandation. | [vercel-labs/skills](https://github.com/vercel-labs/skills) (officiel Vercel Labs) |
 | `frontend-design` | Design frontend distinctif et haut de gamme (direction artistique, typographie, choix qui évitent l'esthétique générique IA). | [anthropics/skills](https://github.com/anthropics/skills) (officiel Anthropic) |
 | `web-design-guidelines` | Revue de code UI selon les Web Interface Guidelines (accessibilité, performance, UX — 100+ règles). | [vercel-labs/agent-skills](https://github.com/vercel-labs/agent-skills) (officiel Vercel Labs) |
-
----
-
-## 🧭 Composition de stack
-
-| Skill | Description | Source |
-|---------|-------------|--------|
-| `stack-ia` | Compose une "stack" de skills à partir de **cette bibliothèque** (pas de l'écosystème externe, voir `find-skills` pour ça) pour un projet donné — appli, site, logiciel, workflow n8n, branding... Analyse le projet, consulte le catalogue interne (`references/catalog.md`), et recommande un sous-ensemble pertinent organisé par phase. | Original (skill personnel) |
-
----
-
-## 🪨 Caveman (économie de tokens)
-
-> Skills [JuliusBrussee/caveman](https://github.com/JuliusBrussee/caveman), sous licence MIT.
-> ⚠️ `cavecrew` référence 3 sous-agents (`agents/`) et `caveman-stats` référence
-> un hook Claude Code (`hooks/`) — voir le `NOTES.md` de chacun pour les
-> activer pleinement, une simple copie du dossier skill ne suffit pas.
-
-| Skill | Description | Source |
-|---------|-------------|--------|
-| `caveman` | Mode de communication ultra-compressé (-65% de tokens en sortie), plusieurs niveaux d'intensité (lite/full/ultra). | [JuliusBrussee/caveman](https://github.com/JuliusBrussee/caveman) |
-| `caveman-commit` | Génère des messages de commit ultra-compressés au format Conventional Commits. | [JuliusBrussee/caveman](https://github.com/JuliusBrussee/caveman) |
-| `caveman-review` | Commentaires de revue de code ultra-compressés, un par ligne : emplacement, problème, correctif. | [JuliusBrussee/caveman](https://github.com/JuliusBrussee/caveman) |
-| `caveman-compress` | Compresse des fichiers mémoire (CLAUDE.md, todos, préférences) en format caveman pour économiser des tokens d'entrée. | [JuliusBrussee/caveman](https://github.com/JuliusBrussee/caveman) |
-| `caveman-help` | Carte de référence rapide de tous les modes/skills/commandes caveman. | [JuliusBrussee/caveman](https://github.com/JuliusBrussee/caveman) |
-| `caveman-stats` | Affiche l'usage réel de tokens et les économies estimées de la session (via un hook, pas de calcul par le modèle). | [JuliusBrussee/caveman](https://github.com/JuliusBrussee/caveman) |
-| `cavecrew` | Guide de délégation à 3 sous-agents caveman-compressés (investigator/builder/reviewer) pour économiser le contexte principal. | [JuliusBrussee/caveman](https://github.com/JuliusBrussee/caveman) |
 
 ---
 
@@ -160,11 +177,16 @@ La bibliothèque regroupe actuellement plusieurs familles de skills.
 | `banner-design` | Création de bannières marketing et visuels promotionnels. | ClaudeKit Marketing Kit (payant, pas de dépôt public) |
 | `canvas-design` | Production d'œuvres visuelles, affiches et posters. | [anthropics/skills](https://github.com/anthropics/skills) (officiel Anthropic) |
 | `brand-guidelines` | Application de la charte visuelle officielle Anthropic. | [anthropics/skills](https://github.com/anthropics/skills) (officiel Anthropic) |
-| `notion-template-designer` | Crée des templates Notion visuellement soignés (dashboards, trackers, portfolios...) via recherche d'inspiration et le MCP Notion. | Original (skill personnel) |
 
 ---
 
 ## 💎 UI / UX
+
+> ⚠️ `taste-skill`, `taste-skill-v1`, `gpt-tasteskill`, `soft-skill`,
+> `minimalist-skill` et `brutalist-skill` sont 6 variantes du même bundle
+> ([Leonxlnx/taste-skill](https://github.com/Leonxlnx/taste-skill)) pour
+> des directions esthétiques différentes — choisir celle qui correspond
+> au projet plutôt que toutes les installer.
 
 | Skill | Description | Source |
 |---------|-------------|--------|
@@ -199,16 +221,17 @@ La bibliothèque regroupe actuellement plusieurs familles de skills.
 | `figma-design-to-code` | Transformation rigoureuse de designs Figma en composants réels. | [figma/mcp-server-guide](https://github.com/figma/mcp-server-guide) (officiel Figma) |
 | `stitch-skill` | Workflow compatible Google Stitch. | [Leonxlnx/taste-skill](https://github.com/Leonxlnx/taste-skill) |
 | `output-skill` | Force des livrables complets sans placeholders. | [Leonxlnx/taste-skill](https://github.com/Leonxlnx/taste-skill) |
-| `figma-to-code` | Convertit une maquette Figma en code HTML/CSS, React ou Vue pixel-perfect. | Original (skill personnel) |
-| `html-to-figma` | Convertit des fichiers HTML/CSS en maquette Figma pixel-perfect via le MCP Figma. | Original (skill personnel) |
 
 ---
 
-## ♿ Accessibilité
+## 🔬 UXR (recherche utilisateur)
 
 | Skill | Description | Source |
 |---------|-------------|--------|
-| `color-contrast-checker` | Analyse le contraste de couleurs d'une image (maquette, capture d'écran) et produit un rapport d'accessibilité WCAG/RGAA. | Original (skill personnel) |
+| `ux-research` | Génère des guides d'entretien utilisateur et questionnaires UX complets en français, adaptés à un contexte entreprise (clients et conseillers internes). | Compte Claude (pas de dépôt public identifié) |
+| `uxr-preparation` | Prépare des entretiens UXR semi-directifs de A à Z (cadrage, profil participant, guide en 5 phases, checklist, grille de notes, biais à surveiller) et écrit dans Notion. | Compte Claude (pas de dépôt public identifié) |
+| `uxr-synthese` | Analyse et synthétise des notes d'entretiens (grille Dit/Fait/Ressent/Besoin, affinity mapping, insights priorisés, persona, patterns cross-entretiens) et écrit dans Notion. | Compte Claude (pas de dépôt public identifié) |
+| `uxr-recherche-secondaire` | Mène une recherche secondaire UX (desk research) rigoureuse : sources notées par fiabilité, triangulation, insights avec niveau de confiance, restitution exportable en Word. | Compte Claude (pas de dépôt public identifié) |
 
 ---
 
@@ -254,34 +277,6 @@ La bibliothèque regroupe actuellement plusieurs familles de skills.
 
 ---
 
-## 🔄 Automatisation (n8n)
-
-> Skills [czlonkowski/n8n-skills](https://github.com/czlonkowski/n8n-skills) (Romuald Członkowski, auteur de [n8n-mcp](https://github.com/czlonkowski/n8n-mcp)), sous licence MIT.
-> ⚠️ Pensés pour accompagner le serveur MCP **n8n-mcp** — le contenu reste
-> utile seul, mais l'usage complet (validation live, recherche de nœuds)
-> nécessite ce MCP configuré dans le projet cible. Voir le `NOTES.md` de
-> `using-n8n-mcp-skills`.
-
-| Skill | Description | Source |
-|---------|-------------|--------|
-| `using-n8n-mcp-skills` | Skill routeur : oriente vers le bon skill spécialiste pour toute tâche n8n via le MCP n8n-mcp. | [czlonkowski/n8n-skills](https://github.com/czlonkowski/n8n-skills) |
-| `n8n-mcp-tools-expert` | Guide d'utilisation des outils MCP n8n-mcp (recherche de nœuds, validation, credentials, audit de sécurité). | [czlonkowski/n8n-skills](https://github.com/czlonkowski/n8n-skills) |
-| `n8n-workflow-patterns` | Patterns d'architecture de workflows éprouvés (webhook, API, DB, agents IA, batch, tâches planifiées). | [czlonkowski/n8n-skills](https://github.com/czlonkowski/n8n-skills) |
-| `n8n-expression-syntax` | Syntaxe des expressions n8n `{{ }}` et pièges classiques (structure des données webhook). | [czlonkowski/n8n-skills](https://github.com/czlonkowski/n8n-skills) |
-| `n8n-node-configuration` | Configuration des nœuds selon l'opération (champs requis, displayOptions, édition chirurgicale). | [czlonkowski/n8n-skills](https://github.com/czlonkowski/n8n-skills) |
-| `n8n-code-javascript` | Écrire du JavaScript dans les nœuds Code n8n (syntaxe $input/$json, dates, patterns de production). | [czlonkowski/n8n-skills](https://github.com/czlonkowski/n8n-skills) |
-| `n8n-code-python` | Écrire du Python dans les nœuds Code n8n (limitations, bibliothèque standard disponible). | [czlonkowski/n8n-skills](https://github.com/czlonkowski/n8n-skills) |
-| `n8n-code-tool` | Écrire le Code Tool appelable par un agent IA (contrat d'entrée/sortie différent du nœud Code classique). | [czlonkowski/n8n-skills](https://github.com/czlonkowski/n8n-skills) |
-| `n8n-agents` | Concevoir des agents IA n8n (AI Agent, LLM chain, mémoire, RAG, sorties structurées, human-in-the-loop). | [czlonkowski/n8n-skills](https://github.com/czlonkowski/n8n-skills) |
-| `n8n-error-handling` | Gestion d'erreurs robuste (branches d'erreur, retries, Error Trigger, codes de réponse webhook). | [czlonkowski/n8n-skills](https://github.com/czlonkowski/n8n-skills) |
-| `n8n-validation-expert` | Interprétation des erreurs/avertissements de validation, faux positifs, auto-fix. | [czlonkowski/n8n-skills](https://github.com/czlonkowski/n8n-skills) |
-| `n8n-binary-and-data` | Gestion des fichiers/données binaires (images, PDF, base64, vision multimodale). | [czlonkowski/n8n-skills](https://github.com/czlonkowski/n8n-skills) |
-| `n8n-subworkflows` | Construction de sous-workflows réutilisables et composables. | [czlonkowski/n8n-skills](https://github.com/czlonkowski/n8n-skills) |
-| `n8n-multi-instance` | Gestion de plusieurs instances n8n (prod/staging, plusieurs clients) via le MCP. | [czlonkowski/n8n-skills](https://github.com/czlonkowski/n8n-skills) |
-| `n8n-self-hosting` | Déploiement d'un n8n auto-hébergé en production (Docker Compose, Caddy, HTTPS, mode queue). | [czlonkowski/n8n-skills](https://github.com/czlonkowski/n8n-skills) |
-
----
-
 ## 🔍 Analyse, Recherche & Productivité
 
 > Skills [Waza](https://github.com/tw93/Waza) (Tw93), sous licence MIT.
@@ -298,20 +293,25 @@ La bibliothèque regroupe actuellement plusieurs familles de skills.
 
 ---
 
-## 🎬 Animation (GSAP)
+## 🪨 Caveman (économie de tokens)
 
-> Skills officiels [GSAP](https://github.com/greensock/gsap-skills) (GreenSock), sous licence MIT.
+> Skills [JuliusBrussee/caveman](https://github.com/JuliusBrussee/caveman), sous licence MIT.
+> ⚠️ `cavecrew` référence 3 sous-agents (`agents/`) et `caveman-stats` référence
+> un hook Claude Code (`hooks/`) — voir le `NOTES.md` de chacun pour les
+> activer pleinement, une simple copie du dossier skill ne suffit pas.
+> 💡 Utile à tous les métiers utilisant Claude Code, pas seulement aux
+> devs (`caveman-commit`/`caveman-review` sont dev-spécifiques, le reste
+> du pack ne l'est pas).
 
 | Skill | Description | Source |
 |---------|-------------|--------|
-| `gsap-core` | API de base — `gsap.to()`, `from()`, `fromTo()`, easing, stagger, `matchMedia()`. | [greensock/gsap-skills](https://github.com/greensock/gsap-skills) |
-| `gsap-timeline` | Séquencement d'animations avec `gsap.timeline()`, paramètre de position, imbrication. | [greensock/gsap-skills](https://github.com/greensock/gsap-skills) |
-| `gsap-react` | Intégration React/Next.js — hook `useGSAP`, refs, `gsap.context()`, cleanup. | [greensock/gsap-skills](https://github.com/greensock/gsap-skills) |
-| `gsap-frameworks` | Intégration Vue, Nuxt, Svelte, SvelteKit — cycle de vie, cleanup au démontage. | [greensock/gsap-skills](https://github.com/greensock/gsap-skills) |
-| `gsap-scrolltrigger` | Animations liées au scroll — pinning, scrub, triggers, parallax. | [greensock/gsap-skills](https://github.com/greensock/gsap-skills) |
-| `gsap-plugins` | Plugins GSAP — ScrollToPlugin, Flip, Draggable, SplitText, CustomEase, etc. | [greensock/gsap-skills](https://github.com/greensock/gsap-skills) |
-| `gsap-utils` | Utilitaires `gsap.utils` — clamp, mapRange, random, snap, toArray, wrap. | [greensock/gsap-skills](https://github.com/greensock/gsap-skills) |
-| `gsap-performance` | Optimisation des animations — transforms, will-change, 60fps. | [greensock/gsap-skills](https://github.com/greensock/gsap-skills) |
+| `caveman` | Mode de communication ultra-compressé (-65% de tokens en sortie), plusieurs niveaux d'intensité (lite/full/ultra). | [JuliusBrussee/caveman](https://github.com/JuliusBrussee/caveman) |
+| `caveman-commit` | Génère des messages de commit ultra-compressés au format Conventional Commits. | [JuliusBrussee/caveman](https://github.com/JuliusBrussee/caveman) |
+| `caveman-review` | Commentaires de revue de code ultra-compressés, un par ligne : emplacement, problème, correctif. | [JuliusBrussee/caveman](https://github.com/JuliusBrussee/caveman) |
+| `caveman-compress` | Compresse des fichiers mémoire (CLAUDE.md, todos, préférences) en format caveman pour économiser des tokens d'entrée. | [JuliusBrussee/caveman](https://github.com/JuliusBrussee/caveman) |
+| `caveman-help` | Carte de référence rapide de tous les modes/skills/commandes caveman. | [JuliusBrussee/caveman](https://github.com/JuliusBrussee/caveman) |
+| `caveman-stats` | Affiche l'usage réel de tokens et les économies estimées de la session (via un hook, pas de calcul par le modèle). | [JuliusBrussee/caveman](https://github.com/JuliusBrussee/caveman) |
+| `cavecrew` | Guide de délégation à 3 sous-agents caveman-compressés (investigator/builder/reviewer) pour économiser le contexte principal. | [JuliusBrussee/caveman](https://github.com/JuliusBrussee/caveman) |
 
 ---
 
