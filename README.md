@@ -91,16 +91,58 @@ La bibliothèque regroupe actuellement plusieurs familles de skills.
 > explique la provenance à la place. La colonne **Source** ci-dessous pointe
 > vers le dépôt d'origine de chaque skill.
 
-## 🧠 Agents & Tests
+# 🧑 Mes skills (créés par moi)
+
+Skills que j'ai écrits moi-même, sans dépôt externe derrière.
+
+## 🛠️ Productivité / workflow perso
 
 | Skill | Description | Source |
 |---------|-------------|--------|
-| `test-agent` | Framework de test pour agents IA avec génération automatique de scénarios, exécution sandboxée et rapport détaillé. | Original (aucun dépôt public identifié) |
 | `context-keeper` | Crée, met à jour et restaure un fichier de contexte maître capturant l'état de tous les projets en cours pour reprendre instantanément dans n'importe quelle conversation. | Original (skill personnel) |
+| `stack-ia` | Compose une "stack" de skills à partir de **cette bibliothèque** (pas de l'écosystème externe, voir `find-skills` pour ça) pour un projet donné — appli, site, logiciel, workflow n8n, branding... Analyse le projet, consulte le catalogue interne (`references/catalog.md`), et recommande un sous-ensemble pertinent organisé par phase. | Original (skill personnel) |
+| `git-github` | Automatisation Git & GitHub de bout en bout : commits conventionnels, push/pull, branches, PR (création et revue), issues, GitHub Actions, Dependabot, releases via release-please. | Original (skill personnel) |
+
+---
+
+## 💡 Idéation / créativité
+
+| Skill | Description | Source |
+|---------|-------------|--------|
 | `brainstorming` | Facilitation de sessions de brainstorming/idéation (HMW, SCAMPER, Crazy 8s, brainwriting...), sélection automatique de la méthode adaptée. | Original (skill personnel) |
 | `naming` | Naming créatif pour projets, artistes IA/musicaux, agents IA et workflows — shortlist commentée avec taglines. | Original (skill personnel) |
 
 ---
+
+## 🎨 Design / UX / Dev visuel
+
+| Skill | Description | Source |
+|---------|-------------|--------|
+| `figma-to-code` | Convertit une maquette Figma en code HTML/CSS, React ou Vue pixel-perfect. | Original (skill personnel) |
+| `html-to-figma` | Convertit des fichiers HTML/CSS en maquette Figma pixel-perfect via le MCP Figma. | Original (skill personnel) |
+| `notion-template-designer` | Crée des templates Notion visuellement soignés (dashboards, trackers, portfolios...) via recherche d'inspiration et le MCP Notion. | Original (skill personnel) |
+
+---
+
+## ♿ Accessibilité
+
+| Skill | Description | Source |
+|---------|-------------|--------|
+| `color-contrast-checker` | Analyse le contraste de couleurs d'une image (maquette, capture d'écran) et produit un rapport d'accessibilité WCAG/RGAA. | Original (skill personnel) |
+
+---
+
+## 🧠 QA / Agents
+
+| Skill | Description | Source |
+|---------|-------------|--------|
+| `test-agent` | Framework de test pour agents IA avec génération automatique de scénarios, exécution sandboxée et rapport détaillé. | Original (aucun dépôt public identifié) |
+
+---
+
+# 🌐 Skills importés d'internet
+
+Skills importés depuis des dépôts publics, des marketplaces officielles ou des produits tiers — voir la colonne **Source** pour l'origine exacte de chacun.
 
 ## 🔎 Découverte de skills
 
@@ -109,14 +151,6 @@ La bibliothèque regroupe actuellement plusieurs familles de skills.
 | `find-skills` | Aide à découvrir et installer des skills de l'écosystème open (via `npx skills find`), avec vérification de la réputation/popularité avant recommandation. | [vercel-labs/skills](https://github.com/vercel-labs/skills) (officiel Vercel Labs) |
 | `frontend-design` | Design frontend distinctif et haut de gamme (direction artistique, typographie, choix qui évitent l'esthétique générique IA). | [anthropics/skills](https://github.com/anthropics/skills) (officiel Anthropic) |
 | `web-design-guidelines` | Revue de code UI selon les Web Interface Guidelines (accessibilité, performance, UX — 100+ règles). | [vercel-labs/agent-skills](https://github.com/vercel-labs/agent-skills) (officiel Vercel Labs) |
-
----
-
-## 🧭 Composition de stack
-
-| Skill | Description | Source |
-|---------|-------------|--------|
-| `stack-ia` | Compose une "stack" de skills à partir de **cette bibliothèque** (pas de l'écosystème externe, voir `find-skills` pour ça) pour un projet donné — appli, site, logiciel, workflow n8n, branding... Analyse le projet, consulte le catalogue interne (`references/catalog.md`), et recommande un sous-ensemble pertinent organisé par phase. | Original (skill personnel) |
 
 ---
 
@@ -160,7 +194,6 @@ La bibliothèque regroupe actuellement plusieurs familles de skills.
 | `banner-design` | Création de bannières marketing et visuels promotionnels. | ClaudeKit Marketing Kit (payant, pas de dépôt public) |
 | `canvas-design` | Production d'œuvres visuelles, affiches et posters. | [anthropics/skills](https://github.com/anthropics/skills) (officiel Anthropic) |
 | `brand-guidelines` | Application de la charte visuelle officielle Anthropic. | [anthropics/skills](https://github.com/anthropics/skills) (officiel Anthropic) |
-| `notion-template-designer` | Crée des templates Notion visuellement soignés (dashboards, trackers, portfolios...) via recherche d'inspiration et le MCP Notion. | Original (skill personnel) |
 
 ---
 
@@ -199,9 +232,6 @@ La bibliothèque regroupe actuellement plusieurs familles de skills.
 | `figma-design-to-code` | Transformation rigoureuse de designs Figma en composants réels. | [figma/mcp-server-guide](https://github.com/figma/mcp-server-guide) (officiel Figma) |
 | `stitch-skill` | Workflow compatible Google Stitch. | [Leonxlnx/taste-skill](https://github.com/Leonxlnx/taste-skill) |
 | `output-skill` | Force des livrables complets sans placeholders. | [Leonxlnx/taste-skill](https://github.com/Leonxlnx/taste-skill) |
-| `figma-to-code` | Convertit une maquette Figma en code HTML/CSS, React ou Vue pixel-perfect. | Original (skill personnel) |
-| `html-to-figma` | Convertit des fichiers HTML/CSS en maquette Figma pixel-perfect via le MCP Figma. | Original (skill personnel) |
-| `git-github` | Automatisation Git & GitHub de bout en bout : commits conventionnels, push/pull, branches, PR (création et revue), issues, GitHub Actions, Dependabot, releases via release-please. | Original (skill personnel) |
 
 ---
 
@@ -213,14 +243,6 @@ La bibliothèque regroupe actuellement plusieurs familles de skills.
 | `uxr-preparation` | Prépare des entretiens UXR semi-directifs de A à Z (cadrage, profil participant, guide en 5 phases, checklist, grille de notes, biais à surveiller) et écrit dans Notion. | Compte Claude (pas de dépôt public identifié) |
 | `uxr-synthese` | Analyse et synthétise des notes d'entretiens (grille Dit/Fait/Ressent/Besoin, affinity mapping, insights priorisés, persona, patterns cross-entretiens) et écrit dans Notion. | Compte Claude (pas de dépôt public identifié) |
 | `uxr-recherche-secondaire` | Mène une recherche secondaire UX (desk research) rigoureuse : sources notées par fiabilité, triangulation, insights avec niveau de confiance, restitution exportable en Word. | Compte Claude (pas de dépôt public identifié) |
-
----
-
-## ♿ Accessibilité
-
-| Skill | Description | Source |
-|---------|-------------|--------|
-| `color-contrast-checker` | Analyse le contraste de couleurs d'une image (maquette, capture d'écran) et produit un rapport d'accessibilité WCAG/RGAA. | Original (skill personnel) |
 
 ---
 
