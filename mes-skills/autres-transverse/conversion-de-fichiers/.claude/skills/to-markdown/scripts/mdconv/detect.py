@@ -169,7 +169,27 @@ def _sniff_broken_zip(path: Path) -> Detected:
         for prefix, fmt in (("word/", "docx"), ("ppt/", "pptx"), ("xl/", "xlsx")):
             if any(n.startswith(prefix) for n in names):
                 return Detected(fmt, note="fichier tronqué ou abîmé")
+    if "mimetype" in names:                       # OpenDocument et EPUB : premier membre, stocké sans compression
+        mt = _first_stored_member(path, "mimetype")
+        fmt = {"application/epub+zip": "epub", "application/vnd.oasis.opendocument.text": "odt",
+               "application/vnd.oasis.opendocument.spreadsheet": "ods", "application/vnd.oasis.opendocument.presentation": "odp"}.get(mt)
+        if fmt:
+            return Detected(fmt, note="fichier tronqué ou abîmé")
     return Detected("zip", note="zip corrompu")
+
+
+def _first_stored_member(path: Path, name: str) -> str:
+    """Contenu texte du premier membre d'un ZIP s'il porte ce nom et n'est pas compressé (cas du « mimetype »)."""
+    with open(path, "rb") as f:
+        head = f.read(4096)
+    if head[:4] != b"PK\x03\x04":
+        return ""
+    method = int.from_bytes(head[8:10], "little")
+    csize = int.from_bytes(head[18:22], "little")
+    nlen, xlen = int.from_bytes(head[26:28], "little"), int.from_bytes(head[28:30], "little")
+    if head[30:30 + nlen].decode("ascii", "ignore") != name or method != 0:
+        return ""
+    return head[30 + nlen + xlen:30 + nlen + xlen + csize].decode("ascii", "ignore").strip()
 
 
 def _sniff_zip(path: Path, ext: str) -> Detected:
