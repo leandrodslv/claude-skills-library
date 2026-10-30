@@ -17,6 +17,7 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from .core import Unsupported
 from .pdf_crypt import Decryptor, first_id
+from .textflow import looks_unfinished
 
 MAX_PAGES = 5000
 MAX_STREAM = 256 << 20
@@ -291,7 +292,7 @@ class PdfDoc:
                 pass
         for num, off in list(self.offsets.items()):        # PDF 1.5 : le « trailer » est le dictionnaire d'un flux /XRef (jamais chiffré)
             if b"/XRef" in data[off:off + 300]:
-                o = self.get(num)
+                o = self.obj(num)
                 if isinstance(o, Stream) and o.d.get("Type") == "XRef":
                     for k, v in o.d.items():
                         self.trailer.setdefault(k, v)
@@ -299,19 +300,23 @@ class PdfDoc:
             enc = self.get(self.trailer["Encrypt"])
             if not isinstance(enc, dict):
                 raise Unsupported("dictionnaire /Encrypt illisible")
-            deref = lambda x: self.get(x) if isinstance(x, Ref) else x  # noqa: E731  (get() prend aussi un entier pour un numéro d'objet)
+            deref = self.get
             self.crypt = Decryptor(enc, first_id(self.trailer, deref), deref)     # lève Protected si mot de passe requis
             self.cache = {k: v for k, v in self.cache.items() if not isinstance(v, Stream)}
         self._load_objstm()
 
     # -- accès ----------------------------------------------------------
     def get(self, ref: Any) -> Any:
+        """Déréférence une référence indirecte ; toute autre valeur (entier, nom, dictionnaire…) est rendue telle quelle.
+
+        Un entier n'est JAMAIS un numéro d'objet ici : « /N 142 » ou « /Widths [500 600] » sont des valeurs.
+        Pour aller chercher un objet par son numéro, passer par `obj()`.
+        """
         if isinstance(ref, Ref):
-            num = ref.num
-        elif isinstance(ref, int) and not isinstance(ref, bool):
-            num = ref
-        else:
-            return ref
+            return self.obj(ref.num)
+        return ref
+
+    def obj(self, num: int) -> Any:
         if num in self.cache:
             return self.cache[num]
         if num in self.compressed:
@@ -389,7 +394,7 @@ class PdfDoc:
             head = self.data[off:off + 400]
             if b"/ObjStm" not in head:
                 continue
-            st = self.get(num)
+            st = self.obj(num)
             if not isinstance(st, Stream) or st.d.get("Type") != "ObjStm":
                 continue
             body = self.decode(st)
@@ -411,14 +416,14 @@ class PdfDoc:
     def pages(self) -> List[Dict[str, Any]]:
         root = self.get(self.trailer.get("Root"))
         if not isinstance(root, dict):
-            root = next((o for n in list(self.offsets) + list(self.compressed) for o in [self.get(n)]
+            root = next((o for n in list(self.offsets) + list(self.compressed) for o in [self.obj(n)]
                          if isinstance(o, dict) and o.get("Type") == "Catalog"), None)
         out: List[Dict[str, Any]] = []
         if isinstance(root, dict) and root.get("Pages"):
             self._walk(self.get(root["Pages"]), {}, out, set())
         if not out:  # arbre cassé : toutes les pages, par numéro d'objet
             for num in sorted(set(self.offsets) | set(self.compressed)):
-                o = self.get(num)
+                o = self.obj(num)
                 if isinstance(o, dict) and o.get("Type") == "Page":
                     out.append(dict(o))
         return out[:MAX_PAGES]
@@ -1107,7 +1112,7 @@ def _heading_level(ln: List[Frag], text: str, body: float, levels: List[Tuple[fl
                    med: float, after_gap: bool) -> int:
     """0 si la ligne n'est pas un titre ; sinon niveau 1-5 déduit de la taille (ou du gras) de la police."""
     words = len(text.split())
-    if not text or words > 16 or len(text) > 140 or text[-1] in ".,;" or widest_gap > med * 2.2 or not body:
+    if not text or words > 16 or len(text) > 140 or text[-1] in ".,;" or widest_gap > med * 2.2 or not body or text.count("(") > text.count(")"):
         return 0
     visible = [f for f in ln if f.text.strip()]
     chars = sum(len(f.text.strip()) for f in visible) or 1
@@ -1117,7 +1122,7 @@ def _heading_level(ln: List[Frag], text: str, body: float, levels: List[Tuple[fl
         for top, level in levels:
             if size >= top * 0.94:
                 return level
-    if after_gap and words <= 12 and all(f.bold for f in visible) and not re.fullmatch(r"[\d\W]+", text):
+    if after_gap and words <= 12 and all(f.bold for f in visible) and not re.fullmatch(r"[\d\W]+", text) and not looks_unfinished(text):
         return min((max((lv for _s, lv in levels), default=1) + 1) if levels else 2, 5)
     return 0
 

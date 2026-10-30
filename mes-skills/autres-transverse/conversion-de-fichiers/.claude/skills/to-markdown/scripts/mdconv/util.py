@@ -540,6 +540,47 @@ def ext_from_bytes(data: bytes, fallback: str = "bin") -> str:
 # Divers
 # --------------------------------------------------------------------------
 
+_LONE_SURROGATE = re.compile("[\ud800-\udfff]")
+
+
+def scrub_surrogates(text: str) -> str:
+    """Remplace les substituts UTF-16 isolés (« \\ud83d » d'un JSON mal formé) par U+FFFD : ils ne s'encodent pas en UTF-8."""
+    return _LONE_SURROGATE.sub("\ufffd", text) if text else text
+
+
+def utf16_without_bom(sample: bytes) -> Optional[str]:
+    """« utf-16-le » / « utf-16-be » si l'échantillon en a le motif (un octet sur deux est nul), sinon None."""
+    s = sample[:8192]
+    if len(s) < 4:
+        return None
+    even, odd = s[0::2], s[1::2]
+    z_even, z_odd = even.count(0) / len(even), odd.count(0) / len(odd)
+    if z_odd >= 0.3 and z_even <= 0.05:
+        return "utf-16-le"
+    if z_even >= 0.3 and z_odd <= 0.05:
+        return "utf-16-be"
+    return None
+
+
+def nul_tolerable(sample: bytes) -> bool:
+    """Du texte (et non un binaire) qui contient des octets NUL : UTF-16 sans BOM, ou texte UTF-8/ASCII parsemé de NUL.
+
+    Sans les NUL, il doit rester au moins 95 % de caractères imprimables et presque aucun octet invalide ;
+    un binaire (archive, exécutable, image) ne passe jamais ce filtre.
+    """
+    if b"\x00" not in sample:
+        return True
+    if utf16_without_bom(sample):
+        return True
+    s = sample[:8192]
+    stripped = s.replace(b"\x00", b"")
+    if not stripped or s.count(0) / len(s) > 0.25:
+        return False
+    txt = stripped.decode("utf-8", "replace")
+    printable = sum(1 for c in txt if c.isprintable() or c in "\t\n\r")
+    return printable / len(txt) >= 0.95 and txt.count("\ufffd") / len(txt) <= 0.02
+
+
 def decode_text(data: bytes) -> Tuple[str, str]:
     """Décode un texte d'encodage inconnu → (texte, encodage).
 
@@ -548,6 +589,12 @@ def decode_text(data: bytes) -> Tuple[str, str]:
     grec, hébreu, arabe, CJK) une devinette sans dépendance (``encodings``) ; en dernier recours charset_normalizer
     s'il est présent, sinon cp1252/latin-1. Le résultat ne dépend donc pas des modules installés.
     """
+    if b"\x00" in data[:8192] and data[:2] not in (b"\xff\xfe", b"\xfe\xff") and data[:3] != b"\xef\xbb\xbf":
+        enc16 = utf16_without_bom(data)
+        if enc16:
+            return data.decode(enc16, "replace"), enc16
+        if nul_tolerable(data[:8192]):
+            return decode_text(data.replace(b"\x00", b""))
     if data[:3] == b"\xef\xbb\xbf":
         return data[3:].decode("utf-8", "replace"), "utf-8-sig"
     if data[:4] in (b"\xff\xfe\x00\x00", b"\x00\x00\xfe\xff"):
@@ -581,6 +628,16 @@ def decode_text(data: bytes) -> Tuple[str, str]:
         return data.decode(enc), enc
     except UnicodeDecodeError:
         return data.decode("latin-1"), "latin-1"
+
+
+def short_error(raw, limit: int = 200) -> str:
+    """Une ligne utile d'une sortie d'erreur d'outil externe : la dernière ligne d'un traceback (l'exception), sinon la première ligne."""
+    text = raw.decode("utf-8", "replace") if isinstance(raw, (bytes, bytearray)) else str(raw)
+    lines = [ln.strip() for ln in text.splitlines() if ln.strip()]
+    if not lines:
+        return "sortie d'erreur vide"
+    line = lines[-1] if any(ln.startswith("Traceback (most recent call last)") for ln in lines) else lines[0]
+    return line[:limit]
 
 
 def first(items: Iterable, default=None):

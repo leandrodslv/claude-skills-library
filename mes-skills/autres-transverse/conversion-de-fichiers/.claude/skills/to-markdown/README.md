@@ -70,6 +70,8 @@ to-markdown/
 ## Banc d'essai et documents difficiles
 
 - [`benchmark/`](benchmark/README.md) — mesure reproductible (rappel, précision, structure) contre markitdown, pandoc, pymupdf4llm, pdftotext sur des documents à contenu connu ; résultats dans `benchmark/RESULTS.md`.
+- [`benchmark/compare_pdf_engines.py`](benchmark/README.md) — compare pdftotext et le lecteur natif sur VOS PDF (rappel, ordre de lecture, titres, tableaux, bruit) ; c'est avec lui que le choix du moteur PDF a été arrêté (`references/engines.md`).
+- [`benchmark/extreme/`](benchmark/extreme/README.md) — 86 cas extrêmes (25 000 lignes Excel, PDF de 400 pages, bombes zip/PNG, XXE, archives piégées, fichiers vides, tronqués ou à la mauvaise extension, Unicode, pièges Markdown) lancés par la vraie ligne de commande avec plafonds de temps et de mémoire (`EXTREME_RESULTS.md`).
 - [`benchmark/hard/`](benchmark/hard/README.md) — 42 documents très difficiles (colonnes, cellules fusionnées, scans, formes libres, bruit web, encodages, fichiers abîmés) avec ce qu'on doit y retrouver : sert à repérer les limites et à mesurer chaque amélioration (`HARD_RESULTS.md`).
 
 ## Tests

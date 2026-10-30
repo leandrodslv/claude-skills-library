@@ -49,6 +49,7 @@ class Outcome:
     seconds: float = 0.0
     error: str = ""
     attempts: List[Dict[str, Any]] = field(default_factory=list)
+    truncated: Dict[str, Any] = field(default_factory=dict)   # {kept, total, full_data, tables} quand des lignes ont été coupées
     children: List[Dict[str, Any]] = field(default_factory=list)
 
     @property
@@ -149,6 +150,27 @@ def _table_cells(md: str) -> List[str]:
     return cells
 
 
+def _same_reading(a: str, b: str, floor_words: float = 0.97, floor_pairs: float = 0.95) -> bool:
+    """Deux lectures du même PDF portent-elles le même texte, dans le même ordre ? (sans référence extérieure)
+
+    Mots : au moins 97 % de part et d'autre. Couples de mots consécutifs : au moins 95 % de part et d'autre — deux colonnes
+    entremêlées gardent leurs mots mais perdent cette part. Étalonné sur des PDF réels (benchmark/compare_pdf_engines.py) :
+    le lecteur natif lit comme pdftotext sur un formulaire ou un texte courant (≥ 98 %) mais pas sur un article à deux colonnes
+    (86 %), un formulaire à champs superposés (précision 33 %) ni un tableau sans bordures (24 %).
+    """
+    from collections import Counter
+
+    from .util import md_plain, words
+
+    wa, wb = words(md_plain(a)), words(md_plain(b))
+    if not wa or not wb:
+        return False
+    pa, pb = Counter(zip(wa, wa[1:])), Counter(zip(wb, wb[1:]))
+    cw, cp = sum((Counter(wa) & Counter(wb)).values()), sum((pa & pb).values())
+    return all(x >= floor_words for x in (cw / len(wa), cw / len(wb))) and all(
+        x >= floor_pairs for x in (cp / max(sum(pa.values()), 1), cp / max(sum(pb.values()), 1)))
+
+
 def _native_pdf_tables_win(best: tuple, specs: list, src: Path, base: Ctx, out: "Outcome") -> Optional[tuple]:
     """Un moteur PDF externe peut défaire un tableau (cellules coupées en deux, colonnes décalées) sans que la note de qualité
     le voie : le texte y est, au mauvais endroit. Le lecteur natif, très rapide, relit alors le même fichier ; si ses tableaux
@@ -168,8 +190,8 @@ def _native_pdf_tables_win(best: tuple, specs: list, src: Path, base: Ctx, out: 
         return None
     res.engine, res.fmt = "pdflite", res.fmt or "pdf"
     native_cells = _table_cells(res.markdown)
-    if len(native_cells) < 4:
-        ctx.cleanup()
+    if len(native_cells) < 4 or not _same_reading(best[1].markdown, res.markdown):
+        ctx.cleanup()       # le natif ne passe devant que s'il lit le même texte dans le même ordre : sinon son tableau n'est pas un gain
         return None
     other = " " + " ".join(words(md_plain(best[1].markdown))) + " "
     missing = [c for c in native_cells if f" {c} " not in other]
@@ -224,6 +246,33 @@ def _order_specs(fmt: str, opts: Options):
     return specs
 
 
+_TRUNC_PATTERNS = (
+    # (motif, indices de : lignes gardées, lignes en plus, lignes au total, lien du jeu complet) — None = non applicable
+    (re.compile(r"_Tableau tronqué dans ce fichier \((\d+) lignes au total\) — données complètes : \[[^\]]+\]\(([^)]+)\)_"), None, None, 1, 2),
+    (re.compile(r"_Tableau tronqué \((\d+) lignes au total\)\._"), None, None, 1, None),
+    (re.compile(r"_… (\d+) ligne\(s\) de plus dans le fichier source \(aperçu limité à (\d+) lignes\)\._"), 2, 1, None, None),
+    (re.compile(r"_… (\d+) ligne\(s\) de plus \(aperçu limité à (\d+)\)\._"), 2, 1, None, None),
+    (re.compile(r"_… (\d+) enregistrement\(s\) de plus \(aperçu limité à (\d+)\)\._"), 2, 1, None, None),
+    (re.compile(r"\| … \((\d+) lignes de plus\) \|"), None, 1, None, None),
+)
+
+
+def find_truncations(body: str, cap: int) -> Dict[str, Any]:
+    """Coupes de tableaux/listes lues dans le Markdown produit : {kept, total, full_data, tables} (vide si rien n'a été coupé)."""
+    kept = total = tables = 0
+    full: List[str] = []
+    for rx, g_kept, g_more, g_total, g_link in _TRUNC_PATTERNS:
+        for m in rx.finditer(body):
+            if rx is _TRUNC_PATTERNS[-1][0] and "_Tableau tronqué" in body[m.end():m.end() + 400]:
+                continue      # la ligne « … (N lignes de plus) » est déjà décrite par la note qui la suit
+            k = int(m.group(g_kept)) if g_kept else cap
+            t = int(m.group(g_total)) if g_total else k + int(m.group(g_more))
+            kept, total, tables = kept + k, total + t, tables + 1
+            if g_link and m.group(g_link) not in full:
+                full.append(m.group(g_link))
+    return {"kept": kept, "total": total, "full_data": full, "tables": tables} if tables else {}
+
+
 def convert_to_memory(src: Path, opts: Options, rel: str = "", assets_dir: str = "assets",
                       det: Optional[Detected] = None, verbose: bool = False) -> Outcome:
     """Convertit un fichier sans rien écrire. Ne lève jamais : les échecs sont dans ``Outcome``."""
@@ -272,7 +321,8 @@ def convert_to_memory(src: Path, opts: Options, rel: str = "", assets_dir: str =
             ctx.cleanup()
             break
         except Unsupported as exc:
-            out.attempts.append({"engine": spec.name, "status": "non pris en charge", "detail": str(exc)})
+            detail = str(exc) + (f"\n{exc.detail}" if verbose and getattr(exc, "detail", "") else "")
+            out.attempts.append({"engine": spec.name, "status": "non pris en charge", "detail": detail})
             ctx.cleanup()
             continue
         except MemoryError:
@@ -338,6 +388,11 @@ def convert_to_memory(src: Path, opts: Options, rel: str = "", assets_dir: str =
     if blind:
         _flag_informative_images(body, ctx)
         ctx.warn(f"{blind} image(s) sans texte alternatif (![](…)) : à ouvrir si leur contenu compte (schéma, capture, graphique)")
+    out.truncated = find_truncations(body, opts.table_rows)
+    if out.truncated:
+        t = out.truncated
+        where = f" — jeu complet : {', '.join(t['full_data'])}" if t["full_data"] else " — le fichier source garde l'intégralité"
+        ctx.warn(f"contenu tronqué : {t['kept']} ligne(s) gardée(s) sur {t['total']} dans {t['tables']} tableau(x){where} (plafond --table-rows {opts.table_rows})")
     for n in score.notes:
         ctx.warn(n)
     if det.ext_mismatch:
@@ -349,7 +404,7 @@ def convert_to_memory(src: Path, opts: Options, rel: str = "", assets_dir: str =
     out.body = body
     if ctx.vision:
         out.status = "needs_vision"
-    elif score.value < opts.quality_threshold or ctx.unread:
+    elif score.value < opts.quality_threshold or ctx.unread or (out.result is not None and out.result.meta.get("_rescue")):
         out.status = "warn"
     return out
 
@@ -399,6 +454,8 @@ def report_entry(out: Outcome, out_md: Optional[str] = None) -> Dict[str, Any]:
         d["warnings"] = list(out.ctx.warnings)
     if out.ctx and out.ctx.vision:
         d["vision"] = [v.as_dict() for v in out.ctx.vision]
+    if out.truncated:
+        d["truncated"] = out.truncated
     if out.ctx and out.ctx.unread:
         d["unread"] = list(out.ctx.unread)
     if out.ctx and out.ctx.previews:

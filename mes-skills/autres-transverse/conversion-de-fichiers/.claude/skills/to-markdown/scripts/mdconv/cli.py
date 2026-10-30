@@ -20,8 +20,8 @@ from .core import VERSION, Options
 from .detect import detect
 from .pipeline import convert_to_memory
 from .writer import (InputFile, Planned, build_index, load_cache, options_signature, plan_outputs,
-                     save_cache, write_combined, write_outcome, write_report)
-from .util import sha256_file
+                     save_cache, utf8, write_combined, write_outcome, write_report)
+from .util import scrub_surrogates, sha256_file
 
 SKIP_DIRS = {"node_modules", "__pycache__", ".git", ".svn", ".hg", ".idea", ".vscode", ".venv", "venv"}
 SKIP_FILES = {"thumbs.db", "desktop.ini", ".ds_store"}
@@ -485,7 +485,7 @@ def main(argv: Optional[List[str]] = None) -> int:
 
     if to_stdout:
         text = next((e.get("_stdout") for e in results if e.get("_stdout")), "")
-        sys.stdout.write(text)
+        sys.stdout.write(scrub_surrogates(text))
         for e in results:
             if e["status"] in ("error", "unsupported"):
                 print(f"[{e['status']}] {e.get('error', '')}", file=sys.stderr)
@@ -504,14 +504,14 @@ def main(argv: Optional[List[str]] = None) -> int:
         from .readable import build_report_md
         from .writer import atomic_write
 
-        atomic_write(out_root / "RAPPORT.md", build_report_md(report).encode("utf-8"))
+        atomic_write(out_root / "RAPPORT.md", utf8(build_report_md(report)))
     if (len(real) > 1 or args.combined) and not args.no_index and not args.in_place:
-        (out_root / "INDEX.md").write_text(build_index(real, out_root), encoding="utf-8")
+        (out_root / "INDEX.md").write_bytes(utf8(build_index(real, out_root)))
     if args.compare:
         _print_compare(results)
     _summary(report, out_root, args)
     if args.json:
-        print(json.dumps(report, ensure_ascii=False, indent=2))
+        print(scrub_surrogates(json.dumps(report, ensure_ascii=False, indent=2)))
     bad = report["summary"]["by_status"]
     return 1 if (bad.get("error", 0) or bad.get("unsupported", 0)) and not (bad.get("ok", 0) + bad.get("unchanged", 0) + bad.get("warn", 0) + bad.get("needs_vision", 0)) else 0
 

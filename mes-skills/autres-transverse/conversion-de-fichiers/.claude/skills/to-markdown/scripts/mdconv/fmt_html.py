@@ -17,6 +17,23 @@ from .core import Ctx, Result, Unsupported, engine
 from .inline import Fmt, Span, alt_clean, md_url, render_spans
 from .util import clean_text, decode_text, esc_inline, fence, md_table
 
+_EDIT_ICON = re.compile(r"(?i)(?:voir et modifier les données sur wikidata|edit (?:this )?(?:at|on) wikidata|view or edit .*wikidata|"
+                        r"modifier sur wikidata|bearbeiten auf wikidata|/Blue_pencil\.svg|/Wikidata-logo|OOjs_UI_icon_edit)")
+_TRACKING = re.compile(r"(?i)^(?:utm_[a-z_]+|fbclid|gclid|mc_eid|mc_cid)=")
+
+
+def clean_remote_url(url: str) -> str:
+    """URL distante propre : « //hôte/… » reçoit https:, les paramètres de suivi (utm_*, fbclid, gclid…) sont retirés."""
+    if url.startswith("//"):
+        url = "https:" + url
+    if "?" in url and re.match(r"(?i)^https?://", url):
+        base, _, rest = url.partition("?")
+        query, hash_, frag = rest.partition("#")
+        keep = [q for q in query.split("&") if q and not _TRACKING.match(q)]
+        url = base + ("?" + "&".join(keep) if keep else "") + ("#" + frag if hash_ else "")
+    return url
+
+
 VOID = {"area", "base", "br", "col", "embed", "hr", "img", "input", "link", "meta", "param", "source", "track", "wbr"}
 BLOCKS = {"address", "article", "aside", "blockquote", "body", "caption", "dd", "details", "dialog", "div", "dl", "dt",
           "fieldset", "figcaption", "figure", "footer", "form", "h1", "h2", "h3", "h4", "h5", "h6", "header", "hgroup",
@@ -658,7 +675,7 @@ class HtmlRenderer:
                 self.spans(c.children, f, out, heading)
 
     def resolve(self, url: str) -> str:
-        url = url.strip()
+        url = clean_remote_url(url.strip())
         if self.base and not re.match(r"^[a-zA-Z][\w+.-]*:", url) and not url.startswith(("//", "#")):
             from urllib.parse import urljoin
 
@@ -683,6 +700,8 @@ class HtmlRenderer:
         w, h = n.get("width", ""), n.get("height", "")
         if (w.isdigit() and int(w) <= 2) or (h.isdigit() and int(h) <= 2):
             return ""
+        if _EDIT_ICON.search(alt) or _EDIT_ICON.search(src):
+            return ""        # icône « modifier sur Wikidata » d'une infobox : de l'interface, pas du contenu
         if alt:
             self.src_parts.append(alt)
         m = re.match(r"data:image/([\w.+-]+);base64,(.*)$", src, re.S)
@@ -738,7 +757,7 @@ def decode_html(data: bytes) -> str:
     m = re.search(rb'<meta[^>]+charset=["\']?([\w-]+)', data[:4096], re.I)
     if m and not data.startswith((b"\xef\xbb\xbf", b"\xff\xfe", b"\xfe\xff")):
         try:
-            return data.decode(m.group(1).decode("ascii"), "replace")
+            return data.decode(m.group(1).decode("ascii"))   # strict : un charset déclaré mais faux (UTF-8 annoncé, latin-1 réel) ne doit pas semer des « � »
         except (LookupError, UnicodeDecodeError):
             pass
     return decode_text(data)[0]
