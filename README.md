@@ -150,6 +150,14 @@ Skills que j'ai écrits moi-même, sans dépôt externe derrière. Classés par
 |---------|-------------|--------|
 | `test-agent` | Framework de test pour agents IA avec génération automatique de scénarios, exécution sandboxée et rapport détaillé. | Original (aucun dépôt public identifié) |
 
+### Spécifications produit
+
+📁 `mes-skills/dev/specifications-produit/.claude/skills/<nom>/`
+
+| Skill | Description | Source |
+|---------|-------------|--------|
+| `prd-from-sources` | Rédige un PRD au format BMAD officiel à partir de documents déjà convertis en Markdown : chaque exigence cite sa source, un vérificateur (`check_prd.py`) contrôle sources, orphelins et références, rien n'est inventé. Suite de `to-markdown`. | Original (skill personnel) |
+
 ---
 
 ## 🔁 Autres / Transverse
@@ -185,6 +193,14 @@ Utile à tous les métiers utilisant Claude Code, pas seulement aux devs.
 |---------|-------------|--------|
 | `brainstorming` | Facilitation de sessions de brainstorming/idéation (HMW, SCAMPER, Crazy 8s, brainwriting...), sélection automatique de la méthode adaptée. | Original (skill personnel) |
 | `naming` | Naming créatif pour projets, artistes IA/musicaux, agents IA et workflows — shortlist commentée avec taglines. | Original (skill personnel) |
+
+### Conversion de fichiers
+
+📁 `mes-skills/autres-transverse/conversion-de-fichiers/.claude/skills/<nom>/`
+
+| Skill | Description | Source |
+|---------|-------------|--------|
+| `to-markdown` | Convertit n'importe quel fichier — Word, PowerPoint, Excel, OpenDocument, RTF, PDF (texte et scans, OCR), SVG et diagrammes (draw.io, Graphviz → Mermaid), HTML, EPUB, e-mails, notebooks, JSON/XML/YAML, images, archives, dossiers entiers — en Markdown fiable pour l'IA. Contrôle qualité automatique, moteurs externes optionnels (LibreOffice, poppler, tesseract, pandoc…) testés avant usage, lecture visuelle guidée pour ce qu'un script ne sait pas lire. 100 % local. | Original (skill personnel) |
 
 ---
 

@@ -6,7 +6,7 @@ importés) puis par métier et catégorie. Chaque skill se trouve dans
 `<chemin 📁>/.claude/skills/<nom>/`. Si un skill récemment ajouté n'apparaît
 pas ici, se rabattre sur un scan direct de `**/.claude/skills/*/SKILL.md`.
 
-**Total : 96 skills.**
+**Total : 98 skills.**
 
 > ℹ️ Les skills d'automatisation n8n (15), d'animation Motion/GSAP (8) et
 > `notion-template-designer` vivent dans le dépôt privé séparé
@@ -25,12 +25,16 @@ pas ici, se rabattre sur un scan direct de `**/.claude/skills/*/SKILL.md`.
 ### 💻 Dev — QA / Agents
 - **`test-agent`** (📁 `mes-skills/dev/qa-agents`) — Framework de test pour agents IA avec génération automatique de scénarios, exécution sandboxée et rapport détaillé. _(source : Original (aucun dépôt public identifié))_
 
+### 💻 Dev — Spécifications produit
+- **`prd-from-sources`** (📁 `mes-skills/dev/specifications-produit`) — Rédige un PRD au format BMAD à partir de documents sources convertis en Markdown (exigences citées, questions ouvertes, rien d'inventé) ; un vérificateur (`check_prd.py`) contrôle sources, orphelins et références. Suite de `to-markdown`. _(source : Original (skill personnel))_
+
 ### 🔁 Autres / Transverse
 - **`git-github`** (📁 `mes-skills/autres-transverse/git-github-accessible-aux-non-devs`) — Automatisation Git & GitHub de bout en bout : commits conventionnels, push/pull, branches, PR, issues, Actions, Dependabot, releases. Pensé pour rendre Git accessible à qui ne le maîtrise pas (designers, PM...), pas seulement aux devs. _(source : Original (skill personnel))_
 - **`context-keeper`** (📁 `mes-skills/autres-transverse/productivite-perso`) — Crée, met à jour et restaure un fichier de contexte maître capturant l'état de tous les projets en cours pour reprendre instantanément dans n'importe quelle conversation. _(source : Original (skill personnel))_
 - **`stack-ia`** (📁 `mes-skills/autres-transverse/productivite-perso`) — Compose une "stack" de skills à partir de cette bibliothèque pour un projet donné. _(source : Original (skill personnel))_
 - **`brainstorming`** (📁 `mes-skills/autres-transverse/ideation-creativite`) — Facilitation de sessions de brainstorming/idéation (HMW, SCAMPER, Crazy 8s, brainwriting...), sélection automatique de la méthode adaptée. _(source : Original (skill personnel))_
 - **`naming`** (📁 `mes-skills/autres-transverse/ideation-creativite`) — Naming créatif pour projets, artistes IA/musicaux, agents IA et workflows — shortlist commentée avec taglines. _(source : Original (skill personnel))_
+- **`to-markdown`** (📁 `mes-skills/autres-transverse/conversion-de-fichiers`) — Convertit n'importe quel fichier (Word, PowerPoint, Excel, OpenDocument, RTF, PDF texte/scanné avec OCR, SVG et diagrammes → Mermaid, HTML, EPUB, e-mails, notebooks, JSON/XML/YAML, images, archives, dossiers) en Markdown fiable pour l'IA : contrôle qualité automatique, moteurs externes optionnels testés avant usage, lecture visuelle guidée pour les scans et schémas, 100 % local. _(source : Original (skill personnel))_
 
 ## 🌐 Skills importés
 
