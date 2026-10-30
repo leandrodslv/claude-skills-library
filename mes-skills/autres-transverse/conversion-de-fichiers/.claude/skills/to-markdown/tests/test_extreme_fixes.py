@@ -8,7 +8,7 @@ import struct
 import zlib
 
 from common import Base
-from fixtures import make_docx, make_pptx, make_xlsx, para, slide_xml, sp
+from fixtures import make_docx, make_pdf, make_pptx, make_xlsx, para, slide_xml, sp
 
 from mdconv.cli import main
 from mdconv.detect import detect
@@ -312,3 +312,155 @@ class DeepNesting(Base):
             self.assertNotIn("RecursionError", out.error)
         else:                                     # ou bien le contenu est lu : aucun plantage dans les deux cas
             self.assertIn("fond", out.body)
+
+
+class RunningHeaders(Base):
+    @staticmethod
+    def _pages(first_line):
+        return [[(60, 800, first_line(i), 10), (60, 700, f"Corps de la page {i} avec assez de texte pour exister vraiment et rester lisible", 12),
+                 (60, 640, "Deuxième paragraphe du corps, distinct d'une page à l'autre " + "mot " * 6, 12)] for i in range(1, 7)]
+
+    def test_identical_header_is_removed_but_the_removal_is_reported(self):
+        p = make_pdf(self.tmp / "rapport.pdf", self._pages(lambda i: "Section 3 – Résultats"))
+        out = self.conv(p)
+        self.assertNotIn("Section 3 – Résultats", out.body)
+        self.assertTrue(any("en-tête/pied de page répété retiré" in w and "Section 3 – Résultats" in w for w in out.ctx.warnings), out.ctx.warnings)
+
+    def test_header_with_a_page_number_is_still_removed(self):
+        p = make_pdf(self.tmp / "numerote.pdf", self._pages(lambda i: f"Rapport annuel – page {i}"))
+        out = self.conv(p)
+        self.assertNotIn("Rapport annuel", out.body)
+        self.assertTrue(any("Rapport annuel" in w for w in out.ctx.warnings))
+
+    def test_lines_that_only_look_alike_are_real_text_and_stay(self):
+        p = make_pdf(self.tmp / "ressemblant.pdf", self._pages(lambda i: f"CHAPITRE-{i:04d} résultats détaillés"))
+        out = self.conv(p)
+        for i in range(1, 7):
+            self.assertIn(f"CHAPITRE-{i:04d}", out.body)
+        self.assertFalse(any("en-tête/pied" in w for w in out.ctx.warnings))
+
+
+class TruncationInEveryFormat(Base):
+    """Le champ `truncated` et son avertissement doivent accompagner TOUT tableau coupé, pas seulement Excel/CSV/JSON."""
+
+    N = 1300
+
+    def _check(self, out, total=None, kept=1000):
+        t = out.truncated
+        self.assertTrue(t, f"aucune troncature signalée ; avertissements : {out.ctx.warnings}")
+        self.assertEqual((t["kept"], t["total"], t["tables"]), (kept, total or self.N, 1), t)
+        self.assertTrue(any("contenu tronqué" in w for w in out.ctx.warnings), out.ctx.warnings)
+
+    def test_word_table(self):
+        rows = "".join(f"<w:tr><w:tc><w:p><w:r><w:t>L{i}</w:t></w:r></w:p></w:tc><w:tc><w:p><w:r><w:t>v{i}</w:t></w:r></w:p></w:tc></w:tr>" for i in range(self.N))
+        self._check(self.conv(make_docx(self.tmp / "t.docx", f"<w:tbl>{rows}</w:tbl>")), self.N, kept=1001)
+
+    def test_html_table(self):
+        rows = "".join(f"<tr><td>L{i}</td><td>v{i}</td></tr>" for i in range(self.N))
+        self._check(self.conv(self.write("t.html", f"<html><body><table>{rows}</table></body></html>")), kept=1001)
+
+    def test_opendocument_text_table(self):
+        from fixtures import make_odf
+        rows = "".join(f"<table:table-row><table:table-cell><text:p>L{i}</text:p></table:table-cell><table:table-cell><text:p>v{i}</text:p></table:table-cell></table:table-row>" for i in range(self.N))
+        out = self.conv(make_odf(self.tmp / "t.odt", "application/vnd.oasis.opendocument.text", f"<office:text><table:table>{rows}</table:table></office:text>"))
+        self._check(out, kept=1001)
+
+    def test_opendocument_spreadsheet(self):
+        from fixtures import make_odf
+        rows = "".join(f'<table:table-row><table:table-cell office:value-type="string"><text:p>L{i}</text:p></table:table-cell><table:table-cell office:value-type="float" office:value="{i}"><text:p>{i}</text:p></table:table-cell></table:table-row>' for i in range(self.N))
+        out = self.conv(make_odf(self.tmp / "t.ods", "application/vnd.oasis.opendocument.spreadsheet", f'<office:spreadsheet><table:table table:name="Feuil">{rows}</table:table></office:spreadsheet>'))
+        self._check(out)
+
+    def test_tsv_and_jsonl(self):
+        self._check(self.conv(self.write("t.tsv", "a\tb\n" + "".join(f"{i}\t{i}\n" for i in range(self.N)))), self.N)
+        self._check(self.conv(self.write("t.jsonl", "".join(f'{{"id": {i}, "v": "x{i}"}}\n' for i in range(self.N)))), self.N)
+
+    def test_a_table_below_the_cap_reports_nothing(self):
+        rows = "".join(f"<tr><td>L{i}</td></tr>" for i in range(50))
+        self.assertEqual(self.conv(self.write("p.html", f"<html><body><table>{rows}</table></body></html>")).truncated, {})
+
+
+def _deflate(src, dst):
+    """Recompresse un fichier ZIP (les fixtures sont stockées sans compression) : un vrai fichier tronqué coupe un flux deflate."""
+    import zipfile
+    with zipfile.ZipFile(src) as zin, zipfile.ZipFile(dst, "w", zipfile.ZIP_DEFLATED) as zout:
+        for info in zin.infolist():
+            zout.writestr(info.filename, zin.read(info.filename), compress_type=zipfile.ZIP_STORED if info.filename == "mimetype" else zipfile.ZIP_DEFLATED)
+    return dst
+
+
+class RescueOpenDocumentAndEpub(Base):
+    def _truncate(self, path, frac=0.6, name=None):
+        raw = path.read_bytes()
+        return self.write(name or ("coupe" + path.suffix), raw[: int(len(raw) * frac)])
+
+    def test_truncated_odt_gives_its_text_back(self):
+        from fixtures import make_odf
+        body = "<office:text><text:h text:outline-level=\"1\">TITRE-ODT</text:h>" + "".join(f"<text:p>Paragraphe {i} " + "mot " * 40 + "</text:p>" for i in range(500)) + "</office:text>"
+        src = _deflate(make_odf(self.tmp / "a.odt", "application/vnd.oasis.opendocument.text", body), self.tmp / "d.odt")
+        p = self._truncate(src)
+        self.assertEqual(detect(p).fmt, "odt")
+        out = self.conv(p)
+        self.assertEqual((out.status, out.result.engine), ("warn", "rescue"))
+        self.assertMd(out.body, "# TITRE-ODT", "Paragraphe 0 ", "Paragraphe 100 ")
+        self.assertNotMd(out.body, "Paragraphe 499 ")
+        self.assertTrue(any("possiblement incomplet" in ln for ln in out.body.splitlines()))
+
+    def test_truncated_ods_keeps_rows_and_flags_the_last_one(self):
+        from fixtures import make_odf
+        rows = "".join(f'<table:table-row><table:table-cell office:value-type="string"><text:p>LIGNE-{i:04d}</text:p></table:table-cell><table:table-cell office:value-type="float" office:value="{i}"><text:p>{i}</text:p></table:table-cell></table:table-row>' for i in range(3000))
+        src = _deflate(make_odf(self.tmp / "a.ods", "application/vnd.oasis.opendocument.spreadsheet", f'<office:spreadsheet><table:table table:name="Données">{rows}</table:table></office:spreadsheet>'), self.tmp / "d.ods")
+        out = self.conv(self._truncate(src, 0.5))
+        self.assertEqual(out.result.engine, "rescue")
+        self.assertMd(out.body, "## Données", "LIGNE-0000", "dernière ligne possiblement incomplète")
+
+    def test_truncated_odp_gives_slides(self):
+        from fixtures import make_odf
+        pages = "".join(f'<draw:page draw:name="p{i}"><draw:frame><draw:text-box><text:p>Titre {i}</text:p><text:p>point {i} ' + "x " * 50 + "</text:p></draw:text-box></draw:frame></draw:page>" for i in range(1, 200))
+        src = _deflate(make_odf(self.tmp / "a.odp", "application/vnd.oasis.opendocument.presentation", f"<office:presentation>{pages}</office:presentation>"), self.tmp / "d.odp")
+        out = self.conv(self._truncate(src, 0.5))
+        self.assertEqual(out.result.engine, "rescue")
+        self.assertMd(out.body, "## Slide 1 — Titre 1")
+
+    def test_truncated_epub_keeps_the_first_chapters_in_spine_order(self):
+        from fixtures import make_epub
+        chapters = [(f"Chapitre {i}", f"<h1>CHAPITRE-{i:03d}</h1><p>" + "texte " * 120 + "</p>") for i in range(120)]
+        src = _deflate(make_epub(self.tmp / "a.epub", chapters), self.tmp / "d.epub")
+        p = self._truncate(src, 0.5)
+        self.assertEqual(detect(p).fmt, "epub")
+        out = self.conv(p)
+        self.assertEqual((out.status, out.result.engine), ("warn", "rescue"))
+        self.assertMd(out.body, "CHAPITRE-000", "CHAPITRE-010")
+        self.assertNotMd(out.body, "CHAPITRE-119")
+
+    def test_intact_opendocument_and_epub_never_go_through_rescue(self):
+        from fixtures import make_epub, make_odf
+        self.assertEqual(self.conv(make_odf(self.tmp / "ok.odt", "application/vnd.oasis.opendocument.text", "<office:text><text:p>Bonjour</text:p></office:text>")).result.engine, "native")
+        self.assertEqual(self.conv(make_epub(self.tmp / "ok.epub", [("C", "<p>Bonjour</p>")])).result.engine, "native")
+
+
+class RescuedSpreadsheetValues(Base):
+    STYLES = ('<styleSheet><numFmts count="1"><numFmt numFmtId="164" formatCode="dd/mm/yyyy"/></numFmts>'
+              '<cellXfs count="3"><xf numFmtId="0"/><xf numFmtId="14"/><xf numFmtId="164"/></cellXfs></styleSheet>')
+
+    def test_dates_booleans_and_formulas(self):
+        from mdconv.fmt_rescue import _xlsx
+        sheet = (b'<worksheet><sheetData><row r="1"><c r="A1" t="inlineStr"><is><t>jour</t></is></c><c r="B1" t="inlineStr"><is><t>heure</t></is></c>'
+                 b'<c r="C1" t="inlineStr"><is><t>ok</t></is></c><c r="D1" t="inlineStr"><is><t>somme</t></is></c></row>'
+                 b'<row r="2"><c r="A2" s="1"><v>45292</v></c><c r="B2" s="2"><v>45292.5</v></c><c r="C2" t="b"><v>1</v></c><c r="D2"><f>SUM(E1:E3)</f></c><c r="E2"><v>7</v></c></row>'
+                 b'</sheetData></worksheet>')
+        md = _xlsx({"xl/worksheets/sheet1.xml": sheet, "xl/styles.xml": self.STYLES.encode(), "xl/workbook.xml": b'<workbook><sheets><sheet name="S" sheetId="1"/></sheets></workbook>'})
+        self.assertMd(md, "2024-01-01", "2024-01-01 12:00:00", "TRUE", "=SUM(E1:E3)")
+        self.assertNotIn("45292", md)
+
+    def test_a_cached_formula_result_wins_over_the_formula_text(self):
+        from mdconv.fmt_rescue import _xlsx
+        md = _xlsx({"xl/worksheets/sheet1.xml": b'<worksheet><sheetData><row r="1"><c r="A1"><f>1+2</f><v>3</v></c></row></sheetData></worksheet>'})
+        self.assertIn("| 3 |", md)
+        self.assertNotIn("=1+2", md)
+
+    def test_1904_workbooks_use_their_own_origin(self):
+        from mdconv.fmt_rescue import _xlsx
+        md = _xlsx({"xl/worksheets/sheet1.xml": b'<worksheet><sheetData><row r="1"><c r="A1" s="1"><v>0</v></c><c r="B1" s="1"><v>1</v></c></row></sheetData></worksheet>',
+                    "xl/styles.xml": self.STYLES.encode(), "xl/workbook.xml": b'<workbook><workbookPr date1904="1"/><sheets/></workbook>'})
+        self.assertIn("1904-01-02", md)

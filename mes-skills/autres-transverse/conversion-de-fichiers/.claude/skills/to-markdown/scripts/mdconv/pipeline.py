@@ -265,7 +265,7 @@ def find_truncations(body: str, cap: int) -> Dict[str, Any]:
         for m in rx.finditer(body):
             if rx is _TRUNC_PATTERNS[-1][0] and "_Tableau tronqué" in body[m.end():m.end() + 400]:
                 continue      # la ligne « … (N lignes de plus) » est déjà décrite par la note qui la suit
-            k = int(m.group(g_kept)) if g_kept else cap
+            k = int(m.group(g_kept)) if g_kept else cap + (1 if rx is _TRUNC_PATTERNS[-1][0] else 0)       # « … (N lignes de plus) » : en-tête + cap lignes gardés
             t = int(m.group(g_total)) if g_total else k + int(m.group(g_more))
             kept, total, tables = kept + k, total + t, tables + 1
             if g_link and m.group(g_link) not in full:

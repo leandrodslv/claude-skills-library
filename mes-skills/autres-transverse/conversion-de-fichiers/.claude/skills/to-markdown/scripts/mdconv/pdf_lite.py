@@ -17,7 +17,7 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from .core import Unsupported
 from .pdf_crypt import Decryptor, first_id
-from .textflow import looks_unfinished
+from .textflow import _has_page_cue, looks_unfinished
 
 MAX_PAGES = 5000
 MAX_STREAM = 256 << 20
@@ -1200,16 +1200,20 @@ def _page_box(doc: PdfDoc, page: Dict[str, Any]) -> Optional[Tuple[float, float]
     return None
 
 
-def _drop_running_marks(doc: PdfDoc, pages: List[Dict[str, Any]], interps: List["Interp"]) -> None:
+def _drop_running_marks(doc: PdfDoc, pages: List[Dict[str, Any]], interps: List["Interp"]) -> List[str]:
     """Retire les en-têtes, pieds de page et numéros de page : lignes situées dans la marge haute ou basse (9 % de la hauteur)
-    dont le texte, chiffres mis à part, se retrouve sur au moins la moitié des pages. Décision géométrique : fonctionne aussi
-    quand l'ordre de lecture place le pied de page au milieu du texte (deux colonnes)."""
+    dont le texte est **strictement identique** sur au moins la moitié des pages. Seul un numéro de page (« page 3 », « 3 / 12 »,
+    « Rapport | 3 ») est ignoré dans la comparaison : « Section 3 » et « Section 4 » sont deux lignes différentes, donc du vrai
+    texte qui se ressemble (« PAGE-0200 … ») n'est jamais pris pour un en-tête. Décision géométrique : fonctionne aussi quand
+    l'ordre de lecture place le pied de page au milieu du texte (deux colonnes).
+
+    Renvoie la liste des retraits (une phrase par ligne distincte retirée) pour que la conversion le signale."""
     if len(interps) < 2:
-        return
-    per_page: List[List[Tuple[str, List[Frag]]]] = []
+        return []
+    per_page: List[List[Tuple[str, str, List[Frag]]]] = []
     for pg, it in zip(pages, interps):
         box = _page_box(doc, pg)
-        found: List[Tuple[str, List[Frag]]] = []
+        found: List[Tuple[str, str, List[Frag]]] = []
         if box is not None:
             lo, hi = box
             band = (hi - lo) * 0.09
@@ -1221,22 +1225,31 @@ def _drop_running_marks(doc: PdfDoc, pages: List[Dict[str, Any]], interps: List[
                 else:
                     lines.append([f])
             for ln in lines:
-                key = re.sub(r"\d+", "#", " ".join(f.text.strip() for f in sorted(ln, key=lambda f: f.x))).lower()
-                key = re.sub(r"\s+", " ", key).strip()
+                text = re.sub(r"\s+", " ", " ".join(f.text.strip() for f in sorted(ln, key=lambda f: f.x))).strip()
+                key = text.lower()
+                if _has_page_cue(key):                       # numéro de page : seul cas où les chiffres ne comptent pas
+                    key = re.sub(r"\d+", "#", key)
                 if key and len(key) < 120:
-                    found.append((key, ln))
+                    found.append((key, text, ln))
         per_page.append(found)
-    counts: Counter = Counter(k for found in per_page for k in {k for k, _ln in found})
+    counts: Counter = Counter(k for found in per_page for k in {k for k, _t, _ln in found})
     threshold = max(2, (len(interps) + 1) // 2)
     drop = {k for k, v in counts.items() if v >= threshold}
     if not drop:
-        return
+        return []
+    removed: Dict[str, Tuple[str, int]] = {}
     for it, found in zip(interps, per_page):
-        gone = {id(f) for k, ln in found if k in drop for f in ln}
+        gone = {id(f) for k, _t, ln in found if k in drop for f in ln}
         # on ne retire jamais plus de la moitié du texte d'une page (formulaire, gabarit répété)
         total = sum(len(f.text) for f in it.frags)
         if gone and sum(len(f.text) for f in it.frags if id(f) in gone) * 2 <= total:
             it.frags = [f for f in it.frags if id(f) not in gone]
+            for k, t, _ln in found:
+                if k in drop:
+                    removed[k] = (removed[k][0] if k in removed else t, removed.get(k, ("", 0))[1] + 1)
+    shown = sorted(removed.values(), key=lambda x: -x[1])
+    return [f"en-tête/pied de page répété retiré : « {t[:60]} » ({n} page(s))" for t, n in shown[:3]] + (
+        [f"… et {len(shown) - 3} autre(s) ligne(s) répétée(s) retirée(s)"] if len(shown) > 3 else [])
 
 
 def extract_pages(data: bytes) -> Tuple[List[str], List[str]]:
@@ -1247,10 +1260,10 @@ def extract_pages(data: bytes) -> Tuple[List[str], List[str]]:
     if not pages:
         raise Unsupported("aucune page trouvée")
     interps = [doc.page_interp(p) for p in pages]
-    _drop_running_marks(doc, pages, interps)
+    removed_marks = _drop_running_marks(doc, pages, interps)
     body, levels = doc_heading_levels(interps)
     texts = [it.render(body, levels) for it in interps]
-    notes: List[str] = []
+    notes: List[str] = list(removed_marks)
     if doc.unreadable:
         notes.append(f"{doc.unreadable} caractère(s) non décodable(s) (police sans table Unicode) — texte possiblement incomplet")
     if len(pages) >= MAX_PAGES:

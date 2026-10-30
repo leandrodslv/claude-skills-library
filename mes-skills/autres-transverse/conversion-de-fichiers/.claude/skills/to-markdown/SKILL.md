@@ -96,7 +96,7 @@ Le skill est 100 % local : aucun réseau, aucune installation, aucun contenu ex�
 - **Audio / vidéo** : transcription seulement sur demande explicite (`--engines whisper`, nécessite `faster-whisper`) ; sinon ignorés avec un message.
 - **Macros** (`.docm`, `.xlsm`) : jamais exécutées, signalées. **Fichiers protégés par un vrai mot de passe d'ouverture** : refusés avec le message qui explique quoi faire (jamais contournés) ; les PDF « sécurisés » sans mot de passe d'ouverture sont lus normalement.
 - **Fichier volumineux** : au-delà de 500 Mo (`--max-size-mb`) le fichier est refusé ; les classeurs Excel sont lus en flux (mémoire bornée) et les longs tableaux tronqués avec un CSV complet à côté. **Toute troncature est signalée** : avertissement « contenu tronqué : N ligne(s) gardée(s) sur M » dans le rapport et champ `truncated` (`kept`, `total`, `full_data`) de `_report.json` — si M compte pour la tâche, ouvre le CSV annexe de `full_data` (ou relance avec `--table-rows 0`) avant de conclure sur les chiffres.
-- **Fichier Office tronqué ou abîmé** (téléchargement interrompu, XML cassé) : le moteur « secours » en sauve le texte (statut `warn`, avertissement « fichier abîmé ou tronqué ») ; la dernière ligne ou le dernier paragraphe est marqué « possiblement incomplet ». Dis-le à l'utilisateur et demande le fichier d'origine si l'intégralité compte.
+- **Fichier Office, OpenDocument ou EPUB tronqué ou abîmé** (téléchargement interrompu, XML cassé) : le moteur « secours » en sauve le texte (statut `warn`, avertissement « fichier abîmé ou tronqué ») ; la dernière ligne ou le dernier paragraphe est marqué « possiblement incomplet ». Dis-le à l'utilisateur et demande le fichier d'origine si l'intégralité compte.
 
 ## Si quelque chose cloche
 
