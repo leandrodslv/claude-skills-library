@@ -302,3 +302,13 @@ class RescueMarksWhatIsCut(Base):
         from mdconv.fmt_rescue import _docx
         xml = b'<w:document><w:body><w:p><w:r><w:t>entier</w:t></w:r></w:p></w:body></w:document>'
         self.assertNotIn("⚠", _docx({"word/document.xml": xml}))
+
+
+class DeepNesting(Base):
+    def test_absurd_nesting_is_refused_with_a_clear_message(self):
+        out = self.conv(self.write("profond.json", "[" * 5000 + '"fond"' + "]" * 5000))
+        if out.status in ("error", "unsupported"):
+            self.assertTrue(any("imbrication" in str(a.get("detail", "")) for a in out.attempts), out.attempts)
+            self.assertNotIn("RecursionError", out.error)
+        else:                                     # ou bien le contenu est lu : aucun plantage dans les deux cas
+            self.assertIn("fond", out.body)

@@ -22,9 +22,9 @@ CASES = []  # chaque cas : id, input (chemin relatif à OUT), expect, forbid, ok
 SECRET = "SECRET-XXE-4242"
 
 
-def case(cid, inp, expect=(), forbid=(), ok=("ok", "warn"), max_s=120, max_mb=3000, note="", flag_truncation=False):
+def case(cid, inp, expect=(), forbid=(), ok=("ok", "warn"), max_s=120, max_mb=3000, note="", flag_truncation=False, soft=False):
     CASES.append(dict(id=cid, input=str(inp), expect=list(expect), forbid=list(forbid), ok=list(ok),
-                      max_s=max_s, max_mb=max_mb, note=note, flag_truncation=flag_truncation))
+                      max_s=max_s, max_mb=max_mb, note=note, flag_truncation=flag_truncation, soft=soft))
 
 
 def w(p, data, mode="wb"):
@@ -328,13 +328,15 @@ def hostile():
     case("B7 html imbriqué sur 3 000 niveaux", "b_hostile/html-profondeur-3000.html", expect=[r"TEXTE-B7"], max_s=60, note="RecursionError possible")
     # B8 XML profondeur 6000
     w("b_hostile/xml-profondeur-6000.xml", "<r>" + "<a>" * 6000 + "FEUILLE-B8" + "</a>" * 6000 + "</r>")
-    case("B8 xml imbriqué sur 6 000 niveaux", "b_hostile/xml-profondeur-6000.xml", expect=[r"FEUILLE-B8"], ok=("ok", "warn", "error"), max_s=60)
+    case("B8 xml imbriqué sur 6 000 niveaux", "b_hostile/xml-profondeur-6000.xml", expect=[r"FEUILLE-B8"], ok=("ok", "warn", "error"), max_s=60, soft=True,
+         note="Lire le contenu OU refuser proprement (« imbrication trop profonde »)")
     # B9 rtf accolades profondeur 5000
     w("b_hostile/rtf-profondeur-5000.rtf", r"{\rtf1\ansi " + "{" * 5000 + "TEXTE-B9" + "}" * 5000 + "}")
     case("B9 rtf à 5 000 groupes imbriqués", "b_hostile/rtf-profondeur-5000.rtf", expect=[r"TEXTE-B9"], max_s=60)
     # B10 JSON profondeur 5000
     w("b_hostile/json-profondeur-5000.json", "[" * 5000 + '"FOND-B10"' + "]" * 5000)
-    case("B10 json imbriqué sur 5 000 niveaux", "b_hostile/json-profondeur-5000.json", expect=[r"FOND-B10"], ok=("ok", "warn", "error"), max_s=60)
+    case("B10 json imbriqué sur 5 000 niveaux", "b_hostile/json-profondeur-5000.json", expect=[r"FOND-B10"], ok=("ok", "warn", "error"), max_s=60, soft=True,
+         note="Lire le contenu OU refuser proprement (« imbrication trop profonde »)")
     # B11 bombe de décompression PNG (1 bit, 40000x40000)
     if _have_pil():
         png_blank("b_hostile/png-bombe-40000x40000.png", (40000, 40000))

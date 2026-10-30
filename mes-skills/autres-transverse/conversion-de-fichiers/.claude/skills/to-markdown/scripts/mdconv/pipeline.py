@@ -329,6 +329,10 @@ def convert_to_memory(src: Path, opts: Options, rel: str = "", assets_dir: str =
             out.attempts.append({"engine": spec.name, "status": "erreur", "detail": "mémoire insuffisante"})
             ctx.cleanup()
             continue
+        except RecursionError:
+            out.attempts.append({"engine": spec.name, "status": "erreur", "detail": "imbrication trop profonde pour ce moteur (milliers de niveaux)"})
+            ctx.cleanup()
+            continue
         except Exception as exc:  # un moteur ne doit jamais faire tomber le lot
             detail = f"{type(exc).__name__}: {exc}"
             if verbose:

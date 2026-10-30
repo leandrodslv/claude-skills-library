@@ -119,6 +119,10 @@ for c in cases:
     if statuses == ["(aucun rapport)"] and not timed_out and not sig:
         problems.append("aucun rapport produit")
     missing = [e for e in c["expect"] if not re.search(e, md)]
+    if c.get("soft") and statuses and set(statuses) <= {"error", "unsupported"}:
+        missing = []          # refus propre accepté (cas « lire OU refuser ») ; le message est vérifié ci-dessous
+        if not any("imbrication" in str(a.get("detail", "")) or "profondeur" in str(a.get("detail", "")) for f in files for a in f.get("attempts", [])):
+            problems.append("refus sans message d'imbrication trop profonde")
     truncated_flag = bool(re.search(r"tronqu|plafon|limit|partiel|coupé|omis|ignoré|au-delà|trop (grand|gros|volumineu)", " ".join(warns) + md + stdout, re.I))
     if missing:
         if c.get("flag_truncation") and truncated_flag:

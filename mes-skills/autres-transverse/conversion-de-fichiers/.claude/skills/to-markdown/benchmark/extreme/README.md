@@ -35,11 +35,11 @@ Pillow et LibreOffice sont facultatifs pour la génération (sans eux, les cas �
 - Troncatures (tableau coupé à 1 000 lignes…) absentes de `_report.json` : maintenant `warnings` + champ `truncated`.
 - Essais sur de vrais PDF (arXiv, IRS) : le lecteur natif plantait sur tout PDF moderne à flux d'objets (un entier lu comme un numéro d'objet). Couvert par `tests/test_extreme_fixes.py`.
 
-## Lecteurs natifs seuls (`--extra --no-external`) : 83 / 86
+## Lecteurs natifs seuls (`--extra --no-external`) : 85 / 86
 
-Trois cas échouent sans aucun outil externe, et c'est connu :
-- **A3** (PDF de 400 pages) : chaque page commence par une ligne « PAGE-NNNN suite de mots » ; le lecteur natif la prend pour un en-tête courant (même position, même forme à un nombre près, sur plus de la moitié des pages) et la retire. Artefact d'un document fabriqué, mais un vrai texte répétitif peut subir la même chose ; pdftotext, lui, garde tout.
-- **B8** (XML à 6 000 niveaux) et **B10** (JSON à 5 000 niveaux) : `RecursionError` du lecteur natif, rattrapée (statut `error`, message clair, aucun plantage) ; avec les outils externes, markitdown prend le relais.
+C'est la configuration de la CI (aucun outil externe ; elle ne lance que les séries B, C, D, F : 86/86 y compris B8 et B10). Deux cas passent par un **refus propre** plutôt que par la lecture du contenu : **B8** (XML à 6 000 niveaux) et **B10** (JSON à 5 000 niveaux) — le lecteur natif répond « imbrication trop profonde pour ce moteur » (statut `error`, aucun plantage) ; avec les outils externes, markitdown prend le relais et lit le contenu.
+
+Le cas qui échoue : **A3** (PDF de 400 pages). Avec pdftotext il passe ; avec le seul lecteur natif, la première ligne de chaque page (« PAGE-NNNN suite de mots ») est prise pour un en-tête courant (même position, même forme à un nombre près, sur plus de la moitié des pages) et retirée. Artefact d'un document fabriqué, mais un vrai texte répétitif peut subir la même chose. Pour le vérifier : `python3 run_extreme.py --only A3 --extra --no-external`.
 
 ## Limites
 
