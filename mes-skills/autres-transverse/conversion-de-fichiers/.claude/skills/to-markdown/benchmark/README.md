@@ -34,3 +34,20 @@ Résultats publiés : [`RESULTS.md`](RESULTS.md). La batterie de documents diffi
 ## Lire un résultat
 
 Un « — » veut dire « sans objet » (pas de liste dans un CSV). Un score bas sur une ligne précise est une piste d'amélioration : ouvrez le fichier correspondant avec `--keep`, convertissez-le et comparez. Les mesures détaillées par fichier sont dans la sortie `--json`.
+
+## Comparer les moteurs PDF sur vos propres PDF
+
+Aucun PDF tiers n'est versionné (poids, droits). La procédure d'essai :
+
+```bash
+# 1. rassembler quelques PDF réels et variés : article à deux colonnes, formulaire, rapport, facture, PDF issu de Word
+# 2. (facultatif mais recommandé) une extraction indépendante : pip install pypdfium2   (ou pdfminer.six)
+python3 benchmark/compare_pdf_engines.py article.pdf formulaire.pdf rapport.pdf facture.pdf
+python3 benchmark/compare_pdf_engines.py --engines pdftotext,pdflite --truth pdfminer *.pdf
+```
+
+Colonnes : mots, **rappel** et **précision** du texte face à la référence, **ordre** (couples de mots consécutifs retrouvés : un texte à deux colonnes entremêlées garde ses mots mais perd cette part), titres, lignes de tableau, bruit, durée. Règle de décision : le lecteur natif ne passe devant pdftotext que s'il est au moins aussi fidèle en texte (rappel, précision **et** ordre). Les résultats obtenus sur 9 PDF réels et la décision qui en découle sont dans [`../references/engines.md`](../references/engines.md).
+
+## Cas extrêmes
+
+[`extreme/README.md`](extreme/README.md) : 86 cas (échelle, hostilité, fichiers abîmés, Unicode, pièges Markdown) ; une version réduite (séries B, C, D, F) tourne dans la CI.

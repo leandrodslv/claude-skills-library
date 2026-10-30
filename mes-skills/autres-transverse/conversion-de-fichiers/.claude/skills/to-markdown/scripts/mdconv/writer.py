@@ -12,7 +12,7 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from .core import Options, VERSION
 from .pipeline import Outcome, front_matter, report_entry
-from .util import slugify
+from .util import scrub_surrogates, slugify
 
 
 @dataclass
@@ -55,6 +55,11 @@ def plan_outputs(files: List[InputFile], flat: bool = False) -> List[Planned]:
     return planned
 
 
+def utf8(text: str) -> bytes:
+    """Texte → octets UTF-8, sans jamais lever sur un substitut isolé (JSON mal formé, PDF mal encodé…)."""
+    return scrub_surrogates(text).encode("utf-8")
+
+
 def atomic_write(path: Path, data: bytes) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     tmp = path.with_name(path.name + ".tmp")
@@ -70,7 +75,7 @@ def write_outcome(out: Outcome, opts: Options, out_root: Path, out_md: str, writ
         fm = front_matter(out, opts, out.src)
         final = fm + out.body
         if write_md:
-            atomic_write(md_path, final.encode("utf-8"))
+            atomic_write(md_path, utf8(final))
             entry_md = out_md
         if out.ctx is not None:
             for name, asset in out.ctx.assets.items():
@@ -84,7 +89,7 @@ def write_outcome(out: Outcome, opts: Options, out_root: Path, out_md: str, writ
     if out.ctx is not None and out.ctx.previews:
         out.ctx.previews = [str((md_path.parent / p).resolve()) for p in out.ctx.previews]
     entry = report_entry(out, entry_md)
-    entry["_bytes"] = len(out.body.encode("utf-8")) if out.body else 0
+    entry["_bytes"] = len(utf8(out.body)) if out.body else 0
     return entry
 
 
@@ -141,7 +146,7 @@ def write_report(entries: List[Dict[str, Any]], out_root: Path, opts: Options, i
         "files": clean,
     }
     if persist:
-        atomic_write(out_root / "_report.json", json.dumps(report, ensure_ascii=False, indent=2).encode("utf-8"))
+        atomic_write(out_root / "_report.json", utf8(json.dumps(report, ensure_ascii=False, indent=2)))
     return report
 
 
@@ -160,7 +165,7 @@ def write_combined(entries: List[Dict[str, Any]], out_root: Path, only: bool, na
     if not parts:
         return None
     path = out_root / name
-    atomic_write(path, ("\n\n---\n\n".join(parts) + "\n").encode("utf-8"))
+    atomic_write(path, utf8("\n\n---\n\n".join(parts) + "\n"))
     if only:
         for e in entries:
             md = e.get("output")
@@ -184,7 +189,7 @@ def load_cache(out_root: Path) -> Dict[str, Any]:
 
 def save_cache(out_root: Path, cache: Dict[str, Any]) -> None:
     try:
-        atomic_write(out_root / CACHE_NAME, json.dumps(cache, ensure_ascii=False).encode("utf-8"))
+        atomic_write(out_root / CACHE_NAME, utf8(json.dumps(cache, ensure_ascii=False)))
     except OSError:
         pass
 

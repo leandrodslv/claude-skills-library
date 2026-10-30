@@ -7,7 +7,7 @@ from __future__ import annotations
 
 import re
 from collections import Counter
-from typing import List, Optional, Sequence
+from typing import List, Optional, Sequence, Tuple
 
 from .util import clean_text, esc_inline, md_table
 
@@ -112,9 +112,53 @@ def _drop_page_numbers(text: str) -> str:
     return "\n".join(lines)
 
 
-def _heading_of(s: str) -> Optional[str]:
+_DANGLING = re.compile(
+    r"(?i)(?:^|[\s(])(?:to|of|the|a|an|and|or|for|in|on|at|by|with|from|as|if|not|that|which|is|are|be|"
+    r"de|du|des|d'|l'|la|le|les|un|une|et|ou|pour|dans|sur|par|avec|au|aux|en|que|qui|ni|sans|sous|chez|vers)$")
+
+
+def looks_unfinished(line: str, next_line: str = "") -> bool:
+    """La ligne se poursuit (parenthèse ouverte, préposition/article/conjonction ou virgule en fin, minuscule à la ligne suivante) :
+    ce n'est pas un titre. Les vrais titres sont complets (« 4 Exemptions (codes apply only to / certain entities… » n'en est pas un)."""
+    t = line.strip()
+    if not t:
+        return False
+    if t.count("(") > t.count(")") or t.endswith((",", "-", "–", "&", "/")) or _DANGLING.search(t):
+        return True
+    nxt = next_line.strip()
+    return bool(nxt) and nxt[:1].islower()
+
+
+_FIELD_NUM = re.compile(r"^\d{1,2}[a-z]?$")
+
+
+def join_form_fields(lines: List[str]) -> Tuple[List[str], set]:
+    """Formulaire : un numéro de champ seul sur sa ligne (« 2 ») est rattaché au libellé qui suit (« 2 Business name… »).
+
+    Ne s'applique que si au moins trois numéros isolés sont suivis d'un libellé en majuscule initiale : un numéro isolé
+    ordinaire (page, figure) n'est jamais touché.
+    """
+    pairs = []
+    for i, ln in enumerate(lines):
+        if _FIELD_NUM.match(ln.strip()):
+            j = i + 1
+            while j < len(lines) and not lines[j].strip():
+                j += 1
+            lab = lines[j].strip() if j < len(lines) else ""
+            if j - i <= 3 and lab[:1].isupper() and not _FIELD_NUM.match(lab):
+                pairs.append((i, j))
+    if len(pairs) < 3:
+        return lines, set()
+    out = list(lines)
+    for i, j in pairs:
+        out[j] = f"{out[i].strip()} {out[j].strip()}"
+        out[i] = ""
+    return out, {j for _i, j in pairs}
+
+
+def _heading_of(s: str, next_line: str = "") -> Optional[str]:
     """Titre Markdown si la ligne ressemble à un titre numéroté (« 2.1 Méthode ») ou en capitales."""
-    if len(s) > 80 or len(s.split()) > 10 or _SENT_END.search(s):
+    if len(s) > 80 or len(s.split()) > 10 or _SENT_END.search(s) or looks_unfinished(s, next_line):
         return None
     m = _NUM_HEADING.match(s)
     if m:
@@ -136,7 +180,7 @@ def _bullet_lead(marker: str) -> str:
 def reflow(text: str, headings: bool = True) -> str:
     """Lignes de largeur fixe → paragraphes Markdown (dé-césure, puces, titres numérotés ou en capitales)."""
     text = clean_text(text.replace("\r\n", "\n").replace("\r", "\n"))
-    lines = [ln.rstrip() for ln in text.split("\n")]
+    lines, fields = join_form_fields([ln.rstrip() for ln in text.split("\n")])
     nonblank = [len(ln.strip()) for ln in lines if ln.strip()]
     if not nonblank:
         return ""
@@ -172,8 +216,8 @@ def reflow(text: str, headings: bool = True) -> str:
             if hm.group(2).strip():
                 out.append("#" * int(hm.group(1)) + " " + esc_inline(hm.group(2).strip()))
             continue
-        if headings:
-            h = _heading_of(s)
+        if headings and i not in fields:
+            h = _heading_of(s, next(((x for x in lines[i + 1:i + 3] if x.strip())), ""))
             if h:
                 flush()
                 out.append(h)

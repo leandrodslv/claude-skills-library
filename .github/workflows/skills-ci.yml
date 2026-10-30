@@ -82,6 +82,25 @@ jobs:
           python scripts/convert.py --doctor > /dev/null
           python scripts/convert.py --plan tests > /dev/null
 
+  extreme-reduit:
+    # Batterie « cas extrêmes » en version réduite : séries B (hostilité), C (fichiers abîmés), D (Unicode), F (pièges Markdown).
+    # La version complète (86 cas, ≈ 55 Mo) se lance à la main : voir benchmark/extreme/README.md.
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Génération du corpus (B, C, D, F)
+        working-directory: mes-skills/autres-transverse/conversion-de-fichiers/.claude/skills/to-markdown/benchmark/extreme
+        run: python gen_extreme.py "$RUNNER_TEMP/extreme" --only BCDF
+      - name: Lancement (processus séparés, plafonds de temps et de mémoire)
+        working-directory: mes-skills/autres-transverse/conversion-de-fichiers/.claude/skills/to-markdown/benchmark/extreme
+        run: |
+          for serie in B C D F; do
+            python run_extreme.py "$RUNNER_TEMP/extreme" "$RUNNER_TEMP/extreme-runs-$serie" --only "$serie"
+          done
+
   prd-from-sources:
     runs-on: ubuntu-latest
     strategy:

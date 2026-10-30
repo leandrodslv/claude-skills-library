@@ -16,7 +16,7 @@ from typing import Callable, Dict, List, Optional
 
 from . import external as ext
 from .core import Ctx, Result, Unsupported, engine
-from .util import esc_inline
+from .util import esc_inline, short_error
 
 LO_CACHE_ENV = "MDCONV_LO_CACHE"
 
@@ -152,7 +152,7 @@ def _run_markitdown(path, ctx: Ctx) -> Result:
     else:
         rc, out, err = ext.run([ext.tool("markitdown") or "markitdown", str(path)], timeout=ctx.opts.timeout)
         if rc != 0:
-            raise Unsupported("markitdown a échoué : " + err.decode("utf-8", "replace")[:200])
+            raise Unsupported("markitdown a échoué : " + short_error(err), detail=err.decode("utf-8", "replace")[:4000])
         md, title = out.decode("utf-8", "replace"), ""
     if not md.strip():
         raise Unsupported("markitdown n'a produit aucun texte")
@@ -186,7 +186,7 @@ def _pandoc_run(path: Path, fmt_from: str, ctx: Ctx) -> Result:
     cmd.append(str(path))
     rc, out, err = ext.run(cmd, timeout=ctx.opts.timeout, cwd=ctx.tmp)
     if rc != 0:
-        raise Unsupported("pandoc a échoué : " + err.decode("utf-8", "replace")[:200])
+        raise Unsupported("pandoc a échoué : " + short_error(err), detail=err.decode("utf-8", "replace")[:4000])
     md = out.decode("utf-8", "replace")
 
     def asset_for(src: str, alt: str) -> Optional[str]:

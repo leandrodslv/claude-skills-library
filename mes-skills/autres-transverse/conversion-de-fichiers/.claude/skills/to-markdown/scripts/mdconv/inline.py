@@ -84,9 +84,10 @@ def _edge(spans: List[Span], i: int, direction: int) -> str:
     j = i + direction
     if 0 <= j < len(spans) and spans[j].kind == "t" and spans[j].text:
         f = spans[j].fmt
+        edge = spans[j].text[-1] if direction < 0 else spans[j].text[0]
         if f.bold or f.italic or f.strike or f.code or f.link or f.sup or f.sub or f.ins or f.dele:
-            return "*"
-        return spans[j].text[-1] if direction < 0 else spans[j].text[0]
+            return edge if edge.isspace() else "*"
+        return edge
     return ""
 
 
@@ -136,6 +137,15 @@ def fmt_text(s: Span, prev: str = "", nxt: str = "") -> str:
     if f.code:
         return wrap_emphasis(txt, False, False, False, code=True)
     body = esc_inline(txt)
+    if (f.bold or f.italic or f.strike) and not (f.dele or f.ins) and (
+            (prev == "*" and not txt[:1].isspace()) or (nxt == "*" and not txt[-1:].isspace())):
+        # deux segments mis en forme collés (« gras »+« italique ») : `**a***b*` serait ambigu en Markdown → balises HTML, texte inchangé
+        core = body.strip()
+        lead, trail = body[: len(body) - len(body.lstrip())], body[len(body.rstrip()):]
+        for on, tag in ((f.strike, "s"), (f.italic, "em"), (f.bold, "strong")):
+            if on:
+                core = f"<{tag}>{core}</{tag}>"
+        return lead + core + trail
     intraword = bool(f.italic) and (
         (prev[-1:].isalnum() and not txt[:1].isspace()) or (nxt[:1].isalnum() and not txt[-1:].isspace()))
     out = wrap_emphasis(body, f.bold, f.italic, f.strike, intraword=intraword)

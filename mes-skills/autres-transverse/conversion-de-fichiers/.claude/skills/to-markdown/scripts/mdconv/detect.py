@@ -13,7 +13,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import List, Optional, Set
 
-from .util import decode_text
+from .util import decode_text, nul_tolerable
 
 # extension -> langage pour les blocs de code
 CODE_LANGS = {
@@ -143,11 +143,40 @@ def _sniff_binary(path: Path, head: bytes, ext: str) -> Optional[Detected]:
     return None
 
 
+def _local_names(path: Path, limit: int = 5000) -> Set[str]:
+    """Noms des membres d'un ZIP sans annuaire final (fichier tronqué), lus dans les en-têtes locaux."""
+    names: Set[str] = set()
+    with open(path, "rb") as f:
+        data = f.read()
+    pos = 0
+    while len(names) < limit:
+        pos = data.find(b"PK\x03\x04", pos)
+        if pos < 0 or pos + 30 > len(data):
+            break
+        nlen = int.from_bytes(data[pos + 26:pos + 28], "little")
+        names.add(data[pos + 30:pos + 30 + nlen].decode("utf-8", "replace").replace("\\", "/").lower())
+        pos += 30 + nlen
+    return names
+
+
+def _sniff_broken_zip(path: Path) -> Detected:
+    """Un ZIP sans annuaire lisible reste un Word/PowerPoint/Excel si ses en-têtes locaux le disent (téléchargement coupé)."""
+    try:
+        names = _local_names(path)
+    except OSError:
+        names = set()
+    if "[content_types].xml" in names:
+        for prefix, fmt in (("word/", "docx"), ("ppt/", "pptx"), ("xl/", "xlsx")):
+            if any(n.startswith(prefix) for n in names):
+                return Detected(fmt, note="fichier tronqué ou abîmé")
+    return Detected("zip", note="zip corrompu")
+
+
 def _sniff_zip(path: Path, ext: str) -> Detected:
     try:
         zf = zipfile.ZipFile(path)
     except zipfile.BadZipFile:
-        return Detected("zip", note="zip corrompu")
+        return _sniff_broken_zip(path)
     with zf:
         raw = zf.namelist()
         names = {n.replace("\\", "/").lower() for n in raw}
@@ -298,9 +327,10 @@ def _decode_head(head: bytes) -> str:
 def _sniff_text(head: bytes, ext: str, size: int) -> Optional[Detected]:
     sample = head[:8192]
     is_utf16 = head[:2] in (b"\xff\xfe", b"\xfe\xff")
-    if b"\x00" in sample and not is_utf16:
+    nul_text = b"\x00" in sample and not is_utf16 and nul_tolerable(sample)
+    if b"\x00" in sample and not is_utf16 and not nul_text:
         return None  # binaire non identifié
-    text = (decode_text(head)[0] if is_utf16 else _decode_head(head)).lstrip("﻿")
+    text = (decode_text(head)[0] if (is_utf16 or nul_text) else _decode_head(head)).lstrip("﻿")
     t = text.lstrip()
     low = t[:4096].lower()
 

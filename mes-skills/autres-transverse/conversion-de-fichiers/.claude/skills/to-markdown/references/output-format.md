@@ -83,7 +83,7 @@ needs_vision: 3       # seulement s'il reste des éléments à lire visuellement
   "files": [
     {"source": "rapport.docx", "format": "docx", "status": "ok", "output": "rapport.md", "engine": "native",
      "score": 1.0, "recall": 1.0, "words": 5230, "tokens_est": 8800, "title": "Rapport", "assets": 4,
-     "warnings": ["…"], "vision": [ … ], "previews": ["/abs/md/rapport_assets/apercu-001.png"],
+     "warnings": ["…"], "truncated": {"kept": 1000, "total": 25000, "full_data": ["rapport_assets/Feuil1.csv"], "tables": 1}, "vision": [ … ], "previews": ["/abs/md/rapport_assets/apercu-001.png"],
      "attempts": [{"engine": "native", "status": "ok", "score": 1.0, "words": 5230, "seconds": 0.04}],
      "seconds": 0.05}
   ]
@@ -95,6 +95,8 @@ needs_vision: 3       # seulement s'il reste des éléments à lire visuellement
 ## `RAPPORT.md`
 
 Écrit à chaque conversion (sauf `--in-place` et `-o -`). Sections : **Non convertis**, **À lire visuellement**, **Non lus volontairement** (`--no-vision`), **À relire** (avec la raison en clair : texte manquant, fidélité sous 90 %, avertissements), **Fiables, avec remarques**, **Fiables** (tableau). `--check` l'ignore. `_report.json` porte en plus la clé `unread` (éléments non lus sous `--no-vision`).
+
+**Troncatures.** Un tableau ou une liste coupé au plafond `--table-rows` (1 000 lignes par défaut) est signalé de trois façons : la note dans le Markdown (`_Tableau tronqué dans ce fichier (25000 lignes au total) — données complètes : [Feuil1.csv](…)_`), un avertissement « contenu tronqué : 1000 ligne(s) gardée(s) sur 25000 … » dans `warnings` (donc dans la section « remarques » de `RAPPORT.md`), et le champ structuré `truncated` : `kept` / `total` (lignes, tous tableaux du fichier confondus), `tables` (nombre de tableaux coupés) et `full_data` (CSV annexes du jeu complet ; liste vide quand le fichier source reste lui-même l'intégralité, par exemple un CSV).
 
 ## `INDEX.md`
 

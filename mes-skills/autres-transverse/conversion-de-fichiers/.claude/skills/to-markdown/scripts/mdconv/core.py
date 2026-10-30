@@ -18,8 +18,9 @@ VERSION = "1.0.0"
 class Unsupported(Exception):
     """Ce moteur ne sait pas traiter ce fichier (on passe au suivant)."""
 
-    def __init__(self, msg: str, hint: str = ""):
+    def __init__(self, msg: str, hint: str = "", detail: str = ""):
         super().__init__(msg)
+        self.detail = detail      # sortie complète de l'outil (affichée seulement avec --verbose)
         self.hint = hint
 
 
@@ -258,7 +259,7 @@ def load_all() -> None:
 
     for mod in (
         "fmt_docx", "fmt_pptx", "fmt_xlsx", "fmt_odf", "fmt_html", "fmt_epub", "fmt_svg",
-        "fmt_data", "fmt_rtf", "fmt_mail", "fmt_pdf", "fmt_image", "fmt_archive", "fmt_legacy", "fmt_binary", "fmt_diagram", "fmt_visio", "fmt_xml2003",
+        "fmt_data", "fmt_rtf", "fmt_mail", "fmt_pdf", "fmt_image", "fmt_archive", "fmt_legacy", "fmt_binary", "fmt_diagram", "fmt_visio", "fmt_xml2003", "fmt_rescue",
     ):
         try:
             importlib.import_module(f"{__package__}.{mod}")

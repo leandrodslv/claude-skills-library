@@ -14,7 +14,7 @@ from typing import Dict, List, Optional, Sequence, Tuple
 from . import external as ext
 from .core import Ctx, Protected, Result, Unsupported, engine
 from .textflow import is_page_number, page_marker, reflow, repeated_sets, strip_repeated, words_count
-from .util import clean_text, esc_inline, md_table
+from .util import clean_text, esc_inline, md_table, short_error
 
 MIN_WORDS_PAGE = 5
 OCR_PAGE_CAP = 60
@@ -247,7 +247,7 @@ def pdf_pdftotext(path, ctx: Ctx) -> Result:
         msg = err.decode("utf-8", "replace").strip()
         if "password" in msg.lower() or "encrypted" in msg.lower():
             raise Protected("PDF protégé par mot de passe")
-        raise Unsupported(f"pdftotext a échoué : {msg[:200]}")
+        raise Unsupported(f"pdftotext a échoué : {short_error(msg)}", detail=msg[:4000])
     pages = out.decode("utf-8", "replace").split("\f")
     if pages and not pages[-1].strip():
         pages.pop()
